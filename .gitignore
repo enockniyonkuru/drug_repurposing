@@ -1,0 +1,81 @@
+# R and RStudio files
+.Rproj.user/
+.Rhistory
+.RData
+.Ruserdata
+*.Rproj
+
+# R package build files
+*.tar.gz
+*.tgz
+/man/*.pdf
+
+# R environment files
+.Renviron
+.Rprofile
+
+# System files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Temporary files
+*~
+*.tmp
+*.temp
+*.swp
+*.swo
+
+# Log files
+*.log
+
+# IDE files
+.vscode/
+.idea/
+*.sublime-*
+
+# Python files (in case you use Python alongside R)
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.env
+
+# Data files that might be sensitive or large
+*.csv.bak
+*.xlsx.bak
+*.rds.bak
+
+# Output and result files that can be regenerated
+*.png
+*.jpg
+*.jpeg
+*.pdf
+*.svg
+plots/
+figures/
+
+# Cache directories
+cache/
+.cache/
+
+# Node modules (if using any web components)
+node_modules/
+
+# Backup files
+*.bak
+*.backup
+*~
+
+# OS generated files
+.fuse_hidden*
+.directory
+.Trash-*
+.nfs*
