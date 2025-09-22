@@ -1,81 +1,125 @@
-# R and RStudio files
+############################
+# R & RStudio
+############################
+*.Rproj
+*.RData
 .Rproj.user/
 .Rhistory
-.RData
+.Rapp.history
 .Ruserdata
-*.Rproj
-
-# R package build files
-*.tar.gz
-*.tgz
-/man/*.pdf
-
-# R environment files
 .Renviron
 .Rprofile
+.lintr
 
-# System files
+# R build/check artifacts
+*.Rcheck/
+*.tar.gz
+*.tgz
+.manifest
+
+# (If you generate PDFs of man pages)
+man/*.pdf
+
+############################
+# Rmd / Quarto / knitr
+############################
+*_cache/
+cache/
+*.utf8.md
+*.knit.md
+.Rhistory
+.quarto/
+_book/
+docs/        # remove if you publish a pkgdown site here
+
+############################
+# R workflow packages
+############################
+# targets / drake
+_targets/
+.targets/
+_drake/
+
+# renv / packrat (keep lockfile, ignore compiled libs)
+renv/library/
+renv/staging/
+packrat/lib*/
+packrat/src/
+
+############################
+# Compiled code (Rcpp, etc.)
+############################
+src/*.o
+src/*.so
+src/*.dll
+src/*.dylib
+
+############################
+# Python (if used alongside R)
+############################
+__pycache__/
+*.py[cod]
+*$py.class
+.ipynb_checkpoints/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.env
+.venv/
+venv/
+env/
+.Python
+
+############################
+# Node / build artifacts
+############################
+node_modules/
+dist/
+build/
+
+############################
+# System / OS cruft
+############################
 .DS_Store
 .DS_Store?
 ._*
 .Spotlight-V100
 .Trashes
+.Trash-*
+.fuse_hidden*
+.directory
+.nfs*
 ehthumbs.db
 Thumbs.db
 
-# Temporary files
+############################
+# Logs / temp / backups
+############################
+*.log
 *~
 *.tmp
 *.temp
 *.swp
 *.swo
-
-# Log files
-*.log
-
-# IDE files
-.vscode/
-.idea/
-*.sublime-*
-
-# Python files (in case you use Python alongside R)
-__pycache__/
-*.py[cod]
-*$py.class
-*.so
-.Python
-env/
-venv/
-.env
-
-# Data files that might be sensitive or large
-*.csv.bak
-*.xlsx.bak
-*.rds.bak
-
-# Output and result files that can be regenerated
-*.png
-*.jpg
-*.jpeg
-*.pdf
-*.svg
-plots/
-figures/
-
-# Cache directories
-cache/
-.cache/
-
-# Node modules (if using any web components)
-node_modules/
-
-# Backup files
 *.bak
 *.backup
-*~
 
-# OS generated files
-.fuse_hidden*
-.directory
-.Trash-*
-.nfs*
+############################
+# Project-specific data/results
+############################
+# Ignore large raw/derived data by default, but allow readme/samples.
+# (Adjust these paths to your layout.)
+data/**
+results/**
+scripts/data/**
+scripts/results/**
+
+# Keep small docs/samples/index files you want in git:
+!data/README*
+!results/README*
+!scripts/data/README*
+!scripts/results/README*
+!**/*.sample.*
+!**/*sample*.csv
+!**/*small*.csv
+
