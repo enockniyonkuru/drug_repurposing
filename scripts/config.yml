@@ -20,7 +20,27 @@ default:
     analysis_dir: "scripts/results/analysis"
     pattern: "_results\\.RData$"
 
-# Example second profile (tweak paths/thresholds as needed)
+# Strict profile with more stringent thresholds for comparison
+strict:
+  paths:
+    signatures: "scripts/data/cmap_signatures.RData"
+    disease_file: "scripts/data/CoreFibroidSignature_All_Datasets.csv"
+    cmap_meta: "scripts/data/cmap_drug_experiments_new.csv"
+    cmap_valid: "scripts/data/cmap_valid_instances.csv"
+    out_dir: "scripts/results"
+  params:
+    gene_key: "SYMBOL"
+    logfc_cols_pref: "log2FC"
+    logfc_cutoff: 1.5        # More stringent: higher fold-change cutoff
+    q_thresh: 0.01           # More stringent: lower q-value threshold
+    reversal_only: true
+    seed: 123
+  analysis:
+    results_dir: "scripts/results"
+    analysis_dir: "scripts/results/analysis"
+    pattern: "_results\\.RData$"
+
+# Example production profile (tweak paths/thresholds as needed)
 production:
   paths:
     signatures: "/data/cmap_signatures.RData"
