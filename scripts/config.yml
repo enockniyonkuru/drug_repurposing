@@ -1,0 +1,42 @@
+default:
+  paths:
+    signatures: "scripts/data/cmap_signatures.RData"
+    # Use exactly one of the next two:
+    disease_file: "scripts/data/CoreFibroidSignature_All_Datasets.csv"
+    # disease_dir: "scripts/data/"
+    # disease_pattern: "CoreFibroidSignature_All_Datasets\\.csv"
+    cmap_meta: "scripts/data/cmap_drug_experiments_new.csv"
+    cmap_valid: "scripts/data/cmap_valid_instances.csv"
+    out_dir: "scripts/results"
+  params:
+    gene_key: "SYMBOL"
+    logfc_cols_pref: "log2FC"
+    logfc_cutoff: 1
+    q_thresh: 0.05
+    reversal_only: true
+    seed: 123
+  analysis:               # OPTIONAL (used by CLI `analyze` or your analysis script)
+    results_dir: "scripts/results"
+    analysis_dir: "scripts/results/analysis"
+    pattern: "_results\\.RData$"
+
+# Example second profile (tweak paths/thresholds as needed)
+production:
+  paths:
+    signatures: "/data/cmap_signatures.RData"
+    disease_dir: "/data/disease/"
+    disease_pattern: "Fibroid.*\\.csv"
+    cmap_meta: "/data/cmap_drug_experiments_new.csv"
+    cmap_valid: "/data/cmap_valid_instances.csv"
+    out_dir: "/results/drugrep"
+  params:
+    gene_key: "SYMBOL"
+    logfc_cols_pref: "log2FC"
+    logfc_cutoff: 1
+    q_thresh: 0.05
+    reversal_only: true
+    seed: 123
+  analysis:
+    results_dir: "/results/drugrep"
+    analysis_dir: "/results/drugrep/analysis"
+    pattern: "_results\\.RData$"
