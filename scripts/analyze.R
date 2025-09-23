@@ -14,7 +14,8 @@ out <- file.path(analysis_root, ts)
 io_ensure_dir(out)
 
 # 3) Quick sanity check: do we have any results?
-files <- io_list_result_files(results_dir, pattern = pattern)
+# Use recursive search to find files in timestamped subdirectories
+files <- list.files(results_dir, pattern = pattern, full.names = TRUE, recursive = TRUE)
 if (!length(files)) stop("No result files matching '", pattern, "' found in ", results_dir)
 
 # 4) Run cross-run analysis
