@@ -25,6 +25,7 @@ man/*.pdf
 ############################
 *_cache/
 cache/
+dump/
 *.utf8.md
 *.knit.md
 .Rhistory
