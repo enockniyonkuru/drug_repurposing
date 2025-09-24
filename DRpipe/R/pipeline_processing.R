@@ -148,7 +148,7 @@ DRP <- R6::R6Class(
         self$drugs_valid <- self$drugs
         return(invisible(self))
       }
-      self$log("Annotating with CMAP metadata …")
+      self$log("Annotating with CMAP metadata...")
       cmap_experiments <- utils::read.csv(self$cmap_meta_path,  stringsAsFactors = FALSE)
       valid_instances  <- utils::read.csv(self$cmap_valid_path, stringsAsFactors = FALSE)
       cmap_experiments_valid <- merge(cmap_experiments, valid_instances, by = "id")
@@ -178,7 +178,7 @@ DRP <- R6::R6Class(
 
     save_outputs = function() {
       io_ensure_dir(self$out_dir)
-      self$log("Saving artifacts → %s", self$out_dir)
+      self$log("Saving artifacts -> %s", self$out_dir)
 
       results <- list(drugs = self$drugs, signature_clean = self$dz_signature)
       save(results, file = file.path(self$out_dir, sprintf("%s_results.RData", self$dataset_label)))
@@ -230,7 +230,14 @@ DRP <- R6::R6Class(
 #' @param cmap_meta_path   Path to CMAP experiment metadata CSV (optional)
 #' @param cmap_valid_path  Path to CMAP valid instances CSV (optional)
 #' @param out_dir          Output directory
-#' @inheritParams DRP$initialize
+#' @param gene_key         Column name for gene identifiers (default: "SYMBOL")
+#' @param logfc_cols_pref  Prefix for log fold change columns (default: "log2FC")
+#' @param logfc_cutoff     Log fold change cutoff threshold (default: 1)
+#' @param q_thresh         Q-value threshold for significance (default: 0.05)
+#' @param reversal_only    Whether to consider only reversal scores (default: TRUE)
+#' @param seed             Random seed for reproducibility (default: 123)
+#' @param verbose          Whether to print progress messages (default: TRUE)
+#' @param make_plots       Whether to generate plots (default: TRUE)
 #' @return Invisibly, the DRP object
 #' @export
 run_dr <- function(

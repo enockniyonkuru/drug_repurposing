@@ -15,6 +15,23 @@ analyze_runs(
   verbose = TRUE
 )
 }
+\arguments{
+\item{results_dir}{Directory containing pipeline result RData files (default: "scripts/results")}
+
+\item{analysis_dir}{Output directory for analysis results (default: "scripts/results/analysis")}
+
+\item{cmap_meta_path}{Path to CMAP experiment metadata CSV file}
+
+\item{cmap_valid_path}{Path to CMAP valid instances CSV file}
+
+\item{cmap_signatures_path}{Path to RData file containing CMAP signatures}
+
+\item{q_thresh}{Q-value threshold for significance filtering (default: 0.05)}
+
+\item{reversal_only}{Whether to consider only reversal scores (default: TRUE)}
+
+\item{verbose}{Whether to print progress messages (default: TRUE)}
+}
 \description{
 One-call analysis (batch)
 }

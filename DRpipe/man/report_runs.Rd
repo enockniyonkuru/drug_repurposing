@@ -11,6 +11,15 @@ report_runs(
   out_dir = "scripts/results/analysis"
 )
 }
+\arguments{
+\item{drugs_list}{Named list of drug result data frames from multiple runs}
+
+\item{signatures_list}{Named list of signature data frames from multiple runs}
+
+\item{cmap_signatures_path}{Path to RData file containing CMAP signatures}
+
+\item{out_dir}{Output directory for reports and plots (default: "scripts/results/analysis")}
+}
 \description{
 Make standard per-run plots & CSVs
 }

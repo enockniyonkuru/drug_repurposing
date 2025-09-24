@@ -6,6 +6,11 @@
 \usage{
 summarize_across_runs(drugs_list, out_dir = "scripts/results/analysis")
 }
+\arguments{
+\item{drugs_list}{Named list of drug result data frames from multiple runs}
+
+\item{out_dir}{Output directory for summary plots and files (default: "scripts/results/analysis")}
+}
 \description{
 Integrate across runs: overlaps & UpSet
 }

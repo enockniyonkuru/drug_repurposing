@@ -1,4 +1,5 @@
 #' @keywords internal
+#' @importFrom R6 R6Class
 #' @importFrom dplyr %>% group_by slice ungroup filter pull select all_of
 #' @importFrom tidyr pivot_wider
 #' @importFrom tibble column_to_rownames
