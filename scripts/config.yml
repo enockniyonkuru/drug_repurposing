@@ -1,13 +1,24 @@
+# Execution configuration - specify which profiles/operations to run
+execution:
+  # Profile to use for runall.R
+  runall_profile: "default"
+  
+  # Profile to use for analyze.R  
+  analyze_profile: "default"
+  
+  # Profiles to compare in compare_profiles.R
+  compare_profiles: ["lenient", "default", "strict"]
+
 default:
   paths:
-    signatures: "scripts/data/cmap_signatures.RData"
+    signatures: "data/cmap_signatures.RData"
     # Use exactly one of the next two:
-    disease_file: "scripts/data/CoreFibroidSignature_All_Datasets.csv"
-    # disease_dir: "scripts/data/"
+    disease_file: "data/CoreFibroidSignature_All_Datasets.csv"
+    # disease_dir: "data/"
     # disease_pattern: "CoreFibroidSignature_All_Datasets\\.csv"
-    cmap_meta: "scripts/data/cmap_drug_experiments_new.csv"
-    cmap_valid: "scripts/data/cmap_valid_instances.csv"
-    out_dir: "scripts/results"
+    cmap_meta: "data/cmap_drug_experiments_new.csv"
+    cmap_valid: "data/cmap_valid_instances.csv"
+    out_dir: "results"
   params:
     gene_key: "SYMBOL"
     logfc_cols_pref: "log2FC"
@@ -16,18 +27,38 @@ default:
     reversal_only: true
     seed: 123
   analysis:               # OPTIONAL (used by CLI `analyze` or your analysis script)
-    results_dir: "scripts/results"
-    analysis_dir: "scripts/results/analysis"
+    results_dir: "results"
+    analysis_dir: "results/analysis"
+    pattern: "_results\\.RData$"
+
+# Lenient profile with lower fold-change cutoff for comparison
+lenient:
+  paths:
+    signatures: "data/cmap_signatures.RData"
+    disease_file: "data/CoreFibroidSignature_All_Datasets.csv"
+    cmap_meta: "data/cmap_drug_experiments_new.csv"
+    cmap_valid: "data/cmap_valid_instances.csv"
+    out_dir: "results"
+  params:
+    gene_key: "SYMBOL"
+    logfc_cols_pref: "log2FC"
+    logfc_cutoff: 0.5        # More lenient: lower fold-change cutoff
+    q_thresh: 0.05
+    reversal_only: true
+    seed: 123
+  analysis:
+    results_dir: "results"
+    analysis_dir: "results/analysis"
     pattern: "_results\\.RData$"
 
 # Strict profile with more stringent thresholds for comparison
 strict:
   paths:
-    signatures: "scripts/data/cmap_signatures.RData"
-    disease_file: "scripts/data/CoreFibroidSignature_All_Datasets.csv"
-    cmap_meta: "scripts/data/cmap_drug_experiments_new.csv"
-    cmap_valid: "scripts/data/cmap_valid_instances.csv"
-    out_dir: "scripts/results"
+    signatures: "data/cmap_signatures.RData"
+    disease_file: "data/CoreFibroidSignature_All_Datasets.csv"
+    cmap_meta: "data/cmap_drug_experiments_new.csv"
+    cmap_valid: "data/cmap_valid_instances.csv"
+    out_dir: "results"
   params:
     gene_key: "SYMBOL"
     logfc_cols_pref: "log2FC"
@@ -36,8 +67,8 @@ strict:
     reversal_only: true
     seed: 123
   analysis:
-    results_dir: "scripts/results"
-    analysis_dir: "scripts/results/analysis"
+    results_dir: "results"
+    analysis_dir: "results/analysis"
     pattern: "_results\\.RData$"
 
 # Example production profile (tweak paths/thresholds as needed)
