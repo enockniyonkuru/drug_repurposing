@@ -1,10 +1,14 @@
-
 # Drug Repurposing Analysis Project
 
 
 This repository contains **DRpipe**, a comprehensive R package for drug repurposing analysis using disease gene expression signatures and the Connectivity Map (CMap) to identify potential therapeutic compounds.
 
 The project aims to identify existing drugs that could be repurposed for new therapeutic applications by analyzing their ability to reverse disease-associated gene expression patterns. The analysis uses the Connectivity Map database to find compounds that produce transcriptional signatures opposite to those observed in disease states.
+
+**Recent Updates:**
+- Added `load_execution_config.R` for enhanced configuration management
+- Updated configuration format to allow specification of multiple profiles for execution
+- Enhanced support for running analyses through RStudio, VSCode, or terminal
 
 
 ## 0. Outline (Table of Contents)
@@ -16,13 +20,11 @@ The project aims to identify existing drugs that could be repurposed for new the
 6. [Configure Once (configyml)](#6-configure-once-configyml)  
 7. [Single-Run Pipeline (end-to-end)](#7-single-run-pipeline-end-to-end)  
 8. [Cross-Run Analysis (compare many runs)](#8-cross-run-analysis-compare-many-runs)  
-9. [Command-Line Usage (optional)](#9-command-line-usage-optional)  
-10. [Customizing for Your Dataset](#10-customizing-for-your-dataset)  
-11. [Outputs Cheat-Sheet](#11-outputs-cheat-sheet)  
-12. [Troubleshooting](#12-troubleshooting)  
-13. [Methodology (What the pipeline does)](#13-methodology-what-the-pipeline-does)  
-14. [Citation, Authors, License](#14-citation-authors-license)  
-15. [Appendix: Run Everything from R](#15-appendix-run-everything-from-r)  
+9. [Profile Comparison Analysis](#9-profile-comparison-analysis)  
+10. [Command-Line Usage (optional)](#10-command-line-usage-optional)  
+11. [Customizing for Your Dataset](#11-customizing-for-your-dataset)  
+12. [Methodology (What the pipeline does)](#12-methodology-what-the-pipeline-does)  
+13. [Citation, Authors, License](#13-citation-authors-license)
 
 ---
 
@@ -60,8 +62,10 @@ drug_repurposing/
 │       └── zzz-imports.R
 ├── scripts/
 │   ├── config.yml                     # single source of truth
+│   ├── load_execution_config.R        # configuration management helper
 │   ├── runall.R                       # one dataset end-to-end
 │   ├── analyze.R                      # cross-run analysis driver
+│   ├── compare_profiles.R             # profile comparison analysis
 │   └── data/, results/
 └── dump/                               # legacy/dev scripts (optional)
 ```
@@ -183,13 +187,76 @@ default:
     pattern: "_results\\.RData$"
 ```
 
-> You can add multiple profiles (e.g., `production`, `demo`) and select them later.
+> You can add multiple profiles (e.g., `production`, `demo`) and select them later. The configuration now supports specifying which profiles to run in execution settings, allowing for systematic comparison of different parameter combinations.
 
 ---
 
 ## 7. Single-Run Pipeline (end-to-end)
 
-### 7.1 Script (recommended)
+### 7.1 Running in RStudio (recommended)
+
+### Prerequisites
+The script requires the following R packages:
+- `DRpipe` (already installed in your project)
+- `yaml` 
+- `config`
+
+### Step-by-Step Instructions
+
+#### Method 1: Using RStudio's Source Button (Recommended)
+1. **Open RStudio**
+2. **Set the working directory** to the scripts folder:
+   ```r
+   setwd("/Users/enockniyonkuru/Desktop/drug_repurposing/scripts")
+   ```
+3. **Open the file**: File → Open File → Navigate to `scripts/runall.R`
+4. **Install required packages** if not already installed:
+   ```r
+   install.packages(c("yaml", "config"))
+   ```
+5. **Click the "Source" button** in RStudio (or press Ctrl/Cmd + Shift + S)
+
+#### Method 2: Using the Console
+1. **Set working directory**:
+   ```r
+   setwd("/Users/enockniyonkuru/Desktop/drug_repurposing/scripts")
+   ```
+2. **Run the script**:
+   ```r
+   source("runall.R")
+   ```
+
+#### Method 3: Run from Terminal within RStudio
+1. **Open Terminal** in RStudio (Tools → Terminal → New Terminal)
+2. **Navigate to scripts directory**:
+   ```bash
+   cd /Users/enockniyonkuru/Desktop/drug_repurposing/scripts
+   ```
+3. **Run the script**:
+   ```bash
+   Rscript runall.R
+   ```
+
+### What the Script Does
+- Uses the "default" profile from `config.yml`
+- Processes the fibroid disease signature data
+- Runs drug repurposing analysis using CMAP signatures
+- Creates timestamped results in the `results/` directory
+- Generates plots and analysis outputs
+- Saves configuration and session information
+
+### Expected Output
+The script will create a new timestamped folder in `scripts/results/` (e.g., `results/20250923-201359/`) containing:
+- Analysis results
+- Generated plots
+- Configuration snapshot
+- Session information
+
+All required data files are present in `scripts/data/`, so the script should run successfully without additional setup.
+
+### 7.2 Terminal/Command Line
+
+While RStudio is recommended for most users, you can also run the analysis from the terminal or VSCode:
 
 ```bash
 Rscript scripts/runall.R
@@ -208,7 +275,7 @@ This will:
   * images under `img/` when enabled
   * `sessionInfo.txt` + effective config snapshot
 
-### 7.2 R Console (power users)
+### 7.3 R Console (power users)
 
 ```r
 library(DRpipe)
@@ -238,11 +305,24 @@ run_dr(
 
 After you have ≥1 per-run outputs in `scripts/results/`:
 
+### 8.1 Running in RStudio
+
+1. **Set working directory**:
+   ```r
+   setwd("/Users/enockniyonkuru/Desktop/drug_repurposing/scripts")
+   ```
+2. **Run the script**:
+   ```r
+   source("analyze.R")
+   ```
+
+### 8.2 Terminal/Command Line
+
 ```bash
 Rscript scripts/analyze.R
 ```
 
-This will:
+Both methods will:
 
 * Read `analysis.*` settings from the config.
 * Load all `*_results.RData` under `results_dir` (matching `pattern`).
@@ -257,7 +337,120 @@ This will:
 
 ---
 
-## 9. Command-Line Usage (optional)
+## 9. Profile Comparison Analysis
+
+The profile comparison feature allows you to systematically compare drug repurposing results across different parameter settings (e.g., different fold-change cutoffs, q-value thresholds) to understand how parameter choices affect your results.
+
+### 9.1 Configuration
+
+In `scripts/config.yml`, specify which profiles to compare in the execution section:
+
+```yaml
+execution:
+  # Profiles to compare in compare_profiles.R
+  compare_profiles: ["lenient", "default", "strict"]
+```
+
+The example configuration includes three profiles with different stringency levels:
+- **lenient**: Lower fold-change cutoff (0.5) for more permissive results
+- **default**: Standard parameters (logfc_cutoff: 1, q_thresh: 0.05)
+- **strict**: Higher stringency (logfc_cutoff: 1.5, q_thresh: 0.01)
+
+### 9.2 Running Profile Comparison
+
+#### RStudio
+1. **Set working directory**:
+   ```r
+   setwd("/Users/enockniyonkuru/Desktop/drug_repurposing/scripts")
+   ```
+2. **Run the script**:
+   ```r
+   source("compare_profiles.R")
+   ```
+
+#### Terminal/Command Line
+```bash
+Rscript scripts/compare_profiles.R
+```
+
+Both methods will:
+
+1. **Run the pipeline** with each specified profile
+2. **Generate timestamped results** for each profile (e.g., `results/lenient_20250923-201359/`)
+3. **Load and combine results** from all profiles
+4. **Filter for valid drug instances** using CMap metadata
+5. **Generate comparison visualizations** and statistics
+
+### 9.3 What Gets Compared
+
+The script automatically compares:
+- **Drug hit counts** across profiles
+- **Score distributions** for each parameter setting
+- **Drug overlap** between different stringency levels
+- **Statistical significance** patterns
+
+### 9.4 Output Structure
+
+Results are saved to `results/profile_comparison/<YYYYMMDD-HHMMSS>/`:
+
+**Individual Results:**
+- `lenient_hits.csv`, `default_hits.csv`, `strict_hits.csv` - Individual profile results
+- `combined_profile_hits.csv` - All results combined with profile identifiers
+
+**Summary Statistics:**
+- `profile_summary_stats.csv` - Hit counts, significance rates, score statistics per profile
+
+**Visualizations (in `img/` subdirectory):**
+- `profile_comparison_score_dist.jpg` - Score distributions across profiles
+- `profile_overlap_heatmap.jpg` - Drug overlap heatmap between profiles
+- `profile_overlap_atleast2.jpg` - Drugs found in at least 2 profiles
+- `profile_upset.jpg` - UpSet plot showing profile intersections
+
+**Report:**
+- `profile_comparison_report.md` - Comprehensive comparison report
+
+### 9.5 Interpreting Results
+
+**Use profile comparison to:**
+- **Assess parameter sensitivity**: How much do results change with different cutoffs?
+- **Find robust hits**: Which drugs are consistently identified across parameter settings?
+- **Optimize parameters**: Choose settings that balance sensitivity and specificity
+- **Validate findings**: Drugs found across multiple profiles may be more reliable
+
+**Example interpretation:**
+- Drugs appearing in all three profiles (lenient, default, strict) are high-confidence candidates
+- Large differences between lenient and strict suggest parameter-sensitive results
+- Consistent score patterns across profiles indicate robust drug-disease relationships
+
+### 9.6 Customizing Profile Comparisons
+
+Add your own profiles to `config.yml`:
+
+```yaml
+custom_profile:
+  paths:
+    # Same paths as default
+    signatures: "scripts/data/cmap_signatures.RData"
+    disease_file: "scripts/data/CoreFibroidSignature_All_Datasets.csv"
+    # ... other paths
+  params:
+    gene_key: "SYMBOL"
+    logfc_cols_pref: "log2FC"
+    logfc_cutoff: 0.8        # Custom cutoff
+    q_thresh: 0.01           # Custom threshold
+    reversal_only: true
+    seed: 123
+```
+
+Then update the execution section:
+```yaml
+execution:
+  compare_profiles: ["default", "custom_profile", "strict"]
+```
+
+---
+
+## 10. Command-Line Usage (optional)
 
 Prefer a single command over scripts? Use the package CLI:
 
@@ -276,14 +469,14 @@ Rscript -e 'DRpipe::dr_cli()' run --config scripts/config.yml --profile default 
 
 ---
 
-## 10. Customizing for Your Dataset
+## 11. Customizing for Your Dataset
 
 * Place your disease CSV under `scripts/data/…`.
 * Choose **one**:
 
   * Single file → set `paths.disease_file`, or
   * Many files → set `paths.disease_dir` **and** `paths.disease_pattern` (regex).
-* If your genes aren’t HGNC symbols, set `params.gene_key` accordingly.
+* If your genes aren't HGNC symbols, set `params.gene_key` accordingly.
 * If your fold-change columns use a different prefix, set `params.logfc_cols_pref` (e.g., `fc_`).
 
 **Tuning knobs**
@@ -295,54 +488,7 @@ Rscript -e 'DRpipe::dr_cli()' run --config scripts/config.yml --profile default 
 
 ---
 
-## 11. Outputs Cheat-Sheet
-
-**Per-run results folder**
-
-* `*_results.RData`
-
-  ```r
-  results <- list(
-    drugs = <data.frame>,          # drug-level scores, p/q, etc.
-    signature_clean = <data.frame> # cleaned per-gene signature
-  )
-  ```
-* `*_random_scores_logFC_<cutoff>.RData` — saved null ensemble
-* `*_hits_q<…>.csv` — filtered, annotated hits (if metadata available)
-* `img/` with plots:
-
-  * `hist_revsc.jpeg` — score distribution
-  * `cmap_score.jpg` — per-run score plot
-  * `heatmap_cmap_hits.jpg` — drug–disease reversal heatmap
-
-**Cross-run analysis folder**
-
-* `hits_overlap_heatmap.jpg`, `hits_overlap_atleast2_heatmap.jpg`
-* `upset.jpg`
-* Per-run `*_hits.csv` and `*_drug_dz_signature_all_hits.csv`
-
----
-
-## 12. Troubleshooting
-
-* **“No columns starting with …”**
-  Check `params.logfc_cols_pref` matches your fold-change column prefix.
-
-* **“No overlap between signature genes and library genes”**
-  Ensure your gene namespace (`gene_key`) matches the CMap gene universe; map IDs if needed.
-
-* **No result files found (analysis)**
-  Confirm `scripts/results/` has `*_results.RData` and your `analysis.pattern` is correct.
-
-* **Plotting fails on headless servers**
-  Install plotting suggests (`pheatmap`, `UpSetR`, `gplots`) or run with `make_plots = FALSE`.
-
-* **Config not found**
-  Ensure `scripts/config.yml` exists, or set `DRPIPE_CONFIG=/path/to/config.yml`.
-
----
-
-## 13. Methodology (What the pipeline does)
+## 12. Methodology (What the pipeline does)
 
 1. **Disease Signature Prep**
    Load DE results → average FC columns → filter by absolute logFC → map to reference gene universe.
@@ -358,7 +504,7 @@ Rscript -e 'DRpipe::dr_cli()' run --config scripts/config.yml --profile default 
 
 ---
 
-## 14. Citation, Authors, License
+## 13. Citation, Authors, License
 
 **Citation**
 *(Add when available.)*
@@ -371,36 +517,3 @@ Rscript -e 'DRpipe::dr_cli()' run --config scripts/config.yml --profile default 
 
 **License**
 MIT — see [`DRpipe/LICENSE`](DRpipe/LICENSE).
-
----
-
-## 15. Appendix: Run Everything from R
-
-```r
-library(DRpipe)
-cfg <- load_dr_config("default", "scripts/config.yml")
-
-# Single run
-run_dr(
-  signatures_rdata = cfg$paths$signatures,
-  disease_path     = cfg$paths$disease_file,
-  out_dir          = cfg$paths$out_dir,
-  make_plots       = TRUE
-)
-
-# Cross-run
-analyze_runs(
-  results_dir          = cfg$analysis$results_dir,
-  analysis_dir         = cfg$analysis$analysis_dir,
-  cmap_meta_path       = cfg$paths$cmap_meta,
-  cmap_valid_path      = cfg$paths$cmap_valid,
-  cmap_signatures_path = cfg$paths$signatures,
-  q_thresh             = cfg$params$q_thresh,
-  reversal_only        = isTRUE(cfg$params$reversal_only),
-  verbose              = TRUE
-)
-```
-
----
-
-> If you’d like, I can also generate a shorter “User Install vs Developer Install” box and a minimal “Hello World” run using the example CSV in `scripts/data/`.
