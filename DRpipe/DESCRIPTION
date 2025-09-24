@@ -1,0 +1,40 @@
+Package: DRpipe
+Type: Package
+Title: Drug Repurposing Utilities for Scoring and Visualization
+Version: 0.1.0
+Authors@R: c(
+    person(given = "Xinyu", family = "Tang", role = "aut", email = "Xinyu.Tang@ucsf.edu"),
+    person(given = "Enock", family = "Niyonkuru", role = c("aut", "cre"), email = "enock.niyonkuru@ucsf.edu"),
+    person(given = "Marina", family = "Sirota", role = "aut", email = "Marina.Sirota@ucsf.edu")
+  )
+Description: Provides functions to clean disease signatures, compute reversal
+    scores against Connectivity Map (CMap) profiles, and visualize and
+    summarize candidate drug hits across datasets. Includes pipeline
+    orchestration, command-line interface, and reproducible configuration
+    management.
+License: MIT + file LICENSE
+Encoding: UTF-8
+LazyData: false
+Depends: 
+    R (>= 4.2)
+Imports:
+    R6,
+    dplyr,
+    config,
+    docopt,
+    pbapply,
+    qvalue,
+    pheatmap,
+    UpSetR,
+    gplots,
+    grid,
+    reshape2,
+    tidyr,
+    tibble,
+    gprofiler2
+Suggests:
+    writexl,
+    knitr,
+    rmarkdown
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.3
