@@ -6,6 +6,9 @@
 \usage{
 load_run_results(result_files)
 }
+\arguments{
+\item{result_files}{Vector of file paths to RData files containing results}
+}
 \description{
 Load a set of pipeline result files (RData) produced by run_dr()
 }

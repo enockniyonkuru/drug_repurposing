@@ -86,6 +86,7 @@ DRA <- R6::R6Class(
 # ---------- Helpers (reused from earlier suggestion) ----------
 
 #' Load a set of pipeline result files (RData) produced by run_dr()
+#' @param result_files Vector of file paths to RData files containing results
 #' @export
 load_run_results <- function(result_files) {
   stopifnot(length(result_files) > 0)
@@ -101,13 +102,18 @@ load_run_results <- function(result_files) {
 }
 
 #' Annotate/filter a list of per-run drug tables using CMAP metadata
+#' @param drugs_list Named list of drug result data frames from multiple runs
+#' @param cmap_meta_path Path to CMAP experiment metadata CSV file
+#' @param cmap_valid_path Path to CMAP valid instances CSV file
+#' @param q_thresh Q-value threshold for significance filtering (default: 0.05)
+#' @param reversal_only Whether to consider only reversal scores (default: TRUE)
 #' @export
 annotate_filter_runs <- function(drugs_list, cmap_meta_path, cmap_valid_path,
                                  q_thresh = 0.05, reversal_only = TRUE) {
   meta  <- utils::read.csv(cmap_meta_path,  stringsAsFactors = FALSE)
   valid <- utils::read.csv(cmap_valid_path, stringsAsFactors = FALSE)
   meta_valid <- merge(meta, valid, by = "id")
-  meta_valid <- subset(meta_valid, valid == 1 & DrugBank.ID != "NULL")
+  meta_valid <- subset(meta_valid, valid == 1 & meta_valid$DrugBank.ID != "NULL")
   lapply(drugs_list, function(x) {
     dv <- valid_instance(x, meta_valid)
     if (reversal_only) dv <- subset(dv, cmap_score < 0)
@@ -123,6 +129,10 @@ annotate_filter_runs <- function(drugs_list, cmap_meta_path, cmap_valid_path,
 }
 
 #' Make standard per-run plots & CSVs
+#' @param drugs_list Named list of drug result data frames from multiple runs
+#' @param signatures_list Named list of signature data frames from multiple runs
+#' @param cmap_signatures_path Path to RData file containing CMAP signatures
+#' @param out_dir Output directory for reports and plots (default: "scripts/results/analysis")
 #' @export
 report_runs <- function(drugs_list, signatures_list, cmap_signatures_path,
                         out_dir = "scripts/results/analysis") {
@@ -150,6 +160,8 @@ report_runs <- function(drugs_list, signatures_list, cmap_signatures_path,
 }
 
 #' Integrate across runs: overlaps & UpSet
+#' @param drugs_list Named list of drug result data frames from multiple runs
+#' @param out_dir Output directory for summary plots and files (default: "scripts/results/analysis")
 #' @export
 summarize_across_runs <- function(drugs_list, out_dir = "scripts/results/analysis") {
   io_ensure_dir(out_dir); io_ensure_dir(file.path(out_dir, "img"))
@@ -163,6 +175,14 @@ summarize_across_runs <- function(drugs_list, out_dir = "scripts/results/analysi
 }
 
 #' One-call analysis (batch)
+#' @param results_dir Directory containing pipeline result RData files (default: "scripts/results")
+#' @param analysis_dir Output directory for analysis results (default: "scripts/results/analysis")
+#' @param cmap_meta_path Path to CMAP experiment metadata CSV file
+#' @param cmap_valid_path Path to CMAP valid instances CSV file
+#' @param cmap_signatures_path Path to RData file containing CMAP signatures
+#' @param q_thresh Q-value threshold for significance filtering (default: 0.05)
+#' @param reversal_only Whether to consider only reversal scores (default: TRUE)
+#' @param verbose Whether to print progress messages (default: TRUE)
 #' @export
 analyze_runs <- function(results_dir = "scripts/results",
                          analysis_dir = "scripts/results/analysis",

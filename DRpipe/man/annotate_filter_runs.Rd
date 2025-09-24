@@ -12,6 +12,17 @@ annotate_filter_runs(
   reversal_only = TRUE
 )
 }
+\arguments{
+\item{drugs_list}{Named list of drug result data frames from multiple runs}
+
+\item{cmap_meta_path}{Path to CMAP experiment metadata CSV file}
+
+\item{cmap_valid_path}{Path to CMAP valid instances CSV file}
+
+\item{q_thresh}{Q-value threshold for significance filtering (default: 0.05)}
+
+\item{reversal_only}{Whether to consider only reversal scores (default: TRUE)}
+}
 \description{
 Annotate/filter a list of per-run drug tables using CMAP metadata
 }

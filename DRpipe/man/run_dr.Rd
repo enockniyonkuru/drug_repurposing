@@ -33,6 +33,22 @@ run_dr(
 \item{cmap_valid_path}{Path to CMAP valid instances CSV (optional)}
 
 \item{out_dir}{Output directory}
+
+\item{gene_key}{Column name for gene identifiers (default: "SYMBOL")}
+
+\item{logfc_cols_pref}{Prefix for log fold change columns (default: "log2FC")}
+
+\item{logfc_cutoff}{Log fold change cutoff threshold (default: 1)}
+
+\item{q_thresh}{Q-value threshold for significance (default: 0.05)}
+
+\item{reversal_only}{Whether to consider only reversal scores (default: TRUE)}
+
+\item{seed}{Random seed for reproducibility (default: 123)}
+
+\item{verbose}{Whether to print progress messages (default: TRUE)}
+
+\item{make_plots}{Whether to generate plots (default: TRUE)}
 }
 \value{
 Invisibly, the DRP object
