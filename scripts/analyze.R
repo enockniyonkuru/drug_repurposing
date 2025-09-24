@@ -1,10 +1,16 @@
 #!/usr/bin/env Rscript
 suppressPackageStartupMessages(library(DRpipe))
 
-# 1) Load config
-cfg <- load_dr_config("default", "scripts/config.yml")
+# 1) Load helper function and execution config to get profile
+source("load_execution_config.R")
+exec_cfg <- load_execution_config("config.yml")
+profile_to_use <- exec_cfg$analyze_profile %||% "default"
+cat("Using profile:", profile_to_use, "\n")
 
-results_dir  <- cfg$analysis$results_dir  %||% "scripts/results"
+# Load config for the specified profile using our fixed function
+cfg <- load_profile_config(profile_to_use, "config.yml")
+
+results_dir  <- cfg$analysis$results_dir  %||% "results"
 analysis_root<- cfg$analysis$analysis_dir %||% file.path(results_dir, "analysis")
 pattern      <- cfg$analysis$pattern      %||% "_results\\.RData$"
 

@@ -2,12 +2,18 @@
 
 suppressPackageStartupMessages(library(DRpipe))
 
-# 0) Load config (use env DRPIPE_CONFIG/DRPIPE_PROFILE to override if you want)
-cfg <- load_dr_config(profile = "default", config_file = "scripts/config.yml")
+# 0) Load helper function and execution config to get profile
+source("load_execution_config.R")
+exec_cfg <- load_execution_config("config.yml")
+profile_to_use <- exec_cfg$runall_profile %||% "default"
+cat("Using profile:", profile_to_use, "\n")
+
+# Load config for the specified profile using our fixed function
+cfg <- load_profile_config(profile = profile_to_use, config_file = "config.yml")
 
 # 1) Resolve output dir and make a timestamped subfolder
 ts    <- format(Sys.time(), "%Y%m%d-%H%M%S")
-root  <- cfg$paths$out_dir %||% "scripts/results"
+root  <- cfg$paths$out_dir %||% "results"
 out   <- file.path(root, ts)
 io_ensure_dir(out)
 
