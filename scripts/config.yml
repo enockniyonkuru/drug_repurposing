@@ -26,6 +26,16 @@ default:
     q_thresh: 0.05
     reversal_only: true
     seed: 123
+    # New sweep mode parameters
+    mode: "single"                    # "single" or "sweep"
+    sweep_cutoffs: null               # e.g., [0.5, 1.0, 1.5] for sweep mode
+    sweep_min_frac: 0.20             # minimum fraction of genes to keep
+    sweep_min_genes: 200             # minimum absolute number of genes
+    combine_log2fc: "average"        # "average" or "each"
+    robust_rule: "all"               # "all" or "k_of_n"
+    robust_k: null                   # threshold for k_of_n rule
+    aggregate: "mean"                # "mean", "median", or "weighted_mean"
+    weights: null                    # weights for weighted_mean aggregation
   analysis:               # OPTIONAL (used by CLI `analyze` or your analysis script)
     results_dir: "results"
     analysis_dir: "results/analysis"
@@ -46,6 +56,16 @@ lenient:
     q_thresh: 0.05
     reversal_only: true
     seed: 123
+    # New sweep mode parameters
+    mode: "single"
+    sweep_cutoffs: null
+    sweep_min_frac: 0.20
+    sweep_min_genes: 200
+    combine_log2fc: "average"
+    robust_rule: "all"
+    robust_k: null
+    aggregate: "mean"
+    weights: null
   analysis:
     results_dir: "results"
     analysis_dir: "results/analysis"
@@ -66,6 +86,46 @@ strict:
     q_thresh: 0.01           # More stringent: lower q-value threshold
     reversal_only: true
     seed: 123
+    # New sweep mode parameters
+    mode: "single"
+    sweep_cutoffs: null
+    sweep_min_frac: 0.20
+    sweep_min_genes: 200
+    combine_log2fc: "average"
+    robust_rule: "all"
+    robust_k: null
+    aggregate: "mean"
+    weights: null
+  analysis:
+    results_dir: "results"
+    analysis_dir: "results/analysis"
+    pattern: "_results\\.RData$"
+
+# Example sweep mode profile - tests multiple cutoffs for robust results
+sweep_example:
+  paths:
+    signatures: "data/cmap_signatures.RData"
+    disease_file: "data/CoreFibroidSignature_All_Datasets.csv"
+    cmap_meta: "data/cmap_drug_experiments_new.csv"
+    cmap_valid: "data/cmap_valid_instances.csv"
+    out_dir: "results"
+  params:
+    gene_key: "SYMBOL"
+    logfc_cols_pref: "log2FC"
+    logfc_cutoff: 1              # Base cutoff (not used in sweep mode)
+    q_thresh: 0.05
+    reversal_only: true
+    seed: 123
+    # Sweep mode configuration
+    mode: "sweep"                # Enable sweep mode
+    sweep_cutoffs: [0.5, 1.0, 1.5, 2.0]  # Test multiple cutoffs
+    sweep_min_frac: 0.15         # Keep at least 15% of genes
+    sweep_min_genes: 150         # Keep at least 150 genes
+    combine_log2fc: "average"    # Average multiple log2FC columns
+    robust_rule: "k_of_n"        # Require presence in k of n cutoffs
+    robust_k: 3                  # Must appear in at least 3 cutoffs
+    aggregate: "median"          # Use median for aggregation
+    weights: null                # No weighting
   analysis:
     results_dir: "results"
     analysis_dir: "results/analysis"
@@ -87,6 +147,16 @@ production:
     q_thresh: 0.05
     reversal_only: true
     seed: 123
+    # New sweep mode parameters
+    mode: "single"
+    sweep_cutoffs: null
+    sweep_min_frac: 0.20
+    sweep_min_genes: 200
+    combine_log2fc: "average"
+    robust_rule: "all"
+    robust_k: null
+    aggregate: "mean"
+    weights: null
   analysis:
     results_dir: "/results/drugrep"
     analysis_dir: "/results/drugrep/analysis"

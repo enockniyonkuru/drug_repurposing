@@ -6,9 +6,13 @@ This repository contains **DRpipe**, a comprehensive R package for drug repurpos
 The project aims to identify existing drugs that could be repurposed for new therapeutic applications by analyzing their ability to reverse disease-associated gene expression patterns. The analysis uses the Connectivity Map database to find compounds that produce transcriptional signatures opposite to those observed in disease states.
 
 **Recent Updates:**
+- **Major Enhancement**: Added sweep mode functionality for robust multi-cutoff drug discovery
+- Enhanced DRP class with advanced parameters for flexible analysis configurations
+- Updated configuration system with comprehensive parameter support
 - Added `load_execution_config.R` for enhanced configuration management
 - Updated configuration format to allow specification of multiple profiles for execution
 - Enhanced support for running analyses through RStudio, VSCode, or terminal
+- Improved backward compatibility while adding powerful new features
 
 
 ## 0. Outline (Table of Contents)
@@ -21,10 +25,11 @@ The project aims to identify existing drugs that could be repurposed for new the
 7. [Single-Run Pipeline (end-to-end)](#7-single-run-pipeline-end-to-end)  
 8. [Cross-Run Analysis (compare many runs)](#8-cross-run-analysis-compare-many-runs)  
 9. [Profile Comparison Analysis](#9-profile-comparison-analysis)  
-10. [Command-Line Usage (optional)](#10-command-line-usage-optional)  
-11. [Customizing for Your Dataset](#11-customizing-for-your-dataset)  
-12. [Methodology (What the pipeline does)](#12-methodology-what-the-pipeline-does)  
-13. [Citation, Authors, License](#13-citation-authors-license)
+10. [Advanced Sweep Mode Analysis](#10-advanced-sweep-mode-analysis)  
+11. [Command-Line Usage (optional)](#11-command-line-usage-optional)  
+12. [Customizing for Your Dataset](#12-customizing-for-your-dataset)  
+13. [Methodology (What the pipeline does)](#13-methodology-what-the-pipeline-does)  
+14. [Citation, Authors, License](#14-citation-authors-license)
 
 ---
 
@@ -450,7 +455,180 @@ execution:
 
 ---
 
-## 10. Command-Line Usage (optional)
+## 10. Advanced Sweep Mode Analysis
+
+The DRPipe package now includes an advanced **sweep mode** that tests multiple fold-change cutoffs simultaneously to identify robust drug candidates that are consistently found across different parameter settings.
+
+### 10.1 What is Sweep Mode?
+
+Sweep mode runs the drug repurposing pipeline across multiple fold-change cutoffs in a single execution, then applies robust filtering rules to identify drugs that appear consistently across different stringency levels. This approach helps:
+
+- **Reduce parameter sensitivity**: Find drugs that are robust to cutoff choices
+- **Increase confidence**: Prioritize drugs found across multiple thresholds
+- **Systematic exploration**: Test multiple parameters efficiently
+- **Enhanced reproducibility**: Reduce arbitrary parameter selection bias
+
+### 10.2 Sweep Mode Configuration
+
+Add a sweep mode profile to your `config.yml`:
+
+```yaml
+sweep_example:
+  paths:
+    signatures: "data/cmap_signatures.RData"
+    disease_file: "data/CoreFibroidSignature_All_Datasets.csv"
+    cmap_meta: "data/cmap_drug_experiments_new.csv"
+    cmap_valid: "data/cmap_valid_instances.csv"
+    out_dir: "results"
+  params:
+    gene_key: "SYMBOL"
+    logfc_cols_pref: "log2FC"
+    logfc_cutoff: 1              # Base cutoff (not used in sweep mode)
+    q_thresh: 0.05
+    reversal_only: true
+    seed: 123
+    # Sweep mode configuration
+    mode: "sweep"                # Enable sweep mode
+    sweep_cutoffs: [0.5, 1.0, 1.5, 2.0]  # Test multiple cutoffs
+    sweep_min_frac: 0.15         # Keep at least 15% of genes
+    sweep_min_genes: 150         # Keep at least 150 genes
+    combine_log2fc: "average"    # Average multiple log2FC columns
+    robust_rule: "k_of_n"        # Require presence in k of n cutoffs
+    robust_k: 3                  # Must appear in at least 3 cutoffs
+    aggregate: "median"          # Use median for aggregation
+    weights: null                # No weighting
+```
+
+### 10.3 Sweep Mode Parameters
+
+**Core Sweep Parameters:**
+- **`mode`**: Set to `"sweep"` to enable sweep mode
+- **`sweep_cutoffs`**: Array of fold-change cutoffs to test (e.g., `[0.5, 1.0, 1.5, 2.0]`)
+- **`sweep_min_frac`**: Minimum fraction of original genes to retain (default: 0.20)
+- **`sweep_min_genes`**: Minimum absolute number of genes required (default: 200)
+
+**Log2FC Handling:**
+- **`combine_log2fc`**: `"average"` (default) or `"each"` - how to handle multiple log2FC columns
+
+**Robust Filtering:**
+- **`robust_rule`**: `"all"` (must appear in all cutoffs) or `"k_of_n"` (must appear in k cutoffs)
+- **`robust_k`**: For `"k_of_n"` rule, minimum number of cutoffs required (default: 70% of total)
+
+**Result Aggregation:**
+- **`aggregate`**: `"mean"`, `"median"`, or `"weighted_mean"` - how to combine scores across cutoffs
+- **`weights`**: Custom weights for `"weighted_mean"` aggregation (optional)
+
+### 10.4 Running Sweep Mode
+
+#### Method 1: Update Execution Profile
+1. **Edit `config.yml`** to use sweep profile:
+   ```yaml
+   execution:
+     runall_profile: "sweep_example"
+   ```
+
+2. **Run normally**:
+   ```bash
+   Rscript scripts/runall.R
+   ```
+
+#### Method 2: Direct R Usage
+```r
+library(DRpipe)
+
+# Load sweep configuration
+cfg <- load_profile_config(profile = "sweep_example", config_file = "scripts/config.yml")
+
+# Create DRP object with sweep parameters
+drp <- DRP$new(
+  signatures_rdata = cfg$paths$signatures,
+  disease_path = cfg$paths$disease_file,
+  cmap_meta_path = cfg$paths$cmap_meta,
+  cmap_valid_path = cfg$paths$cmap_valid,
+  out_dir = "results/sweep_analysis",
+  # ... other basic parameters ...
+  mode = "sweep",
+  sweep_cutoffs = c(0.5, 1.0, 1.5, 2.0),
+  robust_rule = "k_of_n",
+  robust_k = 3,
+  aggregate = "median"
+)
+
+# Run sweep analysis
+drp$run_all(make_plots = TRUE)
+```
+
+### 10.5 Sweep Mode Output Structure
+
+Sweep mode creates an organized output structure:
+
+```
+results/
+└── 20250926-174850/
+    ├── cutoff_0.5/                    # Individual cutoff results
+    │   └── CoreFibroidSignature_hits_cutoff_0.5.csv
+    ├── cutoff_1/
+    │   └── CoreFibroidSignature_hits_cutoff_1.csv
+    ├── cutoff_1.5/
+    │   └── CoreFibroidSignature_hits_cutoff_1.5.csv
+    ├── cutoff_2/
+    │   └── CoreFibroidSignature_hits_cutoff_2.csv
+    ├── aggregate/                     # Final robust results
+    │   ├── robust_hits.csv           # Drugs passing robust filtering
+    │   └── cutoff_summary.csv        # Summary statistics per cutoff
+    ├── CoreFibroidSignature_results.RData
+    └── sessionInfo.txt
+```
+
+### 10.6 Interpreting Sweep Mode Results
+
+**Key Output Files:**
+- **`robust_hits.csv`**: Final drug candidates that passed robust filtering
+- **`cutoff_summary.csv`**: Statistics for each cutoff (gene counts, hit counts, etc.)
+- **Individual cutoff files**: Detailed results for each fold-change threshold
+
+**Important Columns in `robust_hits.csv`:**
+- **`name`**: Drug name
+- **`aggregated_score`**: Combined connectivity score across cutoffs
+- **`min_q`**: Best q-value across all cutoffs
+- **`n_support`**: Number of cutoffs where this drug was significant
+
+**Interpretation Guidelines:**
+- **High `n_support`**: Drug found consistently across many cutoffs (more robust)
+- **Low `aggregated_score`**: Strong reversal signal (more negative = better for reversal)
+- **Low `min_q`**: High statistical significance in at least one cutoff
+
+### 10.7 Choosing Sweep Parameters
+
+**Cutoff Selection:**
+- **Narrow range**: `[0.8, 1.0, 1.2]` for fine-tuning around a known good value
+- **Wide range**: `[0.5, 1.0, 1.5, 2.0]` for comprehensive exploration
+- **Many cutoffs**: More stringent robust filtering, fewer final hits
+- **Few cutoffs**: More permissive, more final hits
+
+**Robust Rule Selection:**
+- **`"all"`**: Most stringent, only drugs found in every cutoff
+- **`"k_of_n"` with high k**: Stringent but allows some variation
+- **`"k_of_n"` with low k**: More permissive, captures more candidates
+
+**Aggregation Method:**
+- **`"median"`**: Robust to outliers (recommended)
+- **`"mean"`**: Standard average across cutoffs
+- **`"weighted_mean"`**: Custom weighting (requires `weights` parameter)
+
+### 10.8 Sweep Mode vs. Single Mode
+
+| Aspect | Single Mode | Sweep Mode |
+|--------|-------------|------------|
+| **Speed** | Fast | Slower (multiple cutoffs) |
+| **Robustness** | Parameter-dependent | Parameter-robust |
+| **Output** | Single result set | Comprehensive analysis |
+| **Use Case** | Quick analysis, known parameters | Thorough investigation, parameter exploration |
+| **Confidence** | Moderate | High (cross-validated) |
+
+---
+
+## 11. Command-Line Usage (optional)
 
 Prefer a single command over scripts? Use the package CLI:
 
@@ -469,7 +647,7 @@ Rscript -e 'DRpipe::dr_cli()' run --config scripts/config.yml --profile default 
 
 ---
 
-## 11. Customizing for Your Dataset
+## 12. Customizing for Your Dataset
 
 * Place your disease CSV under `scripts/data/…`.
 * Choose **one**:
@@ -488,7 +666,7 @@ Rscript -e 'DRpipe::dr_cli()' run --config scripts/config.yml --profile default 
 
 ---
 
-## 12. Methodology (What the pipeline does)
+## 13. Methodology (What the pipeline does)
 
 1. **Disease Signature Prep**
    Load DE results → average FC columns → filter by absolute logFC → map to reference gene universe.
@@ -504,7 +682,7 @@ Rscript -e 'DRpipe::dr_cli()' run --config scripts/config.yml --profile default 
 
 ---
 
-## 13. Citation, Authors, License
+## 14. Citation, Authors, License
 
 **Citation**
 *(Add when available.)*
