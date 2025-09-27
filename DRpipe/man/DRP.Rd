@@ -19,9 +19,12 @@ and can run the whole pipeline with a single call.
 \item \href{#method-DRP-annotate_and_filter}{\code{DRP$annotate_and_filter()}}
 \item \href{#method-DRP-quick_report}{\code{DRP$quick_report()}}
 \item \href{#method-DRP-save_outputs}{\code{DRP$save_outputs()}}
+\item \href{#method-DRP-run_single}{\code{DRP$run_single()}}
 \item \href{#method-DRP-run_processing}{\code{DRP$run_processing()}}
 \item \href{#method-DRP-run_analysis}{\code{DRP$run_analysis()}}
 \item \href{#method-DRP-run_all}{\code{DRP$run_all()}}
+\item \href{#method-DRP-run_sweep}{\code{DRP$run_sweep()}}
+\item \href{#method-DRP-aggregate_thresholds}{\code{DRP$aggregate_thresholds()}}
 \item \href{#method-DRP-clone}{\code{DRP$clone()}}
 }
 }
@@ -43,7 +46,16 @@ and can run the whole pipeline with a single call.
   q_thresh = 0.05,
   reversal_only = TRUE,
   seed = 123,
-  verbose = TRUE
+  verbose = TRUE,
+  mode = c("single", "sweep"),
+  sweep_cutoffs = NULL,
+  sweep_min_frac = 0.2,
+  sweep_min_genes = 200,
+  combine_log2fc = c("average", "each"),
+  robust_rule = c("all", "k_of_n"),
+  robust_k = NULL,
+  aggregate = c("mean", "median", "weighted_mean"),
+  weights = NULL
 )}\if{html}{\out{</div>}}
 }
 
@@ -80,7 +92,7 @@ and can run the whole pipeline with a single call.
 \if{latex}{\out{\hypertarget{method-DRP-clean_signature}{}}}
 \subsection{Method \code{clean_signature()}}{
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{DRP$clean_signature()}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{DRP$clean_signature(cutoff = NULL)}\if{html}{\out{</div>}}
 }
 
 }
@@ -121,6 +133,15 @@ and can run the whole pipeline with a single call.
 
 }
 \if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-DRP-run_single"></a>}}
+\if{latex}{\out{\hypertarget{method-DRP-run_single}{}}}
+\subsection{Method \code{run_single()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{DRP$run_single()}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-DRP-run_processing"></a>}}
 \if{latex}{\out{\hypertarget{method-DRP-run_processing}{}}}
 \subsection{Method \code{run_processing()}}{
@@ -144,6 +165,24 @@ and can run the whole pipeline with a single call.
 \subsection{Method \code{run_all()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{DRP$run_all(make_plots = TRUE)}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-DRP-run_sweep"></a>}}
+\if{latex}{\out{\hypertarget{method-DRP-run_sweep}{}}}
+\subsection{Method \code{run_sweep()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{DRP$run_sweep()}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-DRP-aggregate_thresholds"></a>}}
+\if{latex}{\out{\hypertarget{method-DRP-aggregate_thresholds}{}}}
+\subsection{Method \code{aggregate_thresholds()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{DRP$aggregate_thresholds()}\if{html}{\out{</div>}}
 }
 
 }
