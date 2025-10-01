@@ -6,13 +6,13 @@
 \usage{
 pl_cmap_score(
   cmap_score,
-  qval,
-  annot_col_col,
-  annot_col,
+  qval = NULL,
+  annot_col_col = NULL,
+  annot_col = NULL,
   cluster_cols = FALSE,
   cluster_rows = TRUE,
-  path = dir.out,
-  save = "combined_hits_sig_heatmap.jpg",
+  path = NULL,
+  save = "cmap_score.jpg",
   width = 8,
   height = 12,
   units = "in",

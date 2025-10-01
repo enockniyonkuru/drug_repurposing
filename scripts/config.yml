@@ -1,21 +1,22 @@
+# Drug Repurposing Pipeline Configuration
+# This configuration supports three main functionalities:
+# 1. Run a single profile (runall.R)
+# 2. Compare multiple profiles (compare_profiles.R)
+# 3. Sweep mode analysis (runall.R with sweep mode enabled)
+
 # Execution configuration - specify which profiles/operations to run
 execution:
-  # Profile to use for runall.R
-  runall_profile: "default"
-  
-  # Profile to use for analyze.R  
-  analyze_profile: "default"
-  
-  # Profiles to compare in compare_profiles.R
-  compare_profiles: ["lenient", "default", "strict"]
+  # Profile to use for runall.R (single profile execution)
+  runall_profile: "CoreFibroid_logFC_1"
 
+  # Profiles to compare in compare_profiles.R
+  compare_profiles: ["CoreFibroid_logFC_0.5", "CoreFibroid_logFC_1", "CoreFibroid_logFC_1.5"]
+
+# Default configuration (required by config package)
 default:
   paths:
     signatures: "data/cmap_signatures.RData"
-    # Use exactly one of the next two:
     disease_file: "data/CoreFibroidSignature_All_Datasets.csv"
-    # disease_dir: "data/"
-    # disease_pattern: "CoreFibroidSignature_All_Datasets\\.csv"
     cmap_meta: "data/cmap_drug_experiments_new.csv"
     cmap_valid: "data/cmap_valid_instances.csv"
     out_dir: "results"
@@ -26,13 +27,46 @@ default:
     q_thresh: 0.05
     reversal_only: true
     seed: 123
-  analysis:               # OPTIONAL (used by CLI `analyze` or your analysis script)
-    results_dir: "results"
-    analysis_dir: "results/analysis"
-    pattern: "_results\\.RData$"
+    mode: "single"
+    sweep_cutoffs: null
+    sweep_auto_grid: true
+    sweep_step: 0.1
+    sweep_min_frac: 0.20
+    sweep_min_genes: 200
+    sweep_stop_on_small: false
+    combine_log2fc: "average"
+    robust_rule: "all"
+    robust_k: null
+    aggregate: "mean"
+    weights: null
+
+# Standard profile with logFC cutoff of 1.0
+CoreFibroid_logFC_1:
+  paths:
+    signatures: "data/cmap_signatures.RData"
+    disease_file: "data/CoreFibroidSignature_All_Datasets.csv"
+    cmap_meta: "data/cmap_drug_experiments_new.csv"
+    cmap_valid: "data/cmap_valid_instances.csv"
+    out_dir: "results"
+  params:
+    gene_key: "SYMBOL"
+    logfc_cols_pref: "log2FC"
+    logfc_cutoff: 1
+    q_thresh: 0.05
+    reversal_only: true
+    seed: 123
+    mode: "single"
+    sweep_cutoffs: null
+    sweep_min_frac: 0.20
+    sweep_min_genes: 200
+    combine_log2fc: "average"
+    robust_rule: "all"
+    robust_k: null
+    aggregate: "mean"
+    weights: null
 
 # Lenient profile with lower fold-change cutoff for comparison
-lenient:
+CoreFibroid_logFC_0.5:
   paths:
     signatures: "data/cmap_signatures.RData"
     disease_file: "data/CoreFibroidSignature_All_Datasets.csv"
@@ -46,13 +80,18 @@ lenient:
     q_thresh: 0.05
     reversal_only: true
     seed: 123
-  analysis:
-    results_dir: "results"
-    analysis_dir: "results/analysis"
-    pattern: "_results\\.RData$"
+    mode: "single"
+    sweep_cutoffs: null
+    sweep_min_frac: 0.20
+    sweep_min_genes: 200
+    combine_log2fc: "average"
+    robust_rule: "all"
+    robust_k: null
+    aggregate: "mean"
+    weights: null
 
 # Strict profile with more stringent thresholds for comparison
-strict:
+CoreFibroid_logFC_1.5:
   paths:
     signatures: "data/cmap_signatures.RData"
     disease_file: "data/CoreFibroidSignature_All_Datasets.csv"
@@ -63,15 +102,49 @@ strict:
     gene_key: "SYMBOL"
     logfc_cols_pref: "log2FC"
     logfc_cutoff: 1.5        # More stringent: higher fold-change cutoff
-    q_thresh: 0.01           # More stringent: lower q-value threshold
+    q_thresh: 0.05
     reversal_only: true
     seed: 123
-  analysis:
-    results_dir: "results"
-    analysis_dir: "results/analysis"
-    pattern: "_results\\.RData$"
+    mode: "single"
+    sweep_cutoffs: null
+    sweep_min_frac: 0.20
+    sweep_min_genes: 200
+    combine_log2fc: "average"
+    robust_rule: "all"
+    robust_k: null
+    aggregate: "mean"
+    weights: null
 
-# Example production profile (tweak paths/thresholds as needed)
+# Example sweep mode profile - tests multiple cutoffs for robust results
+Sweep_CoreFibroid:
+  paths:
+    signatures: "data/cmap_signatures.RData"
+    disease_file: "data/CoreFibroidSignature_All_Datasets.csv"
+    cmap_meta: "data/cmap_drug_experiments_new.csv"
+    cmap_valid: "data/cmap_valid_instances.csv"
+    out_dir: "results"
+  params:
+    gene_key: "SYMBOL"
+    logfc_cols_pref: "log2FC"
+    logfc_cutoff: 1              # Base cutoff (not used in sweep mode)
+    q_thresh: 0.05
+    reversal_only: true
+    seed: 123
+    # Sweep mode configuration
+    mode: "sweep"                # Enable sweep mode
+    sweep_cutoffs: null          # Let auto-derive from data
+    sweep_auto_grid: true        # Auto-derive threshold grid
+    sweep_step: 0.1             # Step size for auto-grid
+    sweep_min_frac: 0.10         # Minimum 10% of genes
+    sweep_min_genes: 150         # Minimum 150 genes
+    sweep_stop_on_small: false   # Continue sweep even if signature becomes small
+    combine_log2fc: "average"    # Average multiple log2FC columns
+    robust_rule: "k_of_n"        # Require presence in k of n cutoffs
+    robust_k: 2                  # Must appear in at least 2 cutoffs
+    aggregate: "median"          # Use median for aggregation
+    weights: null                # No weighting
+
+# Production profile template (customize paths/thresholds as needed)
 production:
   paths:
     signatures: "/data/cmap_signatures.RData"
@@ -87,7 +160,12 @@ production:
     q_thresh: 0.05
     reversal_only: true
     seed: 123
-  analysis:
-    results_dir: "/results/drugrep"
-    analysis_dir: "/results/drugrep/analysis"
-    pattern: "_results\\.RData$"
+    mode: "single"
+    sweep_cutoffs: null
+    sweep_min_frac: 0.20
+    sweep_min_genes: 200
+    combine_log2fc: "average"
+    robust_rule: "all"
+    robust_k: null
+    aggregate: "mean"
+    weights: null

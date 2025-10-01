@@ -10,7 +10,7 @@ pl_hist_revsc(
   height = 1500,
   res = 300,
   save = "dist_rev_score.jpg",
-  path = dir.out.img
+  path = getwd()
 )
 }
 \arguments{

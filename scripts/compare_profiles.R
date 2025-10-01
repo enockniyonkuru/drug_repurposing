@@ -2,7 +2,7 @@
 # ------------------------------------------------------------------------------
 # Script: compare_profiles.R
 #
-# This script performs automated comparison across multiple configuration 
+# This script performs automated comparison across multiple configuration
 # profiles (e.g., different logfc_cutoff values). It runs the pipeline with
 # each profile, then performs cross-profile analysis similar to DR_analysis.R
 # but focused on parameter comparison rather than dataset comparison.
@@ -30,16 +30,16 @@ cat("Profiles to compare:", paste(profiles_to_compare, collapse = ", "), "\n")
 # Function to run pipeline with a specific profile
 run_profile <- function(profile_name, config_file) {
   cat("Running pipeline with profile:", profile_name, "\n")
-  
+
   # Load config for this profile using our fixed function
   cfg <- load_profile_config(profile = profile_name, config_file = config_file)
-  
+
   # Create timestamped output directory
   ts <- format(Sys.time(), "%Y%m%d-%H%M%S")
   root <- cfg$paths$out_dir %||% "results"
   out <- file.path(root, paste0(profile_name, "_", ts))
   io_ensure_dir(out)
-  
+
   # Run pipeline
   run_dr(
     signatures_rdata = cfg$paths$signatures,
@@ -57,7 +57,7 @@ run_profile <- function(profile_name, config_file) {
     verbose          = TRUE,
     make_plots       = TRUE
   )
-  
+
   return(list(profile = profile_name, output_dir = out, config = cfg))
 }
 
@@ -65,23 +65,23 @@ run_profile <- function(profile_name, config_file) {
 load_profile_results <- function(output_dir, profile_name) {
   # Find the results RData file
   result_files <- list.files(output_dir, pattern = "_results\\.RData$", full.names = TRUE)
-  
+
   if (length(result_files) == 0) {
     warning("No results file found in ", output_dir)
     return(NULL)
   }
-  
+
   # Load the results
   load(result_files[1])  # loads 'results' object
-  
+
   # Extract drug predictions and disease signatures
   drugs <- results[[1]]
   dz_signature <- results[[2]]
-  
+
   # Add profile identifier
   drugs$profile <- profile_name
   drugs$subset_comparison_id <- profile_name
-  
+
   return(list(drugs = drugs, dz_signature = dz_signature))
 }
 
@@ -159,28 +159,28 @@ drugs_combined <- do.call("rbind", drugs_filtered)
 if (nrow(drugs_combined) > 0) {
   # Overlap analysis across profiles
   pl_overlap(drugs_combined, save = "profile_overlap_heatmap.jpg", path = img_dir)
-  pl_overlap(drugs_combined, at_least2 = TRUE, width = 7, 
+  pl_overlap(drugs_combined, at_least2 = TRUE, width = 7,
              save = "profile_overlap_atleast2.jpg", path = img_dir)
-  
+
   # UpSet plot for profile intersections
   profile_drug_sets <- prepare_upset_drug(drugs_combined)
-  pl_upset(profile_drug_sets, title = "Drug Overlap Across Profiles", 
+  pl_upset(profile_drug_sets, title = "Drug Overlap Across Profiles",
            save = "profile_upset.jpg", path = img_dir)
-  
+
   # Export individual profile results
   for (profile in names(drugs_filtered)) {
     if (nrow(drugs_filtered[[profile]]) > 0) {
-      write.csv(drugs_filtered[[profile]], 
-                file = file.path(comparison_dir, paste0(profile, "_hits.csv")), 
+      write.csv(drugs_filtered[[profile]],
+                file = file.path(comparison_dir, paste0(profile, "_hits.csv")),
                 row.names = FALSE)
     }
   }
-  
+
   # Export combined results
-  write.csv(drugs_combined, 
-            file = file.path(comparison_dir, "combined_profile_hits.csv"), 
+  write.csv(drugs_combined,
+            file = file.path(comparison_dir, "combined_profile_hits.csv"),
             row.names = FALSE)
-  
+
   # Generate summary statistics
   summary_stats <- drugs_combined %>%
     group_by(profile) %>%
@@ -191,14 +191,14 @@ if (nrow(drugs_combined) > 0) {
       median_cmap_score = median(cmap_score, na.rm = TRUE),
       .groups = 'drop'
     )
-  
-  write.csv(summary_stats, 
-            file = file.path(comparison_dir, "profile_summary_stats.csv"), 
+
+  write.csv(summary_stats,
+            file = file.path(comparison_dir, "profile_summary_stats.csv"),
             row.names = FALSE)
-  
+
   cat("Summary Statistics:\n")
   print(summary_stats)
-  
+
 } else {
   cat("No valid drug hits found across profiles.\n")
 }
