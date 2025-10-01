@@ -32,9 +32,9 @@
 #' @importFrom graphics par hist
 pl_hist_revsc <- function(drug_list,
                           width = 1200, height = 1500, res = 300,
-                          save = "dist_rev_score.jpg", path = dir.out.img) {
+                          save = "dist_rev_score.jpg", path = getwd()) {
     n_rows <- ceiling(length(drug_list) / 2)
-    fp <- paste0(path, save)
+    fp <- file.path(path, save)
     jpeg(fp, width = width, height = height, res = res)
     par(mfrow = c(n_rows, 2))
     par(mar = c(3.1, 4.1, 3.1, 2.1))
@@ -401,13 +401,44 @@ remove_pos <- function(x) {
 #' @import pheatmap
 #' @importFrom grDevices colorRampPalette jpeg
 #' @importFrom grid grid.newpage grid.draw
-pl_cmap_score <- function(cmap_score, qval, annot_col_col, annot_col,
+pl_cmap_score <- function(cmap_score, qval = NULL, annot_col_col = NULL, annot_col = NULL,
                           cluster_cols = FALSE, cluster_rows = TRUE,
-                          path = dir.out, save = "combined_hits_sig_heatmap.jpg",
+                          path = NULL, save = "cmap_score.jpg",
                           width = 8, height = 12, units = "in", res = 900) {
 
-    # Mark significant cells with a star
-    qval_sig <- ifelse(qval < 0.05, "*", "")
+    # Handle simple case where we just have a data frame of drugs
+    if (is.data.frame(cmap_score) && "cmap_score" %in% names(cmap_score)) {
+        # Simple bar plot for single dataset
+        if (!is.null(path)) {
+            jpeg(file.path(path), width = width, height = height, units = units, res = res)
+        } else {
+            jpeg(save, width = width, height = height, units = units, res = res)
+        }
+        
+        # Create a simple plot of the top drugs
+        top_drugs <- head(cmap_score[order(cmap_score$cmap_score), ], 20)
+        par(mar = c(5, 10, 4, 2))
+        barplot(top_drugs$cmap_score, 
+                names.arg = top_drugs$name,
+                horiz = TRUE, las = 1,
+                main = "Top Drug Reversal Scores",
+                xlab = "CMap Score",
+                col = "steelblue")
+        dev.off()
+        return(invisible(save))
+    }
+    
+    # Original complex heatmap code for matrix input
+    if (!requireNamespace("pheatmap", quietly = TRUE)) {
+        warning("pheatmap package not available, skipping heatmap")
+        return(invisible(NULL))
+    }
+    
+    # Set default path if not provided
+    if (is.null(path)) path <- getwd()
+    
+    # Mark significant cells with a star if qval provided
+    qval_sig <- if (!is.null(qval)) ifelse(qval < 0.05, "*", "") else NULL
 
     # Symmetric breakpoints if any positive values exist; otherwise go negative->0
     rg <- max(abs(cmap_score), na.rm = TRUE)
@@ -419,11 +450,10 @@ pl_cmap_score <- function(cmap_score, qval, annot_col_col, annot_col,
         color  <- c("blue3", "white")
     }
 
-    p <- pheatmap(cmap_score,
+    p <- pheatmap::pheatmap(cmap_score,
                   color            = colorRampPalette(color)(100),
                   breaks           = breaks,
                   border_color     = "grey60",
-                  labels_col       = substr(annot_col$Cell, 1, 3),
                   display_numbers  = qval_sig, number_color = "red",
                   annotation_col   = annot_col,
                   annotation_colors= annot_col_col,
@@ -433,10 +463,12 @@ pl_cmap_score <- function(cmap_score, qval, annot_col_col, annot_col,
                   cluster_rows     = cluster_rows,
                   legend           = TRUE)
 
-    jpeg(paste0(path, save), width = width, height = height, units = units, res = res)
+    jpeg(file.path(path, save), width = width, height = height, units = units, res = res)
     grid::grid.newpage()
     grid::grid.draw(p$gtable)
     dev.off()
+    
+    invisible(file.path(path, save))
 }
 
 # ---- Get the row order from a clustered heatmap ------------------------------
