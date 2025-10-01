@@ -25,13 +25,37 @@ DRP <- R6::R6Class(
     # --------- new sweep mode configuration ---------
     mode             = "single",
     sweep_cutoffs    = NULL,
+    sweep_auto_grid  = TRUE,        # auto-derive thresholds from data
+    sweep_step       = 0.1,         # step size for auto-derived grid  
     sweep_min_frac   = 0.20,
     sweep_min_genes  = 200,
+    sweep_stop_on_small = FALSE,    # if TRUE, stop sweep when signature too small; if FALSE, skip and continue
     combine_log2fc   = "average",
     robust_rule      = "all",
     robust_k         = NULL,
     aggregate        = "mean",
     weights          = NULL,
+    
+    # --------- meta-analysis filters configuration ---------
+    apply_meta_filters = FALSE,     # enable hardwired meta-analysis filters
+    min_studies        = 2,         # numStudies >= 2
+    effect_fdr_thresh  = 0.05,      # effectSizeFDR < 0.05
+    heterogeneity_thresh = 0.05,    # heterogeneityPval > 0.05
+    
+    # --------- gene mapping configuration ---------
+    gene_conversion_table = NULL,   # path to gene_id_conversion_table.tsv
+    save_count_files     = FALSE,   # save per-threshold count files
+    
+    # --------- permutation configuration ---------
+    n_permutations    = 100000,     # fixed 100k permutations
+    save_null_scores  = FALSE,      # save cmap_random_scores_*.RData files
+    
+    # --------- output configuration ---------
+    per_threshold_dirs = FALSE,     # create threshold_X.X/ directories
+    blood_label        = "blood",   # label for file naming
+    
+    # --------- parallel processing configuration ---------
+    ncores             = NULL,      # number of CPU cores for parallel processing
 
     # --------- pipeline state (filled as it runs) ---------
     cmap_signatures    = NULL,
@@ -66,13 +90,27 @@ DRP <- R6::R6Class(
       verbose         = TRUE,
       mode            = c("single", "sweep"),
       sweep_cutoffs   = NULL,
+      sweep_auto_grid = TRUE,
+      sweep_step      = 0.1,
       sweep_min_frac  = 0.20,
       sweep_min_genes = 200,
+      sweep_stop_on_small = FALSE,
       combine_log2fc  = c("average", "each"),
       robust_rule     = c("all", "k_of_n"),
       robust_k        = NULL,
       aggregate       = c("mean", "median", "weighted_mean"),
-      weights         = NULL
+      weights         = NULL,
+      apply_meta_filters = FALSE,
+      min_studies        = 2,
+      effect_fdr_thresh  = 0.05,
+      heterogeneity_thresh = 0.05,
+      gene_conversion_table = NULL,
+      save_count_files     = FALSE,
+      n_permutations       = 100000,
+      save_null_scores     = FALSE,
+      per_threshold_dirs   = FALSE,
+      blood_label          = "blood",
+      ncores               = NULL
     ) {
       # Original parameters
       self$signatures_rdata <- io_resolve_path(signatures_rdata)
@@ -92,13 +130,37 @@ DRP <- R6::R6Class(
       # New parameters with validation
       self$mode            <- match.arg(mode)
       self$sweep_cutoffs   <- sweep_cutoffs
+      self$sweep_auto_grid <- sweep_auto_grid
+      self$sweep_step      <- sweep_step
       self$sweep_min_frac  <- sweep_min_frac
       self$sweep_min_genes <- sweep_min_genes
+      self$sweep_stop_on_small <- sweep_stop_on_small
       self$combine_log2fc  <- match.arg(combine_log2fc)
       self$robust_rule     <- match.arg(robust_rule)
       self$robust_k        <- robust_k
       self$aggregate       <- match.arg(aggregate)
       self$weights         <- weights
+      
+      # Meta-analysis filter parameters
+      self$apply_meta_filters  <- apply_meta_filters
+      self$min_studies         <- min_studies
+      self$effect_fdr_thresh   <- effect_fdr_thresh
+      self$heterogeneity_thresh <- heterogeneity_thresh
+      
+      # Gene mapping parameters
+      self$gene_conversion_table <- if (!is.null(gene_conversion_table)) io_resolve_path(gene_conversion_table) else NULL
+      self$save_count_files     <- save_count_files
+      
+      # Permutation parameters  
+      self$n_permutations    <- n_permutations
+      self$save_null_scores  <- save_null_scores
+      
+      # Output parameters
+      self$per_threshold_dirs <- per_threshold_dirs
+      self$blood_label        <- blood_label
+      
+      # Parallel processing parameters
+      self$ncores             <- ncores
       
       io_ensure_dir(self$out_dir)
     },
@@ -135,46 +197,150 @@ DRP <- R6::R6Class(
       self$dz_signature_raw <- utils::read.csv(file, stringsAsFactors = FALSE, check.names = FALSE)
       base <- basename(file)
       self$dataset_label <- sub("\\.csv$", "", base)
+      
+      # Apply meta-analysis filters if enabled
+      if (self$apply_meta_filters) {
+        self$log("Applying meta-analysis filters...")
+        n_before <- nrow(self$dz_signature_raw)
+        
+        # Check for required columns
+        if ("numStudies" %in% names(self$dz_signature_raw)) {
+          self$dz_signature_raw <- self$dz_signature_raw[self$dz_signature_raw$numStudies >= self$min_studies, ]
+        }
+        if ("effectSizeFDR" %in% names(self$dz_signature_raw)) {
+          self$dz_signature_raw <- self$dz_signature_raw[self$dz_signature_raw$effectSizeFDR < self$effect_fdr_thresh, ]
+        }
+        if ("heterogeneityPval" %in% names(self$dz_signature_raw)) {
+          self$dz_signature_raw <- self$dz_signature_raw[self$dz_signature_raw$heterogeneityPval > self$heterogeneity_thresh, ]
+        }
+        
+        n_after <- nrow(self$dz_signature_raw)
+        self$log("Meta-analysis filters: %d -> %d genes (removed %d)", n_before, n_after, n_before - n_after)
+      }
+      
       invisible(self)
+    },
+
+    # --------- new helper for auto-deriving thresholds ---------
+    derive_threshold_grid = function() {
+      if (!self$sweep_auto_grid) return(self$sweep_cutoffs)
+      
+      self$log("Auto-deriving threshold grid from effect size distribution...")
+      
+      # Detect effect size column (should be "effectSize" for meta-analysis or log2FC columns)
+      effect_col <- NULL
+      if ("effectSize" %in% names(self$dz_signature_raw)) {
+        effect_col <- "effectSize"
+      } else {
+        # Use first log2FC column as proxy
+        lc_cols <- grep(paste0("^", self$logfc_cols_pref), names(self$dz_signature_raw), value = TRUE)
+        if (length(lc_cols) > 0) {
+          effect_col <- lc_cols[1]
+        }
+      }
+      
+      if (is.null(effect_col)) {
+        stop("Cannot auto-derive thresholds: no 'effectSize' or '", self$logfc_cols_pref, "' columns found")
+      }
+      
+      effect_sizes <- self$dz_signature_raw[[effect_col]]
+      effect_sizes <- effect_sizes[!is.na(effect_sizes)]
+      
+      if (length(effect_sizes) == 0) {
+        stop("No valid effect sizes found for threshold derivation")
+      }
+      
+      # Original script logic: absolute_min = min(abs(max positive), abs(max negative))
+      max_pos <- max(effect_sizes[effect_sizes > 0], na.rm = TRUE)
+      max_neg <- min(effect_sizes[effect_sizes < 0], na.rm = TRUE)  # most negative
+      
+      if (is.infinite(max_pos)) max_pos <- 0
+      if (is.infinite(max_neg)) max_neg <- 0
+      
+      absolute_min <- min(abs(max_pos), abs(max_neg))
+      
+      # Generate sequence from 0 to absolute_min in steps
+      thresholds <- seq(0, absolute_min, by = self$sweep_step)
+      
+      self$log("Derived threshold grid: %s (from effect size range: %.3f to %.3f)", 
+               paste(round(thresholds, 2), collapse = ", "), 
+               max_neg, max_pos)
+      
+      return(thresholds)
     },
 
     clean_signature = function(cutoff = NULL) {
       # Use provided cutoff or default to instance cutoff
       use_cutoff <- if (!is.null(cutoff)) cutoff else self$logfc_cutoff
       
+      # Start with pre-filtered raw data
+      working_data <- self$dz_signature_raw
+      
       # Detect all log2FC columns
-      lc_cols <- grep(paste0("^", self$logfc_cols_pref), names(self$dz_signature_raw), value = TRUE)
+      lc_cols <- grep(paste0("^", self$logfc_cols_pref), names(working_data), value = TRUE)
       if (!length(lc_cols)) stop("No columns starting with '", self$logfc_cols_pref, "' found.")
       
-      # Get gene universe from cmap
+      # Get gene universe from cmap (needs to be character for comparison)
       db_genes <- NULL
       if (is.data.frame(self$cmap_signatures)) {
-        if ("V1" %in% names(self$cmap_signatures)) db_genes <- self$cmap_signatures$V1
-        if (is.null(db_genes) && "gene" %in% names(self$cmap_signatures)) db_genes <- self$cmap_signatures$gene
+        if ("V1" %in% names(self$cmap_signatures)) db_genes <- as.character(self$cmap_signatures$V1)
+        if (is.null(db_genes) && "gene" %in% names(self$cmap_signatures)) db_genes <- as.character(self$cmap_signatures$gene)
       }
-      if (is.null(db_genes)) db_genes <- unique(unlist(self$cmap_signatures))
+      if (is.null(db_genes)) db_genes <- as.character(unique(unlist(self$cmap_signatures)))
       
       # Initialize signature list
       self$dz_signature_list <- list()
       
       if (self$combine_log2fc == "average") {
         # Average approach: compute mean logFC across all columns
-        self$dz_signature_raw$logFC <- rowMeans(self$dz_signature_raw[, lc_cols, drop = FALSE], na.rm = TRUE)
+        working_data$logFC <- rowMeans(working_data[, lc_cols, drop = FALSE], na.rm = TRUE)
         
-        cleaned <- clean_table(
-          self$dz_signature_raw,
-          gene_key     = self$gene_key,
-          logFC_key    = "logFC",
-          logFC_cutoff = use_cutoff,
-          pval_key     = NULL,
-          db_gene_list = db_genes
-        )
+        # Custom gene mapping and filtering (bypass clean_table's gprofiler2 mapping)
+        if (!is.null(self$gene_conversion_table) && file.exists(self$gene_conversion_table)) {
+          self$log("Applying Symbol→Entrez mapping from: %s", self$gene_conversion_table)
+          
+          # Load gene conversion table
+          mapping_tbl <- utils::read.csv(self$gene_conversion_table, sep = '\t', stringsAsFactors = FALSE)
+          mapping_tbl <- mapping_tbl[!is.na(mapping_tbl$entrezID), c("Gene_name", "entrezID")]
+          mapping_tbl <- mapping_tbl[!duplicated(mapping_tbl), ]
+          
+          # Merge with disease signature
+          original_count <- nrow(working_data)
+          working_data <- merge(working_data, mapping_tbl, by.x = self$gene_key, by.y = "Gene_name")
+          mapped_count <- nrow(working_data)
+          
+          self$log("Gene mapping: %d -> %d genes (mapped %d)", original_count, mapped_count, mapped_count)
+          
+          # Manual filtering steps (like clean_table but with our mapped data)
+          # 1. Filter by logFC cutoff
+          working_data <- working_data[abs(working_data$logFC) > use_cutoff, ]
+          
+          # 2. Filter to CMap universe
+          working_data <- working_data[as.character(working_data$entrezID) %in% db_genes, ]
+          
+          # 3. Create final cleaned signature
+          cleaned <- data.frame(
+            GeneID = working_data$entrezID,
+            logFC = working_data$logFC,
+            stringsAsFactors = FALSE
+          )
+        } else {
+          # Use clean_table for standard gene symbol mapping via gprofiler2
+          cleaned <- clean_table(
+            working_data,
+            gene_key     = self$gene_key,
+            logFC_key    = "logFC",
+            logFC_cutoff = use_cutoff,
+            pval_key     = NULL,
+            db_gene_list = db_genes
+          )
+        }
         
         # Store cleaned signature and gene lists
         self$dz_signature_list[["average"]] <- list(
           signature = cleaned,
-          up_ids = dplyr::filter(cleaned, logFC > 0) |> dplyr::pull(GeneID),
-          down_ids = dplyr::filter(cleaned, logFC < 0) |> dplyr::pull(GeneID)
+          up_ids = cleaned$GeneID[cleaned$logFC > 0],
+          down_ids = cleaned$GeneID[cleaned$logFC < 0]
         )
         
         # For backward compatibility, also set the original fields
@@ -189,22 +355,45 @@ DRP <- R6::R6Class(
         # Each approach: process each log2FC column separately
         for (col in lc_cols) {
           # Set logFC to current column
-          self$dz_signature_raw$logFC <- self$dz_signature_raw[[col]]
+          working_data$logFC <- working_data[[col]]
           
-          cleaned <- clean_table(
-            self$dz_signature_raw,
-            gene_key     = self$gene_key,
-            logFC_key    = "logFC",
-            logFC_cutoff = use_cutoff,
-            pval_key     = NULL,
-            db_gene_list = db_genes
-          )
+          # Custom gene mapping and filtering if conversion table provided
+          if (!is.null(self$gene_conversion_table) && file.exists(self$gene_conversion_table)) {
+            # Load gene conversion table
+            mapping_tbl <- utils::read.csv(self$gene_conversion_table, sep = '\t', stringsAsFactors = FALSE)
+            mapping_tbl <- mapping_tbl[!is.na(mapping_tbl$entrezID), c("Gene_name", "entrezID")]
+            mapping_tbl <- mapping_tbl[!duplicated(mapping_tbl), ]
+            
+            # Merge with disease signature
+            temp_data <- merge(working_data, mapping_tbl, by.x = self$gene_key, by.y = "Gene_name")
+            
+            # Manual filtering
+            temp_data <- temp_data[abs(temp_data$logFC) > use_cutoff, ]
+            temp_data <- temp_data[as.character(temp_data$entrezID) %in% db_genes, ]
+            
+            # Create cleaned signature
+            cleaned <- data.frame(
+              GeneID = temp_data$entrezID,
+              logFC = temp_data$logFC,
+              stringsAsFactors = FALSE
+            )
+          } else {
+            # Use clean_table
+            cleaned <- clean_table(
+              working_data,
+              gene_key     = self$gene_key,
+              logFC_key    = "logFC",
+              logFC_cutoff = use_cutoff,
+              pval_key     = NULL,
+              db_gene_list = db_genes
+            )
+          }
           
           # Store cleaned signature and gene lists
           self$dz_signature_list[[col]] <- list(
             signature = cleaned,
-            up_ids = dplyr::filter(cleaned, logFC > 0) |> dplyr::pull(GeneID),
-            down_ids = dplyr::filter(cleaned, logFC < 0) |> dplyr::pull(GeneID)
+            up_ids = cleaned$GeneID[cleaned$logFC > 0],
+            down_ids = cleaned$GeneID[cleaned$logFC < 0]
           )
           
           self$log("Cleaned signature (%s): n_up=%d  n_down=%d", col,
@@ -265,8 +454,34 @@ DRP <- R6::R6Class(
     quick_report = function(top_n = 25) {
       # Use your existing analysis functions; save files to out_dir when possible
       io_ensure_dir(self$out_dir)
-      try(pl_hist_revsc(list(self$drugs), save = file.path(self$out_dir, "hist_revsc.jpg")), silent = TRUE)
-      try(pl_cmap_score(self$drugs_valid, save = file.path(self$out_dir, "cmap_score.jpg")), silent = TRUE)
+      img_dir <- file.path(self$out_dir, "img")
+      io_ensure_dir(img_dir)
+      
+      self$log("Generating plots...")
+      
+      # Plot histogram of reversal scores
+      tryCatch({
+        pl_hist_revsc(list(self$drugs), 
+                      save = "imgdist_rev_score.jpeg", 
+                      path = img_dir)
+        self$log("Generated histogram of reversal scores")
+      }, error = function(e) {
+        self$log("Warning: Could not generate histogram - %s", e$message)
+      })
+      
+      # Plot CMap scores if we have valid drugs
+      if (!is.null(self$drugs_valid) && nrow(self$drugs_valid) > 0) {
+        tryCatch({
+          pl_cmap_score(self$drugs_valid, 
+                        save = file.path(img_dir, "cmap_score.jpg"))
+          self$log("Generated CMap score plot")
+        }, error = function(e) {
+          self$log("Warning: Could not generate CMap score plot - %s", e$message)
+        })
+      } else {
+        self$log("No valid drugs found for CMap score plot")
+      }
+      
       invisible(self)
     },
 
@@ -374,6 +589,11 @@ DRP <- R6::R6Class(
         self$run_single()
       } else if (self$mode == "sweep") {
         self$run_sweep()
+        # Generate plots for sweep mode if requested
+        if (isTRUE(make_plots)) {
+          self$log("make_plots is TRUE, ensuring sweep plots are generated...")
+          self$create_sweep_plots()
+        }
         # For sweep mode, we're done after run_sweep (it handles annotation/filtering/saving)
         if (!is.null(self$robust_hits) && nrow(self$robust_hits) > 0) {
           print(utils::head(self$robust_hits, 10))
@@ -383,17 +603,27 @@ DRP <- R6::R6Class(
       
       # Continue with single mode processing
       self$annotate_and_filter()
-      if (isTRUE(make_plots)) self$quick_report()
+      if (isTRUE(make_plots)) {
+        self$log("make_plots is TRUE, calling quick_report...")
+        self$quick_report()
+      } else {
+        self$log("make_plots is FALSE, skipping plots")
+      }
       self$save_outputs()
       if (!is.null(self$drugs_valid)) print(utils::head(self$drugs_valid, 10)) else print(utils::head(self$drugs, 10))
       invisible(self)
     },
 
     run_sweep = function() {
-      self$log("Running sweep mode")
+      self$log("Running sweep mode with parallel processing")
       
-      if (is.null(self$sweep_cutoffs)) {
-        stop("sweep_cutoffs must be provided for sweep mode")
+      # Auto-derive cutoffs if needed
+      cutoffs_to_use <- if (is.null(self$sweep_cutoffs) && self$sweep_auto_grid) {
+        self$derive_threshold_grid()
+      } else if (!is.null(self$sweep_cutoffs)) {
+        self$sweep_cutoffs
+      } else {
+        stop("Either sweep_cutoffs must be provided or sweep_auto_grid must be TRUE")
       }
       
       # Store original cutoff and get pre-filtered gene count
@@ -409,50 +639,234 @@ DRP <- R6::R6Class(
         median_q = numeric(0)
       )
       
-      for (cutoff in self$sweep_cutoffs) {
-        self$log("Processing cutoff: %s", cutoff)
+      # Determine number of cores to use
+      ncores <- if (!is.null(self$ncores)) {
+        self$ncores
+      } else if (exists("ncores", envir = .GlobalEnv)) {
+        get("ncores", envir = .GlobalEnv)
+      } else {
+        min(20, parallel::detectCores() - 1, length(cutoffs_to_use))
+      }
+      
+      self$log("Using %d cores for parallel threshold processing", ncores)
+      
+      # Process thresholds in parallel
+      cutoff_results <- parallel::mclapply(cutoffs_to_use, function(cutoff) {
+        tryCatch({
+          # Create a temporary copy of necessary objects for this worker
+          temp_raw <- self$dz_signature_raw
+          temp_cmap <- self$cmap_signatures
+          temp_meta_path <- self$cmap_meta_path
+          temp_valid_path <- self$cmap_valid_path
+          temp_gene_conversion_table <- self$gene_conversion_table
+          
+          # Rebuild signature list for this cutoff
+          working_data <- temp_raw
+          
+          # Detect all log2FC columns
+          lc_cols <- grep(paste0("^", self$logfc_cols_pref), names(working_data), value = TRUE)
+          if (!length(lc_cols)) stop("No columns starting with '", self$logfc_cols_pref, "' found.")
+          
+          # Get gene universe from cmap
+          db_genes <- NULL
+          if (is.data.frame(temp_cmap)) {
+            if ("V1" %in% names(temp_cmap)) db_genes <- as.character(temp_cmap$V1)
+            if (is.null(db_genes) && "gene" %in% names(temp_cmap)) db_genes <- as.character(temp_cmap$gene)
+          }
+          if (is.null(db_genes)) db_genes <- as.character(unique(unlist(temp_cmap)))
+          
+          # Process signature based on combine_log2fc mode
+          if (self$combine_log2fc == "average") {
+            working_data$logFC <- rowMeans(working_data[, lc_cols, drop = FALSE], na.rm = TRUE)
+            
+            # Apply gene mapping and filtering
+            if (!is.null(temp_gene_conversion_table) && file.exists(temp_gene_conversion_table)) {
+              mapping_tbl <- utils::read.csv(temp_gene_conversion_table, sep = '\t', stringsAsFactors = FALSE)
+              mapping_tbl <- mapping_tbl[!is.na(mapping_tbl$entrezID), c("Gene_name", "entrezID")]
+              mapping_tbl <- mapping_tbl[!duplicated(mapping_tbl), ]
+              
+              working_data <- merge(working_data, mapping_tbl, by.x = self$gene_key, by.y = "Gene_name")
+              working_data <- working_data[abs(working_data$logFC) > cutoff, ]
+              working_data <- working_data[as.character(working_data$entrezID) %in% db_genes, ]
+              
+              cleaned <- data.frame(
+                GeneID = working_data$entrezID,
+                logFC = working_data$logFC,
+                stringsAsFactors = FALSE
+              )
+            } else {
+              cleaned <- clean_table(
+                working_data,
+                gene_key     = self$gene_key,
+                logFC_key    = "logFC",
+                logFC_cutoff = cutoff,
+                pval_key     = NULL,
+                db_gene_list = db_genes
+              )
+            }
+            
+            up_ids <- cleaned$GeneID[cleaned$logFC > 0]
+            down_ids <- cleaned$GeneID[cleaned$logFC < 0]
+          }
+          
+          # Check gene count thresholds
+          n_genes <- length(up_ids) + length(down_ids)
+          min_genes_threshold <- max(self$sweep_min_genes, self$sweep_min_frac * n_prefiltered)
+          
+          if (n_genes < min_genes_threshold) {
+            return(list(
+              cutoff = cutoff,
+              status = "skipped",
+              reason = sprintf("Signature too small (%.0f < %.0f)", n_genes, min_genes_threshold),
+              n_genes = n_genes
+            ))
+          }
+          
+          # Set per-cutoff seed for reproducibility
+          cutoff_seed <- self$seed + round(cutoff * 1000)
+          set.seed(cutoff_seed)
+          
+          # Run scoring for this cutoff
+          rand_scores <- random_score(temp_cmap, 
+                                    length(up_ids), 
+                                    length(down_ids),
+                                    N_PERMUTATIONS = self$n_permutations)
+          obs_scores <- query_score(temp_cmap, up_ids, down_ids)
+          drugs <- query(
+            rand_scores,
+            obs_scores,
+            subset_comparison_id = sprintf("%s_logFC_%s", self$dataset_label, cutoff)
+          )
+          
+          # Annotate and filter
+          drugs_valid <- drugs
+          if (!is.null(temp_meta_path) && !is.null(temp_valid_path) && 
+              file.exists(temp_meta_path) && file.exists(temp_valid_path)) {
+            
+            cmap_experiments <- utils::read.csv(temp_meta_path, stringsAsFactors = FALSE)
+            valid_instances <- utils::read.csv(temp_valid_path, stringsAsFactors = FALSE)
+            cmap_experiments_valid <- merge(cmap_experiments, valid_instances, by = "id")
+            cmap_experiments_valid <- subset(cmap_experiments_valid, valid == 1 & DrugBank.ID != "NULL")
+            
+            drugs_valid <- merge(drugs, cmap_experiments_valid, by.x = "exp_id", by.y = "id", all.x = TRUE)
+            if (self$reversal_only) drugs_valid <- subset(drugs_valid, cmap_score < 0)
+            drugs_valid <- subset(drugs_valid, q < self$q_thresh)
+            
+            if ("name" %in% names(drugs_valid) && nrow(drugs_valid) > 0) {
+              drugs_valid <- drugs_valid |>
+                dplyr::group_by(name) |>
+                dplyr::slice(which.min(cmap_score)) |>
+                dplyr::ungroup()
+            }
+          }
+          
+          # Return results for this cutoff
+          return(list(
+            cutoff = cutoff,
+            status = "success",
+            n_genes = n_genes,
+            drugs_valid = drugs_valid,
+            signature = cleaned,
+            rand_scores = if (self$save_null_scores) rand_scores else NULL,
+            up_ids = up_ids,
+            down_ids = down_ids
+          ))
+          
+        }, error = function(e) {
+          return(list(
+            cutoff = cutoff,
+            status = "error",
+            error = as.character(e),
+            n_genes = 0
+          ))
+        })
+      }, mc.cores = ncores)
+      
+      # Process results from parallel execution
+      for (result in cutoff_results) {
+        cutoff <- result$cutoff
         
-        # Temporarily set cutoff and rebuild signature list
-        self$logfc_cutoff <- cutoff
-        self$clean_signature(cutoff = cutoff)
-        
-        # Check gene count thresholds
-        n_genes <- if (self$combine_log2fc == "average") {
-          length(self$dz_signature_list[["average"]]$up_ids) + 
-          length(self$dz_signature_list[["average"]]$down_ids)
-        } else {
-          # For "each", use the first signature as representative
-          first_sig <- self$dz_signature_list[[1]]
-          length(first_sig$up_ids) + length(first_sig$down_ids)
+        if (result$status == "skipped") {
+          self$log("Cutoff %s: %s", cutoff, result$reason)
+          # Check if we should stop or continue based on user preference
+          if (self$sweep_stop_on_small && grepl("too small", result$reason)) {
+            self$log("Stopping sweep due to insufficient genes (sweep_stop_on_small = TRUE)")
+            break
+          }
+          next  # Skip this cutoff but continue with remaining ones
         }
         
-        min_genes_threshold <- max(self$sweep_min_genes, 
-                                   self$sweep_min_frac * n_prefiltered)
-        
-        if (n_genes < min_genes_threshold) {
-          self$log("Skipping cutoff %s: only %d genes (< %d threshold)", 
-                   cutoff, n_genes, min_genes_threshold)
+        if (result$status == "error") {
+          self$log("Cutoff %s failed: %s", cutoff, result$error)
           next
         }
         
-        # Run scoring for this cutoff
-        self$run_single()
-        self$annotate_and_filter()
+        self$log("Cutoff %s: %d genes, %d hits", cutoff, result$n_genes, nrow(result$drugs_valid))
         
-        # Save per-cutoff results
-        cutoff_dir <- file.path(self$out_dir, sprintf("cutoff_%s", cutoff))
-        io_ensure_dir(cutoff_dir)
+        # Create output directory
+        if (self$per_threshold_dirs) {
+          cutoff_dir <- file.path(self$out_dir, sprintf("threshold_%s", cutoff))
+          io_ensure_dir(cutoff_dir)
+        } else {
+          cutoff_dir <- file.path(self$out_dir, sprintf("cutoff_%s", cutoff))
+          io_ensure_dir(cutoff_dir)
+        }
+        
+        # Save per-threshold count files if requested
+        if (self$save_count_files) {
+          blood_suffix <- if (!is.null(self$blood_label)) paste0("_", self$blood_label) else ""
+          
+          utils::write.table(result$n_genes,
+            file = file.path(cutoff_dir, sprintf("n_signature_genes_from_metanalysis_%s%s_threshold_%s.txt",
+                                                 self$dataset_label, blood_suffix, cutoff)),
+            quote = FALSE, col.names = FALSE, row.names = FALSE
+          )
+          
+          utils::write.table(result$n_genes,
+            file = file.path(cutoff_dir, sprintf("n_signature_genes_geneid_%s%s_threshold_%s.txt",
+                                                 self$dataset_label, blood_suffix, cutoff)),
+            quote = FALSE, col.names = FALSE, row.names = FALSE
+          )
+          
+          utils::write.table(length(result$up_ids),
+            file = file.path(cutoff_dir, sprintf("upreg_genes_%s%s_threshold_%s.txt",
+                                                 self$dataset_label, blood_suffix, cutoff)),
+            quote = FALSE, col.names = FALSE, row.names = FALSE
+          )
+          
+          utils::write.table(length(result$down_ids),
+            file = file.path(cutoff_dir, sprintf("downreg_genes_%s%s_threshold_%s.txt",
+                                                 self$dataset_label, blood_suffix, cutoff)),
+            quote = FALSE, col.names = FALSE, row.names = FALSE
+          )
+        }
+        
+        # Save null scores if requested
+        if (self$save_null_scores && !is.null(result$rand_scores)) {
+          rand_cmap_scores <- result$rand_scores
+          save(rand_cmap_scores,
+               file = file.path(cutoff_dir, sprintf("cmap_random_scores_%d_%s%s_threshold_%s.RData",
+                                                    self$n_permutations, self$dataset_label, 
+                                                    blood_suffix, cutoff)))
+        }
         
         # Save cutoff-specific outputs
-        if (!is.null(self$drugs_valid)) {
-          cutoff_hits <- self$drugs_valid
+        if (!is.null(result$drugs_valid) && nrow(result$drugs_valid) > 0) {
+          cutoff_hits <- result$drugs_valid
           cutoff_hits$cutoff <- cutoff
           
+          blood_suffix <- if (!is.null(self$blood_label)) paste0("_", self$blood_label) else ""
+          filename <- sprintf("%s%s_hits_cutoff_%s.csv", self$dataset_label, blood_suffix, cutoff)
           utils::write.csv(cutoff_hits,
-            file = file.path(cutoff_dir, sprintf("%s_hits_cutoff_%s.csv", 
-                                                 self$dataset_label, cutoff)),
+            file = file.path(cutoff_dir, filename),
             row.names = FALSE
           )
+          
+          # Save in original script format
+          results_list <- list(cutoff_hits, result$signature)
+          save(results_list,
+               file = file.path(cutoff_dir, sprintf("cmap_predictions_%s%s_threshold_%s.RData",
+                                                    self$dataset_label, blood_suffix, cutoff)))
           
           # Store in sweep results
           self$sweep_hits[[as.character(cutoff)]] <- cutoff_hits
@@ -460,7 +874,7 @@ DRP <- R6::R6Class(
           # Update summary
           summary_row <- data.frame(
             cutoff = cutoff,
-            n_genes_kept = n_genes,
+            n_genes_kept = result$n_genes,
             n_hits = nrow(cutoff_hits),
             median_q = median(cutoff_hits$q, na.rm = TRUE)
           )
@@ -474,6 +888,20 @@ DRP <- R6::R6Class(
       # Aggregate across cutoffs
       if (length(self$sweep_hits) > 0) {
         self$aggregate_thresholds()
+        
+        # Always create consolidated results and plots after sweep
+        tryCatch({
+          self$create_sweep_analysis_files()
+          self$log("✅ Sweep analysis plots and consolidated results created successfully")
+        }, error = function(e) {
+          self$log("Warning: Could not create sweep analysis files - %s", e$message)
+          # Still try to create basic consolidated results file
+          tryCatch({
+            self$create_basic_consolidated_results()
+          }, error = function(e2) {
+            self$log("Warning: Could not create basic consolidated results - %s", e2$message)
+          })
+        })
       }
       
       invisible(self)
@@ -518,7 +946,7 @@ DRP <- R6::R6Class(
           .groups = "drop"
         )
       
-      n_cutoffs_total <- length(self$sweep_cutoffs)
+      n_cutoffs_total <- length(self$sweep_hits)
       
       # Apply robust rule
       if (self$robust_rule == "all") {
@@ -552,8 +980,15 @@ DRP <- R6::R6Class(
               if (is.null(self$weights)) {
                 mean(cmap_score, na.rm = TRUE)
               } else {
-                # Use weights based on cutoff
-                w <- sapply(cutoff, function(c) self$weights[as.character(c)] %||% 1)
+                # Use weights based on cutoff values in this group
+                w <- sapply(cutoff, function(c) {
+                  weight_key <- as.character(c)
+                  if (weight_key %in% names(self$weights)) {
+                    self$weights[[weight_key]]
+                  } else {
+                    1  # default weight
+                  }
+                })
                 weighted.mean(cmap_score, w, na.rm = TRUE)
               }
             }
@@ -579,7 +1014,252 @@ DRP <- R6::R6Class(
       )
       
       self$log("Aggregated %d robust hits from %d cutoffs", 
-               nrow(self$robust_hits), n_cutoffs_total)
+               as.integer(nrow(self$robust_hits)), as.integer(n_cutoffs_total))
+      
+      # Auto-generate sweep plots after aggregation
+      tryCatch({
+        plot_success <- plot_sweep_outputs_legacy(
+          run_dir = self$out_dir,
+          per_cutoff_df = NULL,  # not currently used
+          aggregated_df = self$robust_hits,
+          cutoff_summary = self$cutoff_summary
+        )
+        if (plot_success) {
+          self$log("Generated legacy sweep plots successfully")
+        } else {
+          self$log("Warning: Some sweep plots may not have been generated")
+        }
+      }, error = function(e) {
+        self$log("Warning: Failed to generate sweep plots - %s", e$message)
+      })
+      
+      invisible(self)
+    },
+
+    create_sweep_analysis_files = function() {
+      self$log("Creating consolidated results files for analysis pipeline compatibility")
+      
+      if (is.null(self$robust_hits) || nrow(self$robust_hits) == 0) {
+        self$log("No robust hits available to create analysis files")
+        return(invisible(self))
+      }
+      
+      # Create a consolidated drugs dataframe that mimics single mode output
+      # Use the robust hits with proper column names for analysis pipeline
+      consolidated_drugs <- data.frame(
+        exp_id = 1:nrow(self$robust_hits),  # Create synthetic experiment IDs
+        cmap_score = self$robust_hits$aggregated_score,
+        q = self$robust_hits$min_q,
+        subset_comparison_id = sprintf("%s_sweep_aggregated", self$dataset_label),
+        name = self$robust_hits$name,
+        n_support = self$robust_hits$n_support,
+        stringsAsFactors = FALSE
+      )
+      
+      # Create a representative signature (use the last successful cutoff's signature)
+      representative_signature <- NULL
+      if (length(self$sweep_hits) > 0) {
+        # Get signature from the last successful cutoff
+        last_cutoff <- names(self$sweep_hits)[length(self$sweep_hits)]
+        if (!is.null(self$dz_signature)) {
+          representative_signature <- self$dz_signature
+        } else if (length(self$dz_signature_list) > 0) {
+          representative_signature <- self$dz_signature_list[[1]]$signature
+        }
+      }
+      
+      # Create consolidated results in the format expected by analysis pipeline
+      consolidated_results <- list(
+        drugs = consolidated_drugs, 
+        signature_clean = representative_signature
+      )
+      
+      # Save consolidated results file
+      results_file <- file.path(self$out_dir, sprintf("%s_results.RData", self$dataset_label))
+      save(consolidated_results, file = results_file)
+      self$log("Saved consolidated results: %s", results_file)
+      
+      # Rename the results object to 'results' for compatibility
+      results <- consolidated_results
+      save(results, file = results_file)
+      
+      # Create img directory and generate sweep-specific plots
+      img_dir <- file.path(self$out_dir, "img")
+      io_ensure_dir(img_dir)
+      
+      # Generate plots using the analysis functions
+      tryCatch({
+        # Plot histogram of aggregated reversal scores
+        sweep_drugs_list <- list(sweep_aggregated = consolidated_drugs)
+        pl_hist_revsc(sweep_drugs_list, 
+                      save = "dist_rev_score.jpeg", 
+                      path = img_dir)
+        self$log("Generated sweep histogram of reversal scores")
+      }, error = function(e) {
+        self$log("Warning: Could not generate sweep histogram - %s", e$message)
+      })
+      
+      # Generate CMap score plot for robust hits
+      tryCatch({
+        pl_cmap_score(consolidated_drugs, 
+                      save = file.path(img_dir, "cmap_score.jpg"))
+        self$log("Generated sweep CMap score plot")
+      }, error = function(e) {
+        self$log("Warning: Could not generate sweep CMap score plot - %s", e$message)
+      })
+      
+      # Create a summary plot showing cutoff performance
+      tryCatch({
+        if (!is.null(self$cutoff_summary) && nrow(self$cutoff_summary) > 0) {
+          jpeg(file.path(img_dir, "sweep_cutoff_summary.jpg"), 
+               width = 10, height = 6, units = "in", res = 300)
+          
+          par(mfrow = c(1, 2))
+          
+          # Plot 1: Number of hits vs cutoff
+          plot(self$cutoff_summary$cutoff, self$cutoff_summary$n_hits,
+               type = "b", pch = 16,
+               xlab = "Log2FC Cutoff", ylab = "Number of Hits",
+               main = "Hits vs Cutoff Threshold",
+               col = "steelblue", lwd = 2)
+          grid()
+          
+          # Plot 2: Median q-value vs cutoff
+          plot(self$cutoff_summary$cutoff, self$cutoff_summary$median_q,
+               type = "b", pch = 16,
+               xlab = "Log2FC Cutoff", ylab = "Median Q-value",
+               main = "Significance vs Cutoff Threshold",
+               col = "darkred", lwd = 2)
+          abline(h = 0.05, lty = 2, col = "gray50")
+          grid()
+          
+          dev.off()
+          self$log("Generated sweep cutoff summary plot")
+        }
+      }, error = function(e) {
+        self$log("Warning: Could not generate cutoff summary plot - %s", e$message)
+      })
+      
+      # Save additional sweep-specific analysis files
+      utils::write.csv(consolidated_drugs,
+        file = file.path(self$out_dir, sprintf("%s_hits_q<%.2f.csv", self$dataset_label, self$q_thresh)),
+        row.names = FALSE
+      )
+      
+      invisible(self)
+    },
+
+    create_sweep_plots = function() {
+      self$log("Creating sweep-specific plots...")
+      
+      # Ensure plots directory exists
+      img_dir <- file.path(self$out_dir, "img")
+      io_ensure_dir(img_dir)
+      
+      # Generate plots if we have robust hits
+      if (!is.null(self$robust_hits) && nrow(self$robust_hits) > 0) {
+        # Create consolidated drugs dataframe for plotting
+        consolidated_drugs <- data.frame(
+          exp_id = 1:nrow(self$robust_hits),
+          cmap_score = self$robust_hits$aggregated_score,
+          q = self$robust_hits$min_q,
+          subset_comparison_id = sprintf("%s_sweep_aggregated", self$dataset_label),
+          name = self$robust_hits$name,
+          stringsAsFactors = FALSE
+        )
+        
+        # Generate histogram of aggregated reversal scores
+        tryCatch({
+          sweep_drugs_list <- list(sweep_aggregated = consolidated_drugs)
+          pl_hist_revsc(sweep_drugs_list, 
+                        save = "dist_rev_score.jpeg", 
+                        path = img_dir)
+          self$log("Generated sweep histogram of reversal scores")
+        }, error = function(e) {
+          self$log("Warning: Could not generate sweep histogram - %s", e$message)
+        })
+        
+        # Generate CMap score plot
+        tryCatch({
+          pl_cmap_score(consolidated_drugs, 
+                        save = file.path(img_dir, "cmap_score.jpg"))
+          self$log("Generated sweep CMap score plot")
+        }, error = function(e) {
+          self$log("Warning: Could not generate sweep CMap score plot - %s", e$message)
+        })
+        
+        # Create cutoff summary plot
+        if (!is.null(self$cutoff_summary) && nrow(self$cutoff_summary) > 0) {
+          tryCatch({
+            jpeg(file.path(img_dir, "sweep_cutoff_summary.jpg"), 
+                 width = 10, height = 6, units = "in", res = 300)
+            
+            par(mfrow = c(1, 2))
+            
+            # Plot 1: Number of hits vs cutoff
+            plot(self$cutoff_summary$cutoff, self$cutoff_summary$n_hits,
+                 type = "b", pch = 16,
+                 xlab = "Log2FC Cutoff", ylab = "Number of Hits",
+                 main = "Hits vs Cutoff Threshold",
+                 col = "steelblue", lwd = 2)
+            grid()
+            
+            # Plot 2: Median q-value vs cutoff
+            plot(self$cutoff_summary$cutoff, self$cutoff_summary$median_q,
+                 type = "b", pch = 16,
+                 xlab = "Log2FC Cutoff", ylab = "Median Q-value",
+                 main = "Significance vs Cutoff Threshold",
+                 col = "darkred", lwd = 2)
+            abline(h = 0.05, lty = 2, col = "gray50")
+            grid()
+            
+            dev.off()
+            self$log("Generated sweep cutoff summary plot")
+          }, error = function(e) {
+            self$log("Warning: Could not generate cutoff summary plot - %s", e$message)
+          })
+        }
+      } else {
+        self$log("No robust hits available for plotting")
+      }
+      
+      invisible(self)
+    },
+
+    create_basic_consolidated_results = function() {
+      self$log("Creating basic consolidated results...")
+      
+      if (is.null(self$robust_hits) || nrow(self$robust_hits) == 0) {
+        self$log("No robust hits available")
+        return(invisible(self))
+      }
+      
+      # Create consolidated results in basic format
+      consolidated_drugs <- data.frame(
+        exp_id = 1:nrow(self$robust_hits),  
+        cmap_score = self$robust_hits$aggregated_score,
+        q = self$robust_hits$min_q,
+        subset_comparison_id = sprintf("%s_sweep_aggregated", self$dataset_label),
+        name = self$robust_hits$name,
+        stringsAsFactors = FALSE
+      )
+      
+      # Use average signature as representative
+      representative_signature <- if (!is.null(self$dz_signature)) {
+        self$dz_signature
+      } else {
+        NULL
+      }
+      
+      results <- list(
+        drugs = consolidated_drugs, 
+        signature_clean = representative_signature
+      )
+      
+      # Save consolidated results file
+      results_file <- file.path(self$out_dir, sprintf("%s_results.RData", self$dataset_label))
+      save(results, file = results_file)
+      self$log("Saved basic consolidated results: %s", results_file)
       
       invisible(self)
     }
