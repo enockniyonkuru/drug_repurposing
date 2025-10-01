@@ -106,21 +106,24 @@ Thumbs.db
 *.backup
 
 ############################
-# Project-specific data/results
+# Project-specific: Large files
 ############################
-# Ignore large raw/derived data by default, but allow readme/samples.
-# (Adjust these paths to your layout.)
-data/**
-results/**
-scripts/data/**
-scripts/results/**
+# Ignore large CMap signatures file (232MB - exceeds GitHub limit)
+scripts/data/cmap_signatures.RData
 
-# Keep small docs/samples/index files you want in git:
-!data/README*
-!results/README*
-!scripts/data/README*
-!scripts/results/README*
-!**/*.sample.*
-!**/*sample*.csv
-!**/*small*.csv
+# Ignore large gene conversion table (4.5MB)
+scripts/data/gene_id_conversion_table.tsv
 
+# Ignore all results directories (generated outputs)
+scripts/results/*
+!scripts/results/.gitkeep
+!scripts/results/README.md
+
+############################
+# Keep small data files
+############################
+# These files are small enough for GitHub and needed for the pipeline
+!scripts/data/cmap_drug_experiments_new.csv
+!scripts/data/cmap_valid_instances.csv
+!scripts/data/CoreFibroidSignature_All_Datasets.csv
+!scripts/data/README.md
