@@ -79,6 +79,79 @@ install.packages(c("pheatmap", "UpSetR", "gplots"))
 - Disease gene expression signature (CSV format)
 - CMap metadata files (optional but recommended)
 
+See [Section 3.1: Required Data Files](#31-required-data-files) for download instructions.
+
+---
+
+### 3.1 Required Data Files
+
+The pipeline requires several data files to run. Due to file size limitations, large files are hosted externally.
+
+#### Files Included in Repository
+
+The following small data files are already included in `scripts/data/`:
+
+1. **cmap_drug_experiments_new.csv** (831 KB)
+   - CMap experiment metadata
+   - Contains drug names, cell lines, and experimental conditions
+
+2. **cmap_valid_instances.csv** (41 KB)
+   - Curated list of valid CMap instances
+   - Includes DrugBank IDs and validation flags
+
+3. **CoreFibroidSignature_All_Datasets.csv** (270 KB)
+   - Example disease signature for fibroid analysis
+   - Contains gene symbols and log2 fold-change values
+
+#### Large Files (Download Required)
+
+The following files are **required** but must be downloaded separately:
+
+1. **cmap_signatures.RData** (232 MB)
+   - CMap reference signatures database
+   - **Required for pipeline execution**
+
+2. **gene_id_conversion_table.tsv** (4.5 MB)
+   - Gene identifier conversion table
+   - Optional but recommended for gene mapping
+
+#### Download Instructions
+
+**All required data files are available on Google Drive:**
+
+🔗 **[Download Data Files](https://drive.google.com/drive/folders/1LvKiT0u3DGf5sW5bYVJk7scbM5rLmBx-?usp=sharing)**
+
+**Steps:**
+1. Visit the Google Drive link above
+2. Download the following files:
+   - `cmap_signatures.RData`
+   - `gene_id_conversion_table.tsv` (optional)
+3. Place downloaded files in the `scripts/data/` directory
+
+**Verify your data directory:**
+```bash
+ls -lh scripts/data/
+```
+
+You should see:
+- ✓ cmap_drug_experiments_new.csv
+- ✓ cmap_valid_instances.csv
+- ✓ CoreFibroidSignature_All_Datasets.csv
+- ✓ cmap_signatures.RData (after download)
+- ✓ gene_id_conversion_table.tsv (optional, after download)
+
+#### Data Format Requirements
+
+**Disease Signature CSV:**
+- Must contain gene identifier column (default: `SYMBOL`)
+- Must contain one or more log2FC columns (default prefix: `log2FC`)
+- Optional: p-value or adjusted p-value columns
+
+**CMap Signatures RData:**
+- Must be loadable with `load()` function
+- Should contain gene identifiers (column `V1`, `gene`, or as values)
+- Used as reference for connectivity scoring
+
 ---
 
 ## 4. Installation
@@ -490,8 +563,9 @@ The pipeline uses connectivity scoring to measure how well a drug reverses the d
 
 ### Authors
 
-- **Xinyu Tang** - *Author* - [Xinyu.Tang@ucsf.edu](mailto:Xinyu.Tang@ucsf.edu)
+
 - **Enock Niyonkuru** - *Author, Maintainer* - [enock.niyonkuru@ucsf.edu](mailto:enock.niyonkuru@ucsf.edu)
+- **Xinyu Tang** - *Author* - [Xinyu.Tang@ucsf.edu](mailto:Xinyu.Tang@ucsf.edu)
 - **Marina Sirota** - *Author* - [Marina.Sirota@ucsf.edu](mailto:Marina.Sirota@ucsf.edu)
 
 ### License
