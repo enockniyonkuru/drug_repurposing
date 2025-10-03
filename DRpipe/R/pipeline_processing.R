@@ -17,6 +17,8 @@ DRP <- R6::R6Class(
     gene_key         = "SYMBOL",
     logfc_cols_pref  = "log2FC",
     logfc_cutoff     = 1,
+    pval_key         = NULL,
+    pval_cutoff      = 0.05,
     q_thresh         = 0.05,
     reversal_only    = TRUE,
     seed             = 123,
@@ -84,6 +86,8 @@ DRP <- R6::R6Class(
       gene_key        = "SYMBOL",
       logfc_cols_pref = "log2FC",
       logfc_cutoff    = 1,
+      pval_key        = NULL,
+      pval_cutoff     = 0.05,
       q_thresh        = 0.05,
       reversal_only   = TRUE,
       seed            = 123,
@@ -122,6 +126,8 @@ DRP <- R6::R6Class(
       self$gene_key         <- gene_key
       self$logfc_cols_pref  <- logfc_cols_pref
       self$logfc_cutoff     <- logfc_cutoff
+      self$pval_key         <- pval_key
+      self$pval_cutoff      <- pval_cutoff
       self$q_thresh         <- q_thresh
       self$reversal_only    <- reversal_only
       self$seed             <- seed
@@ -384,7 +390,17 @@ DRP <- R6::R6Class(
               gene_key     = self$gene_key,
               logFC_key    = "logFC",
               logFC_cutoff = use_cutoff,
-              pval_key     = NULL,
+              pval_key     = self$pval_key,
+              pval_cutoff  = self$pval_cutoff,
+              db_gene_list = db_genes
+            )
+            cleaned <- clean_table(
+              working_data,
+              gene_key     = self$gene_key,
+              logFC_key    = "logFC",
+              logFC_cutoff = use_cutoff,
+              pval_key     = self$pval_key,
+              pval_cutoff  = self$pval_cutoff,
               db_gene_list = db_genes
             )
           }
@@ -700,7 +716,8 @@ DRP <- R6::R6Class(
                 gene_key     = self$gene_key,
                 logFC_key    = "logFC",
                 logFC_cutoff = cutoff,
-                pval_key     = NULL,
+                pval_key     = self$pval_key,
+                pval_cutoff  = self$pval_cutoff,
                 db_gene_list = db_genes
               )
             }

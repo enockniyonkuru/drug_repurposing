@@ -406,6 +406,8 @@ CoreFibroid_logFC_1:
 - `gene_key`: Gene identifier column (default: "SYMBOL")
 - `logfc_cols_pref`: Fold-change column prefix (default: "log2FC")
 - `logfc_cutoff`: Absolute fold-change threshold
+- `pval_key`: P-value column name for filtering genes (default: null, skips p-value filtering)
+- `pval_cutoff`: P-value threshold for gene filtering (default: 0.05, only used if pval_key is set)
 - `q_thresh`: FDR threshold for significance (default: 0.05)
 - `reversal_only`: Keep only negative connectivity (default: true)
 - `seed`: Random seed for reproducibility
@@ -447,15 +449,16 @@ execution:
 
 **Example:**
 
-| SYMBOL | log2FC_1 | log2FC_2 | pval    |
-|--------|----------|----------|---------|
-| TP53   | 2.5      | 2.3      | 0.001   |
-| BRCA1  | -1.8     | -2.1     | 0.005   |
-| MYC    | 3.2      | 3.0      | 0.0001  |
+| SYMBOL | log2FC_1 | log2FC_2 | p_val_adj |
+|--------|----------|----------|-----------|
+| TP53   | 2.5      | 2.3      | 0.001     |
+| BRCA1  | -1.8     | -2.1     | 0.005     |
+| MYC    | 3.2      | 3.0      | 0.0001    |
 
 **Notes:**
 - Multiple log2FC columns are averaged automatically
-- `pval`/`padj` columns are optional
+- P-value columns (e.g., `p_val_adj`, `FDR`, `pvalue`) are optional but can be used for filtering
+- To enable p-value filtering, set `pval_key` to your column name in the config
 
 ### 8.2 CMap Signatures
 
@@ -516,6 +519,15 @@ params:
   logfc_cols_pref: "fc_"  # Matches fc_1, fc_2, etc.
 ```
 
+**Enable p-value filtering:**
+```yaml
+params:
+  pval_key: "p_val_adj"    # Column name for p-values
+  pval_cutoff: 0.05        # P-value threshold
+```
+
+**Note:** P-value filtering is applied BEFORE fold-change filtering. Set `pval_key: null` to disable.
+
 **Multiple disease files:**
 ```yaml
 paths:
@@ -532,6 +544,7 @@ paths:
 1. **Disease Signature Preparation**
    - Load differential expression results
    - Average multiple fold-change columns
+   - Filter by p-value threshold (optional, if `pval_key` is specified)
    - Filter by absolute fold-change threshold
    - Map to reference gene universe
 
