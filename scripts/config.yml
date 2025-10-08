@@ -306,7 +306,7 @@ Sweep_CoreFibroid:
     mode: "sweep"                # Enable sweep mode
     sweep_cutoffs: null          # Let auto-derive from data
     sweep_auto_grid: true        # Auto-derive threshold grid
-    sweep_step: 0.1             # Step size for auto-grid
+    sweep_step: 0.6             # Step size for auto-grid
     sweep_min_frac: 0.10         # Minimum 10% of genes
     sweep_min_genes: 150         # Minimum 150 genes
     sweep_stop_on_small: false   # Continue sweep even if signature becomes small
