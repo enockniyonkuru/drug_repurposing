@@ -15,13 +15,14 @@ This pipeline identifies existing drugs that could be repurposed for new therape
 6. [Working Directory Setup](#6-working-directory-setup)
 7. [Understanding Configuration](#7-understanding-configuration)
 8. [Three Main Functionalities](#8-three-main-functionalities)  
-9. [Configuration Reference](#9-configuration-reference)  
-10. [Data Formats](#10-data-formats)  
-11. [Customizing for Your Dataset](#11-customizing-for-your-dataset)  
-12. [Advanced Topics](#12-advanced-topics)
-13. [Troubleshooting](#13-troubleshooting)
-14. [Methodology](#14-methodology)  
-15. [Citation & License](#15-citation--license)
+9. [Running via Shiny App (GUI Alternative)](#9-running-via-shiny-app-gui-alternative)
+10. [Configuration Reference](#10-configuration-reference)  
+11. [Data Formats](#11-data-formats)  
+12. [Customizing for Your Dataset](#12-customizing-for-your-dataset)  
+13. [Advanced Topics](#13-advanced-topics)
+14. [Troubleshooting](#14-troubleshooting)
+15. [Methodology](#15-methodology)  
+16. [Citation & License](#16-citation--license)
 
 ---
 
@@ -541,7 +542,88 @@ results/<timestamp>/
 
 ---
 
-## 9. Configuration Reference
+## 9. Running via Shiny App (GUI Alternative)
+
+For users who prefer a graphical interface over command-line tools, the DRpipe pipeline can also be run through an interactive Shiny web application.
+
+### Overview
+
+The Shiny app provides a user-friendly way to:
+- Upload disease gene expression data through a web form
+- Configure analysis parameters using interactive controls
+- Run single or comparative analyses with a button click
+- View and download results directly in your browser
+- Generate interactive visualizations
+
+### Quick Start
+
+**Step 1: Install the DRpipe package** (if not already done)
+```r
+devtools::document("DRpipe")
+devtools::install("DRpipe")
+```
+
+**Step 2: Navigate to the Shiny app directory**
+```r
+setwd("path/to/drug_repurposing/shiny_app")
+```
+
+**Step 3: Launch the app**
+```r
+# Option 1: Direct launch
+shiny::runApp()
+
+# Option 2: Using helper script
+source("run.R")
+```
+
+**Step 4: Use the app**
+1. Choose analysis type (Single or Comparative)
+2. Upload your disease signature CSV or load example data
+3. Configure parameters through the interface
+4. Click "Run Analysis"
+5. View results and download outputs
+
+### Features
+
+**Analysis Types:**
+- **Single Analysis**: Run with one parameter configuration
+- **Comparative Analysis**: Compare results across multiple configurations
+
+**Capabilities:**
+- Full sweep mode support with parameter customization
+- Real-time progress tracking
+- Interactive result tables with filtering and sorting
+- Dynamic visualizations (bar charts, histograms, volcano plots, heatmaps)
+- CSV export of results
+
+### When to Use the Shiny App
+
+**Use the Shiny app when:**
+- You prefer graphical interfaces over command-line tools
+- You want to quickly test different parameters
+- You're new to R or the DRpipe pipeline
+- You need to demonstrate results to collaborators
+
+**Use the command-line pipeline when:**
+- You need to process many datasets in batch
+- You want to integrate into automated workflows
+- You need fine-grained control over all parameters
+- You're running analyses on a remote server
+
+### Documentation
+
+For detailed Shiny app documentation, including:
+- Data format requirements
+- Parameter descriptions
+- Troubleshooting tips
+- Example datasets
+
+See: **[shiny_app/README.md](shiny_app/README.md)**
+
+---
+
+## 10. Configuration Reference
 
 ### Configuration File Structure
 
@@ -1019,6 +1101,3 @@ For questions or issues:
 ---
 
 **Last Updated:** January 2025
-
-
-

@@ -1,168 +1,214 @@
 # Drug Repurposing Shiny App
 
-Interactive web interface for the DRpipe drug repurposing analysis pipeline with full sweep mode support.
+Interactive web application for the DRpipe drug repurposing analysis pipeline. This app provides a user-friendly graphical interface to run drug repurposing analyses without writing code.
+
+## Overview
+
+The Shiny app offers an alternative way to run the DRpipe pipeline through an interactive web interface. Instead of editing configuration files and running R scripts, you can:
+
+- Upload disease gene expression data through a web form
+- Configure analysis parameters using interactive controls
+- Run analyses with a single button click
+- View and download results directly in your browser
+- Generate visualizations interactively
+
+**When to use the Shiny app:**
+- You prefer a graphical interface over command-line tools
+- You want to quickly test different parameters
+- You're new to R or the DRpipe pipeline
+- You need to demonstrate results to collaborators
+
+**When to use the command-line pipeline:**
+- You need to process many datasets in batch
+- You want to integrate the pipeline into automated workflows
+- You need fine-grained control over all parameters
+- You're running analyses on a remote server
 
 ## Features
 
-- ✅ Upload disease gene expression data or load examples
-- ✅ Configure analysis parameters with intuitive UI
-- ✅ **Full sweep mode customization** - control all sweep parameters
-- ✅ Fixed navigation buttons for smooth workflow
-- ✅ Run drug repurposing analysis with progress tracking
-- ✅ View and download results
-- ✅ Interactive visualizations
+### Analysis Types
 
-## What's New
+1. **Single Analysis**
+   - Run analysis with one configuration profile
+   - Full sweep mode parameter customization
+   - Ideal for initial exploration and parameter testing
 
-### Version 2.0 (Current)
-- ✅ **Sweep Mode Customization**: Full control over all sweep parameters
-  - Auto-grid generation
-  - Step size control
-  - Min fraction/genes thresholds
-  - Robust drug rules (all vs k_of_n)
-  - Score aggregation methods
-- ✅ **Fixed Navigation**: All buttons now work correctly
-- ✅ **Streamlined Workflow**: Simplified 4-step process
-- ✅ **Better UX**: Conditional UI, real-time summaries, auto-navigation
+2. **Comparative Analysis**
+   - Compare results across multiple configuration profiles
+   - Identify robust drug candidates that appear consistently
+   - Side-by-side comparison visualizations
+
+### Sweep Mode Support
+
+Both analysis types support full sweep mode customization:
+- **Auto-grid**: Automatically generate threshold grid from data
+- **Step size**: Control spacing between thresholds
+- **Min fraction/genes**: Set minimum signature size requirements
+- **Robust rule**: Choose between "all cutoffs" or "k of n cutoffs"
+- **Aggregation**: Select mean or median for score combination
+- **Combine log2FC**: Choose how to combine multiple log2FC columns
+
+### Workflow
+
+1. **Choose Analysis Type** - Select Single or Comparative analysis
+2. **Upload Data** - Upload disease gene expression CSV or load examples
+3. **Configure** - Create custom profiles or select existing ones
+4. **Run Analysis** - Execute pipeline with real-time progress tracking
+5. **View Results** - Explore drug candidates with interactive tables
+6. **Visualizations** - Analyze results with dynamic plots
 
 ## Running the App
 
-From R:
+### From R Console
 
 ```r
-# Install required packages if needed
-install.packages(c("shiny", "shinydashboard", "DT", "plotly", "tidyverse", "yaml", "shinyjs"))
+# Navigate to the shiny_app directory
+setwd("path/to/drug_repurposing/shiny_app")
 
 # Run the app
-shiny::runApp("shiny_app")
+shiny::runApp()
 ```
 
-Or use the provided run script:
+### Using the Helper Script
 
 ```r
-source("shiny_app/run.R")
+source("run.R")
 ```
 
-## Quick Start
+### From Command Line
 
-1. **Upload Data**: Load CSV or click "Load Fibroid Example"
-2. **Configure**: 
-   - Set basic parameters (gene column, log2FC cutoff, etc.)
-   - Choose "Single Cutoff" or "Sweep Mode"
-   - Customize sweep parameters if using sweep mode
-3. **Run Analysis**: Click "Run Analysis" and monitor progress
-4. **View Results**: Explore drug candidates, download results
-
-## Sweep Mode Guide
-
-### What is Sweep Mode?
-
-Sweep mode tests multiple log2FC thresholds to identify robust drug candidates that appear consistently across different cutoff values. This reduces sensitivity to arbitrary threshold selection.
-
-### Key Parameters
-
-#### sweep_auto_grid
-- **TRUE**: Automatically generate thresholds from data distribution
-- **FALSE**: Use manually specified cutoffs
-
-#### sweep_step
-- Controls spacing between thresholds
-- Example: 0.1 creates 0.5, 0.6, 0.7, 0.8...
-- Smaller = more thresholds tested
-
-#### sweep_min_frac
-- Minimum fraction of genes required at each threshold
-- Example: 0.20 = at least 20% of genes must remain
-
-#### sweep_min_genes
-- Absolute minimum number of genes required
-- Example: 200 = at least 200 genes
-
-#### sweep_stop_on_small
-- **TRUE**: Stop if signature becomes too small
-- **FALSE**: Continue testing all thresholds (recommended)
-
-#### combine_log2fc
-- **average**: Mean of multiple log2FC columns
-- **median**: Median (robust to outliers)
-- **first**: Use only first column
-
-#### robust_rule
-- **all**: Drug must be significant at ALL thresholds
-- **k_of_n**: Drug must be significant in at least k thresholds
-
-#### robust_k
-- Only used when robust_rule = "k_of_n"
-- Example: k=2 means drug must appear in ≥2 thresholds
-
-#### aggregate
-- **mean**: Average scores across thresholds
-- **median**: Median score (robust to outliers)
-
-## Example Workflow
-
-### Single Mode Analysis
-```r
-1. Load Fibroid Example
-2. Configure:
-   - Gene Column: SYMBOL
-   - Log2FC Cutoff: 1.0
-   - Mode: Single Cutoff
-3. Run Analysis
-4. View 38 drug hits
+```bash
+cd shiny_app
+R -e "shiny::runApp()"
 ```
 
-### Sweep Mode Analysis
-```r
-1. Load Fibroid Example
-2. Configure:
-   - Gene Column: SYMBOL
-   - Mode: Sweep Mode
-   - Auto-grid: TRUE
-   - Step size: 0.1
-   - Min fraction: 0.20
-   - Min genes: 200
-   - Robust rule: k_of_n
-   - Robust k: 2
-   - Aggregation: median
-3. Run Analysis
-4. View robust drug candidates
+## Data Requirements
+
+### Input CSV Format
+
+Your disease gene expression file should contain:
+
+**Required columns:**
+- Gene identifier (e.g., SYMBOL, ENSEMBL, ENTREZ)
+- Log2 fold-change values (e.g., log2FC, log2FC_1, log2FC_2)
+
+**Optional columns:**
+- P-values or adjusted p-values (e.g., p_val_adj, FDR, pvalue)
+
+### Example Format
+
+```csv
+SYMBOL,log2FC_1,log2FC_2,p_val_adj
+TP53,2.5,2.3,0.001
+BRCA1,-1.8,-2.1,0.005
+MYC,3.2,3.0,0.0001
+```
+
+## Configuration Profiles
+
+### Single Analysis
+
+Create custom profiles with:
+- Gene column selection
+- Log2FC cutoff and prefix
+- P-value filtering (optional)
+- Q-value threshold
+- Analysis mode (single cutoff or sweep)
+- Sweep parameters (when sweep mode selected)
+- Random seed
+
+### Comparative Analysis
+
+- Select 2+ existing profiles from config.yml
+- Create custom profiles with full sweep parameter control
+- Compare results across different parameter combinations
+- Identify drugs that appear consistently
+
+## Visualizations
+
+### Single Analysis Plots
+
+- **Top Drugs**: Bar chart of highest-scoring drug candidates
+- **Score Distribution**: Histogram of CMap scores
+- **Volcano Plot**: Score vs significance scatter plot
+
+### Comparative Analysis Plots
+
+- **Profile Overlap**: Heatmap showing drug overlap between profiles
+- **Score Distribution by Profile**: Box plots comparing score distributions
+
+## Example Data
+
+Two example datasets are included:
+
+1. **Fibroid Example** - Core fibroid signature across datasets
+2. **Endothelial Example** - Endothelial cell DEG data
+
+Load these from the Upload Data tab to test the application.
+
+## Dependencies
+
+Required R packages:
+- shiny
+- shinydashboard
+- DT
+- plotly
+- tidyverse
+- yaml
+- shinyjs
+- DRpipe (custom package)
+
+## File Structure
+
+```
+shiny_app/
+├── app.R              # Main application (merged version)
+├── app_backup.R       # Original backup (comparative analysis)
+├── run.R              # Helper script to launch app
+├── README.md          # This file
+└── MERGE_PLAN.md      # Documentation of merge process
 ```
 
 ## Troubleshooting
 
-### Navigation not working
-- Ensure you're using the latest version of app.R
-- Check that shinyjs is loaded
+### Common Issues
 
-### Sweep mode options not showing
-- Verify "Sweep Mode" is selected in Mode dropdown
-- Refresh the page if needed
+**"Gene column not found"**
+- Verify the gene_key parameter matches your CSV column name exactly
 
-### Analysis fails
-- Check that gene_key matches your data column name
-- Verify log2FC columns exist with specified prefix
-- Ensure data file is properly formatted CSV
+**"No genes matched"**
+- Check that gene identifiers are in the correct format
+- Ensure log2FC column prefix matches your data
 
-## Requirements
+**"No significant hits"**
+- Try adjusting the log2FC cutoff (lower = more lenient)
+- Increase the q-value threshold
+- Check that your disease signature has sufficient genes
 
-- R >= 4.0
-- DRpipe package installed
-- Required R packages: shiny, shinydashboard, DT, plotly, tidyverse, yaml, shinyjs
-
-## Files
-
-- `app.R` - Main Shiny application (updated v2.0)
-- `run.R` - Helper script to launch app
-- `README.md` - This file
-- `README_v2.md` - Detailed v2.0 documentation
-- `app_backup.R` - Backup of original app (v1.0)
-- `app_v2.R` - Source for v2.0 (now merged into app.R)
-
-## Support
+### Getting Help
 
 For issues or questions:
-1. Check the Help tab in the app
-2. Review README_v2.md for detailed documentation
-3. Verify your data format matches requirements
-4. Check R console for error messages
+1. Check the Help tab in the application
+2. Review the MERGE_PLAN.md for implementation details
+3. Consult the DRpipe package documentation
+
+## Recent Updates
+
+### Version 2.0 (Merged)
+
+- ✅ Added analysis type selection (Single vs Comparative)
+- ✅ Integrated full sweep mode parameter customization
+- ✅ Restored comparative analysis functionality
+- ✅ Separate visualization tabs for different analysis types
+- ✅ Conditional UI based on selected analysis type
+- ✅ Support for custom profiles with sweep parameters in comparative mode
+
+### Previous Version
+
+- Basic single analysis with limited sweep customization
+- No comparative analysis support
+- Fixed visualization layout
+
+## License
+
+See main project LICENSE file.
