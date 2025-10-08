@@ -318,10 +318,15 @@ DRP <- R6::R6Class(
           self$log("Gene mapping: %d -> %d genes (mapped %d)", original_count, mapped_count, mapped_count)
           
           # Manual filtering steps (like clean_table but with our mapped data)
-          # 1. Filter by logFC cutoff
+          # 1. Filter by p-value if pval_key is provided
+          if (!is.null(self$pval_key) && self$pval_key %in% names(working_data)) {
+            working_data <- working_data[working_data[[self$pval_key]] < self$pval_cutoff, ]
+          }
+          
+          # 2. Filter by logFC cutoff
           working_data <- working_data[abs(working_data$logFC) > use_cutoff, ]
           
-          # 2. Filter to CMap universe
+          # 3. Filter to CMap universe
           working_data <- working_data[as.character(working_data$entrezID) %in% db_genes, ]
           
           # 3. Create final cleaned signature
@@ -337,7 +342,8 @@ DRP <- R6::R6Class(
             gene_key     = self$gene_key,
             logFC_key    = "logFC",
             logFC_cutoff = use_cutoff,
-            pval_key     = NULL,
+            pval_key     = self$pval_key,
+            pval_cutoff  = self$pval_cutoff,
             db_gene_list = db_genes
           )
         }
@@ -374,7 +380,15 @@ DRP <- R6::R6Class(
             temp_data <- merge(working_data, mapping_tbl, by.x = self$gene_key, by.y = "Gene_name")
             
             # Manual filtering
+            # 1. Filter by p-value if pval_key is provided
+            if (!is.null(self$pval_key) && self$pval_key %in% names(temp_data)) {
+              temp_data <- temp_data[temp_data[[self$pval_key]] < self$pval_cutoff, ]
+            }
+            
+            # 2. Filter by logFC cutoff
             temp_data <- temp_data[abs(temp_data$logFC) > use_cutoff, ]
+            
+            # 3. Filter to CMap universe
             temp_data <- temp_data[as.character(temp_data$entrezID) %in% db_genes, ]
             
             # Create cleaned signature
@@ -384,16 +398,7 @@ DRP <- R6::R6Class(
               stringsAsFactors = FALSE
             )
           } else {
-            # Use clean_table
-            cleaned <- clean_table(
-              working_data,
-              gene_key     = self$gene_key,
-              logFC_key    = "logFC",
-              logFC_cutoff = use_cutoff,
-              pval_key     = self$pval_key,
-              pval_cutoff  = self$pval_cutoff,
-              db_gene_list = db_genes
-            )
+            # Use clean_table with proper p-value filtering
             cleaned <- clean_table(
               working_data,
               gene_key     = self$gene_key,
@@ -702,6 +707,12 @@ DRP <- R6::R6Class(
               mapping_tbl <- mapping_tbl[!duplicated(mapping_tbl), ]
               
               working_data <- merge(working_data, mapping_tbl, by.x = self$gene_key, by.y = "Gene_name")
+              
+              # Filter by p-value if pval_key is provided
+              if (!is.null(self$pval_key) && self$pval_key %in% names(working_data)) {
+                working_data <- working_data[working_data[[self$pval_key]] < self$pval_cutoff, ]
+              }
+              
               working_data <- working_data[abs(working_data$logFC) > cutoff, ]
               working_data <- working_data[as.character(working_data$entrezID) %in% db_genes, ]
               

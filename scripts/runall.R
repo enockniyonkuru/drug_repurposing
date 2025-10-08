@@ -33,6 +33,8 @@ drp <- DRP$new(
   gene_key         = cfg$params$gene_key %||% "SYMBOL",
   logfc_cols_pref  = cfg$params$logfc_cols_pref %||% "log2FC",
   logfc_cutoff     = cfg$params$logfc_cutoff %||% 1,
+  pval_key         = cfg$params$pval_key %||% NULL,
+  pval_cutoff      = cfg$params$pval_cutoff %||% 0.05,
   q_thresh         = cfg$params$q_thresh %||% 0.05,
   reversal_only    = isTRUE(cfg$params$reversal_only %||% TRUE),
   seed             = cfg$params$seed %||% 123,

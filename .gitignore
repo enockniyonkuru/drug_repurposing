@@ -119,6 +119,12 @@ scripts/results/*
 !scripts/results/.gitkeep
 !scripts/results/README.md
 
+# Temporary documentation files
+README_UPDATES.md
+
+# R package build artifacts
+DRpipe_*.tar.gz
+
 ############################
 # Keep small data files
 ############################
