@@ -114,6 +114,10 @@ scripts/data/cmap_signatures.RData
 # Ignore large gene conversion table (4.5MB)
 scripts/data/gene_id_conversion_table.tsv
 
+# Ignore any zip files (can be very large)
+*.zip
+scripts/data/*.zip
+
 # Ignore all results directories (generated outputs)
 scripts/results/*
 !scripts/results/.gitkeep
