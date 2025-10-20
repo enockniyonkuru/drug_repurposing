@@ -177,7 +177,7 @@ Endothelial_Standard:
   params:
     gene_key: "SYMBOL"
     logfc_cols_pref: "avg_log2FC"
-    logfc_cutoff: 0.05
+    logfc_cutoff: 0.5
     pval_key: p_val_adj
     pval_cutoff: 0.05
     q_thresh: 0.05
@@ -196,9 +196,9 @@ Endothelial_Lenient:
   params:
     gene_key: "SYMBOL"
     logfc_cols_pref: "avg_log2FC"
-    logfc_cutoff: 1       # Very relaxed fold-change threshold
+    logfc_cutoff: 1       
     pval_key: p_val_adj
-    pval_cutoff: 0.1
+    pval_cutoff: 0.05
     q_thresh: 0.05
     reversal_only: true
     seed: 123
@@ -345,3 +345,42 @@ production:
     robust_k: null
     aggregate: "mean"
     weights: null
+
+# Standard p-value threshold profile
+Endothelial_Standard_cmap_filtered:
+  paths:
+    signatures: "data/drug_rep_cmap_ranks_shared_genes_drugs.RData"
+    disease_file: "data/Endothelia_DEG.csv"
+    cmap_meta: "data/cmap_drug_experiments_new.csv"
+    cmap_valid: "data/cmap_valid_instances.csv"
+    out_dir: "results"
+  params:
+    gene_key: "SYMBOL"
+    logfc_cols_pref: "avg_log2FC"
+    logfc_cutoff: 0.5
+    pval_key: p_val_adj
+    pval_cutoff: 0.05
+    q_thresh: 0.05
+    reversal_only: true
+    seed: 123
+    mode: "single"
+
+
+# 
+Endothelial_Standard_tahoe_filtered:
+  paths:
+    signatures: "data/drug_rep_tahoe_ranks_shared_genes_drugs.RData"
+    disease_file: "data/Endothelia_DEG.csv"
+    cmap_meta: "data/cmap_drug_experiments_new.csv"
+    cmap_valid: "data/cmap_valid_instances.csv"
+    out_dir: "results"
+  params:
+    gene_key: "SYMBOL"
+    logfc_cols_pref: "avg_log2FC"
+    logfc_cutoff: 0.5
+    pval_key: p_val_adj
+    pval_cutoff: 0.05
+    q_thresh: 0.05
+    reversal_only: true
+    seed: 123
+    mode: "single"

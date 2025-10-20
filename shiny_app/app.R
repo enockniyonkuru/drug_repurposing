@@ -354,7 +354,13 @@ server <- function(input, output, session) {
     drugs_valid = NULL,
     analysisLog = "",
     config_profiles = list(),
-    comparison_results = list()
+    comparison_results = list(),
+    drug_signatures = list(
+      "OG - CMAP" = "../scripts/data/cmap_signatures.RData",
+      "Filtered CMAP" = "../scripts/data/drug_rep_cmap_ranks_shared_genes_drugs.RData",
+      "Filtered TAHOE" = "../scripts/data/drug_rep_tahoe_ranks_shared_genes_drugs.RData"
+    ),
+    selected_drug_signature = "../scripts/data/cmap_signatures.RData"
   )
   
   # Load configuration profiles on startup
@@ -371,6 +377,28 @@ server <- function(input, output, session) {
     }, error = function(e) {
       showNotification(paste("Warning: Could not load config.yml:", e$message), type = "warning")
     })
+  })
+  
+  # Observer for drug signature selection (single analysis)
+  observeEvent(input$drugSignatureChoice, {
+    req(input$drugSignatureChoice)
+    signature_map <- list(
+      og_cmap = "../scripts/data/cmap_signatures.RData",
+      filtered_cmap = "../scripts/data/drug_rep_cmap_ranks_shared_genes_drugs.RData",
+      filtered_tahoe = "../scripts/data/drug_rep_tahoe_ranks_shared_genes_drugs.RData"
+    )
+    values$selected_drug_signature <- signature_map[[input$drugSignatureChoice]]
+  })
+  
+  # Observer for drug signature selection (comparative analysis)
+  observeEvent(input$compDrugSignatureChoice, {
+    req(input$compDrugSignatureChoice)
+    signature_map <- list(
+      og_cmap = "../scripts/data/cmap_signatures.RData",
+      filtered_cmap = "../scripts/data/drug_rep_cmap_ranks_shared_genes_drugs.RData",
+      filtered_tahoe = "../scripts/data/drug_rep_tahoe_ranks_shared_genes_drugs.RData"
+    )
+    values$selected_drug_signature <- signature_map[[input$compDrugSignatureChoice]]
   })
   
   # Navigation buttons
@@ -531,6 +559,21 @@ server <- function(input, output, session) {
             h4("Create Custom Profile"),
             textInput("customProfileName", "Profile Name:", value = "my_custom_profile"),
           
+          h4("Drug Signature Selection"),
+          selectInput("drugSignatureChoice", "Choose Drug Signature:",
+                     choices = c("OG - CMAP" = "og_cmap",
+                               "Filtered CMAP" = "filtered_cmap", 
+                               "Filtered TAHOE" = "filtered_tahoe"),
+                     selected = "og_cmap"),
+          p(style = "color: #666; font-size: 12px;",
+            "• OG - CMAP: Original CMAP signatures",
+            br(),
+            "• Filtered CMAP: CMAP signatures with shared genes/drugs",
+            br(),
+            "• Filtered TAHOE: TAHOE signatures with shared genes/drugs"),
+          hr(),
+          
+          h4("Disease Signature Configuration"),
           selectInput("customGeneKey", "Gene Column:", 
                      choices = if(!is.null(values$data)) names(values$data) else c("SYMBOL"),
                      selected = "SYMBOL"),
@@ -603,7 +646,22 @@ server <- function(input, output, session) {
           textInput("compCustomProfileName", "Profile Name:", 
                    value = paste0("custom_", as.integer(Sys.time()))),
           
-          selectInput("compCustomGeneKey", "Gene Column:", 
+          h4("Drug Signature Selection"),
+          selectInput("compDrugSignatureChoice", "Choose Drug Signature:",
+                     choices = c("OG - CMAP" = "og_cmap",
+                               "Filtered CMAP" = "filtered_cmap", 
+                               "Filtered TAHOE" = "filtered_tahoe"),
+                     selected = "og_cmap"),
+          p(style = "color: #666; font-size: 12px;",
+            "• OG - CMAP: Original CMAP signatures",
+            br(),
+            "• Filtered CMAP: CMAP signatures with shared genes/drugs",
+            br(),
+            "• Filtered TAHOE: TAHOE signatures with shared genes/drugs"),
+          hr(),
+          
+          h4("Disease Signature Configuration"),
+          selectInput("compCustomGeneKey", "Gene Column:",
                      choices = if(!is.null(values$data)) names(values$data) else c("SYMBOL"),
                      selected = "SYMBOL"),
           
@@ -848,7 +906,7 @@ server <- function(input, output, session) {
         
         drp_args <- c(
           list(
-            signatures_rdata = "../scripts/data/cmap_signatures.RData",
+            signatures_rdata = values$selected_drug_signature,
             disease_path = temp_file,
             cmap_meta_path = "../scripts/data/cmap_drug_experiments_new.csv",
             cmap_valid_path = "../scripts/data/cmap_valid_instances.csv",
@@ -942,7 +1000,7 @@ server <- function(input, output, session) {
           
           # Build DRP arguments including sweep parameters if present
           drp_args <- list(
-            signatures_rdata = "../scripts/data/cmap_signatures.RData",
+            signatures_rdata = values$selected_drug_signature,
             disease_path = temp_file,
             cmap_meta_path = "../scripts/data/cmap_drug_experiments_new.csv",
             cmap_valid_path = "../scripts/data/cmap_valid_instances.csv",

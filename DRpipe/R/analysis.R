@@ -415,8 +415,11 @@ pl_cmap_score <- function(cmap_score, qval = NULL, annot_col_col = NULL, annot_c
             jpeg(save, width = width, height = height, units = units, res = res)
         }
         
+        # Filter out rows with NA in the name column before selecting top drugs
+        cmap_score_clean <- cmap_score[!is.na(cmap_score$name), ]
+        
         # Create a simple plot of the top drugs
-        top_drugs <- head(cmap_score[order(cmap_score$cmap_score), ], 20)
+        top_drugs <- head(cmap_score_clean[order(cmap_score_clean$cmap_score), ], 20)
         par(mar = c(5, 10, 4, 2))
         barplot(top_drugs$cmap_score, 
                 names.arg = top_drugs$name,

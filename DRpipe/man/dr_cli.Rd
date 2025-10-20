@@ -18,5 +18,6 @@ Rscript -e "DRpipe::dr_cli()" analyze --config scripts/config.yml --profile defa
 }
 
 \section{Print the merged config the CLI is using (for debugging)}{
-Rscript -e "DRpipe::dr_cli()" config --config scripts/config.yml --profile default
+
 }
+
