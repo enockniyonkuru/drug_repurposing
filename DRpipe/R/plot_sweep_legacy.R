@@ -108,53 +108,101 @@ plot_sweep_outputs_legacy <- function(run_dir, per_cutoff_df = NULL, aggregated_
     par(mfrow = c(2, 3))
     
     # 4a: Score distribution
-    hist(consolidated_drugs$cmap_score, breaks = 25, 
-         main = "CMap Score Distribution",
-         xlab = "CMap Score", col = "lightblue", border = "darkblue")
+    if (length(consolidated_drugs$cmap_score) > 0 && any(is.finite(consolidated_drugs$cmap_score))) {
+      hist(consolidated_drugs$cmap_score, breaks = 25, 
+           main = "CMap Score Distribution",
+           xlab = "CMap Score", col = "lightblue", border = "darkblue")
+    } else {
+      plot(1, 1, type = "n", main = "Score data not available", axes = FALSE)
+      text(1, 1, "No finite score data", cex = 1.2)
+    }
     
     # 4b: Q-value distribution
-    hist(consolidated_drugs$q, breaks = 25, 
-         main = "Q-value Distribution",
-         xlab = "Q-value", col = "lightgreen", border = "darkgreen")
-    abline(v = 0.05, col = "red", lty = 2, lwd = 2)
+    if (length(consolidated_drugs$q) > 0 && any(is.finite(consolidated_drugs$q))) {
+      hist(consolidated_drugs$q, breaks = 25, 
+           main = "Q-value Distribution",
+           xlab = "Q-value", col = "lightgreen", border = "darkgreen")
+      abline(v = 0.05, col = "red", lty = 2, lwd = 2)
+    } else {
+      plot(1, 1, type = "n", main = "Q-value data not available", axes = FALSE)
+      text(1, 1, "No finite q-value data", cex = 1.2)
+    }
     
     # 4c: Support vs Score
-    if ("n_support" %in% names(consolidated_drugs)) {
+    if ("n_support" %in% names(consolidated_drugs) && 
+        length(consolidated_drugs$n_support) > 0 && 
+        any(is.finite(consolidated_drugs$n_support)) &&
+        any(is.finite(consolidated_drugs$cmap_score))) {
       plot(consolidated_drugs$n_support, consolidated_drugs$cmap_score, 
            main = "Threshold Support vs Score",
            xlab = "Number of Supporting Thresholds", ylab = "CMap Score",
            pch = 16, col = "red", cex = 1.2)
     } else {
-      plot(1, 1, type = "n", main = "Support data not available")
+      plot(1, 1, type = "n", main = "Support data not available", axes = FALSE)
+      text(1, 1, "No support data", cex = 1.2)
     }
     
     # 4d: Top drugs bar plot
     top_drugs <- head(consolidated_drugs[order(consolidated_drugs$cmap_score), ], 15)
     par(mar = c(8, 4, 4, 2))
-    if (nrow(top_drugs) > 0) {
+    if (nrow(top_drugs) > 0 && any(is.finite(top_drugs$cmap_score))) {
       barplot(top_drugs$cmap_score, names.arg = top_drugs$name,
               main = "Top 15 Candidate Drugs", ylab = "CMap Score",
               las = 2, col = "steelblue", cex.names = 0.8)
     } else {
-      plot(1, 1, type = "n", main = "No drug data available")
+      plot(1, 1, type = "n", main = "No drug data available", axes = FALSE)
+      text(1, 1, "No drugs to display", cex = 1.2)
     }
     
     # 4e: Score vs Q-value scatter
     par(mar = c(4, 4, 4, 2))
-    plot(consolidated_drugs$cmap_score, -log10(consolidated_drugs$q),
-         main = "Score vs Significance", 
-         xlab = "CMap Score", ylab = "-log10(Q-value)",
-         pch = 16, col = "orange", cex = 1.2)
-    abline(h = -log10(0.05), col = "red", lty = 2, lwd = 2)
+    if (length(consolidated_drugs$cmap_score) > 0 && 
+        length(consolidated_drugs$q) > 0 &&
+        any(is.finite(consolidated_drugs$cmap_score)) &&
+        any(is.finite(consolidated_drugs$q))) {
+      
+      # Filter out non-finite values
+      valid_idx <- is.finite(consolidated_drugs$cmap_score) & is.finite(consolidated_drugs$q)
+      valid_scores <- consolidated_drugs$cmap_score[valid_idx]
+      valid_q <- consolidated_drugs$q[valid_idx]
+      
+      # Compute -log10(q) safely
+      log_q <- -log10(pmax(valid_q, 1e-300))  # Avoid log(0)
+      
+      if (length(valid_scores) > 0 && any(is.finite(log_q))) {
+        plot(valid_scores, log_q,
+             main = "Score vs Significance", 
+             xlab = "CMap Score", ylab = "-log10(Q-value)",
+             pch = 16, col = "orange", cex = 1.2,
+             ylim = range(log_q[is.finite(log_q)], na.rm = TRUE))
+        abline(h = -log10(0.05), col = "red", lty = 2, lwd = 2)
+      } else {
+        plot(1, 1, type = "n", main = "Score vs Significance", axes = FALSE)
+        text(1, 1, "No valid data", cex = 1.2)
+      }
+    } else {
+      plot(1, 1, type = "n", main = "Score vs Significance", axes = FALSE)
+      text(1, 1, "No data available", cex = 1.2)
+    }
     
     # 4f: Support distribution
-    if ("n_support" %in% names(consolidated_drugs)) {
-      barplot(table(consolidated_drugs$n_support),
-              main = "Distribution of Threshold Support",
-              xlab = "Number of Supporting Thresholds", ylab = "Number of Drugs",
-              col = "purple")
+    par(mar = c(4, 4, 4, 2))
+    if ("n_support" %in% names(consolidated_drugs) && 
+        length(consolidated_drugs$n_support) > 0 &&
+        any(is.finite(consolidated_drugs$n_support))) {
+      support_table <- table(consolidated_drugs$n_support)
+      if (length(support_table) > 0) {
+        barplot(support_table,
+                main = "Distribution of Threshold Support",
+                xlab = "Number of Supporting Thresholds", ylab = "Number of Drugs",
+                col = "purple")
+      } else {
+        plot(1, 1, type = "n", main = "Support distribution", axes = FALSE)
+        text(1, 1, "No support data", cex = 1.2)
+      }
     } else {
-      plot(1, 1, type = "n", main = "Support data not available")
+      plot(1, 1, type = "n", main = "Support distribution", axes = FALSE)
+      text(1, 1, "No support data", cex = 1.2)
     }
     
     dev.off()

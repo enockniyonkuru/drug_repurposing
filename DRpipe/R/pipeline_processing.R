@@ -458,11 +458,18 @@ DRP <- R6::R6Class(
       cmap_experiments_valid <- merge(cmap_experiments, valid_instances, by = "id")
       cmap_experiments_valid <- subset(cmap_experiments_valid, valid == 1 & DrugBank.ID != "NULL")
 
-      dv <- merge(self$drugs, cmap_experiments_valid, by.x = "exp_id", by.y = "id", all.x = TRUE)
+      dv <- merge(self$drugs, cmap_experiments_valid, by.x = "exp_id", by.y = "id", all.x = FALSE)
+      
+      # Remove any rows with NA in the name column immediately after merge
+      if ("name" %in% names(dv)) {
+        dv <- dv[!is.na(dv$name) & dv$name != "", ]
+      }
+      
       if (self$reversal_only) dv <- subset(dv, cmap_score < 0)
       dv <- subset(dv, q < self$q_thresh)
-
-      if ("name" %in% names(dv)) {
+      
+      # Deduplicate by drug name
+      if ("name" %in% names(dv) && nrow(dv) > 0) {
         dv <- dv |>
           dplyr::group_by(name) |>
           dplyr::slice(which.min(cmap_score)) |>
@@ -776,10 +783,17 @@ DRP <- R6::R6Class(
             cmap_experiments_valid <- merge(cmap_experiments, valid_instances, by = "id")
             cmap_experiments_valid <- subset(cmap_experiments_valid, valid == 1 & DrugBank.ID != "NULL")
             
-            drugs_valid <- merge(drugs, cmap_experiments_valid, by.x = "exp_id", by.y = "id", all.x = TRUE)
+            drugs_valid <- merge(drugs, cmap_experiments_valid, by.x = "exp_id", by.y = "id", all.x = FALSE)
+            
+            # Remove any rows with NA in the name column immediately after merge
+            if ("name" %in% names(drugs_valid)) {
+              drugs_valid <- drugs_valid[!is.na(drugs_valid$name) & drugs_valid$name != "", ]
+            }
+            
             if (self$reversal_only) drugs_valid <- subset(drugs_valid, cmap_score < 0)
             drugs_valid <- subset(drugs_valid, q < self$q_thresh)
             
+            # Deduplicate by drug name
             if ("name" %in% names(drugs_valid) && nrow(drugs_valid) > 0) {
               drugs_valid <- drugs_valid |>
                 dplyr::group_by(name) |>

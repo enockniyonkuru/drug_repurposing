@@ -14,6 +14,7 @@ and can run the whole pipeline with a single call.
 \item \href{#method-DRP-log}{\code{DRP$log()}}
 \item \href{#method-DRP-load_cmap}{\code{DRP$load_cmap()}}
 \item \href{#method-DRP-load_disease}{\code{DRP$load_disease()}}
+\item \href{#method-DRP-derive_threshold_grid}{\code{DRP$derive_threshold_grid()}}
 \item \href{#method-DRP-clean_signature}{\code{DRP$clean_signature()}}
 \item \href{#method-DRP-score}{\code{DRP$score()}}
 \item \href{#method-DRP-annotate_and_filter}{\code{DRP$annotate_and_filter()}}
@@ -25,6 +26,9 @@ and can run the whole pipeline with a single call.
 \item \href{#method-DRP-run_all}{\code{DRP$run_all()}}
 \item \href{#method-DRP-run_sweep}{\code{DRP$run_sweep()}}
 \item \href{#method-DRP-aggregate_thresholds}{\code{DRP$aggregate_thresholds()}}
+\item \href{#method-DRP-create_sweep_analysis_files}{\code{DRP$create_sweep_analysis_files()}}
+\item \href{#method-DRP-create_sweep_plots}{\code{DRP$create_sweep_plots()}}
+\item \href{#method-DRP-create_basic_consolidated_results}{\code{DRP$create_basic_consolidated_results()}}
 \item \href{#method-DRP-clone}{\code{DRP$clone()}}
 }
 }
@@ -43,19 +47,35 @@ and can run the whole pipeline with a single call.
   gene_key = "SYMBOL",
   logfc_cols_pref = "log2FC",
   logfc_cutoff = 1,
+  pval_key = NULL,
+  pval_cutoff = 0.05,
   q_thresh = 0.05,
   reversal_only = TRUE,
   seed = 123,
   verbose = TRUE,
   mode = c("single", "sweep"),
   sweep_cutoffs = NULL,
+  sweep_auto_grid = TRUE,
+  sweep_step = 0.1,
   sweep_min_frac = 0.2,
   sweep_min_genes = 200,
+  sweep_stop_on_small = FALSE,
   combine_log2fc = c("average", "each"),
   robust_rule = c("all", "k_of_n"),
   robust_k = NULL,
   aggregate = c("mean", "median", "weighted_mean"),
-  weights = NULL
+  weights = NULL,
+  apply_meta_filters = FALSE,
+  min_studies = 2,
+  effect_fdr_thresh = 0.05,
+  heterogeneity_thresh = 0.05,
+  gene_conversion_table = NULL,
+  save_count_files = FALSE,
+  n_permutations = 1e+05,
+  save_null_scores = FALSE,
+  per_threshold_dirs = FALSE,
+  blood_label = "blood",
+  ncores = NULL
 )}\if{html}{\out{</div>}}
 }
 
@@ -84,6 +104,15 @@ and can run the whole pipeline with a single call.
 \subsection{Method \code{load_disease()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{DRP$load_disease()}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-DRP-derive_threshold_grid"></a>}}
+\if{latex}{\out{\hypertarget{method-DRP-derive_threshold_grid}{}}}
+\subsection{Method \code{derive_threshold_grid()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{DRP$derive_threshold_grid()}\if{html}{\out{</div>}}
 }
 
 }
@@ -183,6 +212,33 @@ and can run the whole pipeline with a single call.
 \subsection{Method \code{aggregate_thresholds()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{DRP$aggregate_thresholds()}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-DRP-create_sweep_analysis_files"></a>}}
+\if{latex}{\out{\hypertarget{method-DRP-create_sweep_analysis_files}{}}}
+\subsection{Method \code{create_sweep_analysis_files()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{DRP$create_sweep_analysis_files()}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-DRP-create_sweep_plots"></a>}}
+\if{latex}{\out{\hypertarget{method-DRP-create_sweep_plots}{}}}
+\subsection{Method \code{create_sweep_plots()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{DRP$create_sweep_plots()}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-DRP-create_basic_consolidated_results"></a>}}
+\if{latex}{\out{\hypertarget{method-DRP-create_basic_consolidated_results}{}}}
+\subsection{Method \code{create_basic_consolidated_results()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{DRP$create_basic_consolidated_results()}\if{html}{\out{</div>}}
 }
 
 }
