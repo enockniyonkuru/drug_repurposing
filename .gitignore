@@ -123,6 +123,14 @@ scripts/results/*
 !scripts/results/.gitkeep
 !scripts/results/README.md
 
+# Ignore tahoe_cmap_analysis results (1.5GB - too large for GitHub)
+tahoe_cmap_analysis/results/*
+!tahoe_cmap_analysis/results/.gitkeep
+!tahoe_cmap_analysis/results/README.md
+
+# Ignore large annotated hits files (exceed GitHub limits)
+tahoe_cmap_analysis/data/*annotated_hits*.csv
+
 # Temporary documentation files
 README_UPDATES.md
 

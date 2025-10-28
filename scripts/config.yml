@@ -7,10 +7,13 @@
 # Execution configuration - specify which profiles/operations to run
 execution:
   # Profile to use for runall.R (single profile execution)
-  runall_profile: "Endothelial_Strict"
+  runall_profile: "CMAP_Chronic_granulomatous_disease_0.00"
+
+  # runall_profile: "Tahoe_Chronic_granulomatous_disease_0.00"
+
 
   # Profiles to compare in compare_profiles.R
-  compare_profiles: ["Endothelial_Strict", "Endothelial_Standard", "Endothelial_Lenient"]
+  compare_profiles: ["CoreFibroid_logFC_0.25", "CoreFibroid_logFC_0.5", "CoreFibroid_logFC_1"]
 
 # ============================================================================
 # DEFAULT PROFILE (REQUIRED - DO NOT DELETE)
@@ -39,13 +42,13 @@ default:
     # IMPORTANT: Verify your CSV has column headers! Missing headers is a common issue.
     disease_file: "data/CoreFibroidSignature_All_Datasets.csv"
     
-    # Path to CMap experiment metadata (optional but recommended)
+    # Path to drug experiment metadata (optional but recommended)
     # Contains drug names, cell lines, experimental conditions
-    cmap_meta: "data/cmap_drug_experiments_new.csv"
+    drug_meta: "data/cmap_drug_experiments_new.csv"
     
-    # Path to CMap valid instances list (optional but recommended)
+    # Path to drug valid instances list (optional but recommended)
     # Contains curated list of valid experiments with DrugBank IDs
-    cmap_valid: "data/cmap_valid_instances.csv"
+    drug_valid: "data/cmap_valid_instances.csv"
     
     # Output directory for results (relative to scripts/ folder)
     out_dir: "results"
@@ -152,8 +155,8 @@ Endothelial_Strict:
   paths:
     signatures: "data/cmap_signatures.RData"
     disease_file: "data/Endothelia_DEG.csv"
-    cmap_meta: "data/cmap_drug_experiments_new.csv"
-    cmap_valid: "data/cmap_valid_instances.csv"
+    drug_meta: "data/cmap_drug_experiments_new.csv"
+    drug_valid: "data/cmap_valid_instances.csv"
     out_dir: "results"
   params:
     gene_key: "SYMBOL"
@@ -171,13 +174,13 @@ Endothelial_Standard:
   paths:
     signatures: "data/cmap_signatures.RData"
     disease_file: "data/Endothelia_DEG.csv"
-    cmap_meta: "data/cmap_drug_experiments_new.csv"
-    cmap_valid: "data/cmap_valid_instances.csv"
+    drug_meta: "data/cmap_drug_experiments_new.csv"
+    drug_valid: "data/cmap_valid_instances.csv"
     out_dir: "results"
   params:
     gene_key: "SYMBOL"
     logfc_cols_pref: "avg_log2FC"
-    logfc_cutoff: 0.05
+    logfc_cutoff: 0.5
     pval_key: p_val_adj
     pval_cutoff: 0.05
     q_thresh: 0.05
@@ -190,32 +193,32 @@ Endothelial_Lenient:
   paths:
     signatures: "data/cmap_signatures.RData"
     disease_file: "data/Endothelia_DEG.csv"
-    cmap_meta: "data/cmap_drug_experiments_new.csv"
-    cmap_valid: "data/cmap_valid_instances.csv"
+    drug_meta: "data/cmap_drug_experiments_new.csv"
+    drug_valid: "data/cmap_valid_instances.csv"
     out_dir: "results"
   params:
     gene_key: "SYMBOL"
     logfc_cols_pref: "avg_log2FC"
-    logfc_cutoff: 1       # Very relaxed fold-change threshold
+    logfc_cutoff: 1       
     pval_key: p_val_adj
-    pval_cutoff: 0.1
+    pval_cutoff: 0.05
     q_thresh: 0.05
     reversal_only: true
     seed: 123
     mode: "single"
 
-# Standard profile with logFC cutoff of 1.0
-CoreFibroid_logFC_1:
+
+CoreFibroid_logFC_0.25:
   paths:
     signatures: "data/cmap_signatures.RData"
     disease_file: "data/CoreFibroidSignature_All_Datasets.csv"
-    cmap_meta: "data/cmap_drug_experiments_new.csv"
-    cmap_valid: "data/cmap_valid_instances.csv"
+    drug_meta: "data/cmap_drug_experiments_new.csv"
+    drug_valid: "data/cmap_valid_instances.csv"
     out_dir: "results"
   params:
     gene_key: "SYMBOL"
     logfc_cols_pref: "log2FC"
-    logfc_cutoff: 1
+    logfc_cutoff: 0.25
     pval_key: null           # Column name for p-values (e.g., "p_val_adj", "FDR"). Set to null to skip p-value filtering
     pval_cutoff: 0.05        # P-value threshold for filtering genes (only used if pval_key is not null)
     q_thresh: 0.05
@@ -231,13 +234,12 @@ CoreFibroid_logFC_1:
     aggregate: "mean"
     weights: null
 
-# Lenient profile with lower fold-change cutoff for comparison
 CoreFibroid_logFC_0.5:
   paths:
     signatures: "data/cmap_signatures.RData"
     disease_file: "data/CoreFibroidSignature_All_Datasets.csv"
-    cmap_meta: "data/cmap_drug_experiments_new.csv"
-    cmap_valid: "data/cmap_valid_instances.csv"
+    drug_meta: "data/cmap_drug_experiments_new.csv"
+    drug_valid: "data/cmap_valid_instances.csv"
     out_dir: "results"
   params:
     gene_key: "SYMBOL"
@@ -258,18 +260,17 @@ CoreFibroid_logFC_0.5:
     aggregate: "mean"
     weights: null
 
-# Strict profile with more stringent thresholds for comparison
-CoreFibroid_logFC_1.5:
+CoreFibroid_logFC_1:
   paths:
     signatures: "data/cmap_signatures.RData"
     disease_file: "data/CoreFibroidSignature_All_Datasets.csv"
-    cmap_meta: "data/cmap_drug_experiments_new.csv"
-    cmap_valid: "data/cmap_valid_instances.csv"
+    drug_meta: "data/cmap_drug_experiments_new.csv"
+    drug_valid: "data/cmap_valid_instances.csv"
     out_dir: "results"
   params:
     gene_key: "SYMBOL"
     logfc_cols_pref: "log2FC"
-    logfc_cutoff: 1.5        # More stringent: higher fold-change cutoff
+    logfc_cutoff: 1        # More stringent: higher fold-change cutoff
     pval_key: null           # Column name for p-values (e.g., "p_val_adj", "FDR"). Set to null to skip p-value filtering
     pval_cutoff: 0.05        # P-value threshold for filtering genes (only used if pval_key is not null)
     q_thresh: 0.05
@@ -290,8 +291,8 @@ Sweep_CoreFibroid:
   paths:
     signatures: "data/cmap_signatures.RData"
     disease_file: "data/CoreFibroidSignature_All_Datasets.csv"
-    cmap_meta: "data/cmap_drug_experiments_new.csv"
-    cmap_valid: "data/cmap_valid_instances.csv"
+    drug_meta: "data/cmap_drug_experiments_new.csv"
+    drug_valid: "data/cmap_valid_instances.csv"
     out_dir: "results"
   params:
     gene_key: "SYMBOL"
@@ -306,7 +307,7 @@ Sweep_CoreFibroid:
     mode: "sweep"                # Enable sweep mode
     sweep_cutoffs: null          # Let auto-derive from data
     sweep_auto_grid: true        # Auto-derive threshold grid
-    sweep_step: 0.1             # Step size for auto-grid
+    sweep_step: 0.6             # Step size for auto-grid
     sweep_min_frac: 0.10         # Minimum 10% of genes
     sweep_min_genes: 150         # Minimum 150 genes
     sweep_stop_on_small: false   # Continue sweep even if signature becomes small
@@ -324,8 +325,8 @@ production:
     signatures: "/data/cmap_signatures.RData"
     disease_dir: "/data/disease/"
     disease_pattern: "Fibroid.*\\.csv"
-    cmap_meta: "/data/cmap_drug_experiments_new.csv"
-    cmap_valid: "/data/cmap_valid_instances.csv"
+    drug_meta: "/data/cmap_drug_experiments_new.csv"
+    drug_valid: "/data/cmap_valid_instances.csv"
     out_dir: "/results/drugrep"
   params:
     gene_key: "SYMBOL"
@@ -344,4 +345,61 @@ production:
     robust_rule: "all"
     robust_k: null
     aggregate: "mean"
+    weights: null
+
+
+
+
+Tahoe_Chronic_granulomatous_disease_0.00:
+  paths:
+    signatures: "data/drug_rep_tahoe_ranks_shared_genes_drugs.RData"
+    disease_file: "/Users/enockniyonkuru/Desktop/tahoe_analysis/data/disease_signature/creeds_disease_signature/Chronic_granulomatous_disease_signature.csv"
+    drug_meta: "data/tahoe_drug_experiments_new.csv"  # Use tahoe metadata for tahoe experiments
+    drug_valid: null  # Do NOT filter by drug validation instances
+    out_dir: "results"
+  params:
+    gene_key: "gene_symbol"
+    logfc_cols_pref: "common_experiment"
+    logfc_cutoff: 0.00
+    pval_key: null      
+    pval_cutoff: 0.05        # P-value threshold for filtering genes
+    q_thresh: 1.0            # Changed from 0.00 to 1.0 to accept all q-values
+    reversal_only: false     # Changed from true to false to accept both reversal and mimicry
+    seed: 123
+    mode: "single"
+    analysis_id: "tahoe"     # Identify this as TAHOE analysis
+    sweep_cutoffs: null
+    sweep_min_frac: 0.20
+    sweep_min_genes: 200
+    combine_log2fc: null
+    robust_rule: "all"
+    robust_k: null
+    aggregate: null
+    weights: null
+
+CMAP_Chronic_granulomatous_disease_0.00:
+  paths:
+    signatures: "data/drug_rep_cmap_ranks_shared_genes_drugs.RData"
+    disease_file: "/Users/enockniyonkuru/Desktop/tahoe_analysis/data/disease_signature/creeds_disease_signature/Chronic_granulomatous_disease_signature.csv"
+    drug_meta: "data/cmap_drug_experiments_new.csv"  # Use cmap metadata for cmap experiments
+    drug_valid: null  # Do NOT filter by drug validation instances
+    out_dir: "results"
+  params:
+    gene_key: "gene_symbol"
+    logfc_cols_pref: "common_experiment"
+    logfc_cutoff: 0.00
+    pval_key: null
+    pval_cutoff: 0.05        
+    q_thresh: 1.0            # Changed from 0.00 to 1.0 to accept all q-values
+    reversal_only: false     # Changed from true to false to accept both reversal and mimicry
+    seed: 123
+    mode: "single"
+    analysis_id: "CMAP"     
+    sweep_cutoffs: null
+    sweep_min_frac: 0.20
+    sweep_min_genes: 200
+    combine_log2fc: null
+    robust_rule: "all"
+    robust_k: null
+    aggregate: null
     weights: null

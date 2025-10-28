@@ -27,8 +27,11 @@ drp <- DRP$new(
   signatures_rdata = cfg$paths$signatures,
   disease_path     = disease_path,
   disease_pattern  = disease_pattern,
+  # Handle both old and new parameter names for backward compatibility
   cmap_meta_path   = cfg$paths$cmap_meta %||% NULL,
   cmap_valid_path  = cfg$paths$cmap_valid %||% NULL,
+  drug_meta_path   = cfg$paths$drug_meta %||% NULL,
+  drug_valid_path  = cfg$paths$drug_valid %||% NULL,
   out_dir          = out,
   gene_key         = cfg$params$gene_key %||% "SYMBOL",
   logfc_cols_pref  = cfg$params$logfc_cols_pref %||% "log2FC",
@@ -39,6 +42,7 @@ drp <- DRP$new(
   reversal_only    = isTRUE(cfg$params$reversal_only %||% TRUE),
   seed             = cfg$params$seed %||% 123,
   verbose          = TRUE,
+  analysis_id      = cfg$params$analysis_id %||% "cmap",
   # New sweep mode parameters
   mode             = cfg$params$mode %||% "single",
   sweep_cutoffs    = cfg$params$sweep_cutoffs %||% NULL,

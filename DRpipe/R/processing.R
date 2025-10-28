@@ -287,9 +287,10 @@ query_score <- function(cmap_signatures, dz_genes_up, dz_genes_down) {
 #' @param rand_cmap_scores numeric vector of null scores from random_score()
 #' @param dz_cmap_scores numeric vector of observed scores from query_score()
 #' @param subset_comparison_id string label for this query (e.g., dataset name)
+#' @param analysis_id string label for the analysis type (default: "cmap")
 #' @return data.frame with experiment id, score, p, q, subset_comparison_id, analysis_id
 #' @export
-query <- function(rand_cmap_scores, dz_cmap_scores, subset_comparison_id) {
+query <- function(rand_cmap_scores, dz_cmap_scores, subset_comparison_id, analysis_id = "cmap") {
     # --- Two-sided p-values from the empirical null (frequency method) --------
     message("COMPUTING p-values")
     p_values <- sapply(dz_cmap_scores, function(score) {
@@ -300,8 +301,7 @@ query <- function(rand_cmap_scores, dz_cmap_scores, subset_comparison_id) {
     message("COMPUTING q-values")
     q_values <- qvalue::qvalue(p_values)$qvalues
 
-    # Annotate result set
-    analysis_id <- "cmap"
+    # Annotate result set with provided analysis_id
     drugs <- data.frame(
         exp_id = seq_along(dz_cmap_scores),
         cmap_score = dz_cmap_scores,

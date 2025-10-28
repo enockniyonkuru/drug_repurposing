@@ -11,8 +11,10 @@ DRP <- R6::R6Class(
     signatures_rdata = NULL,     # e.g. "scripts/data/cmap_signatures.RData"
     disease_path     = NULL,     # CSV path OR directory
     disease_pattern  = NULL,     # used if disease_path is a directory
-    cmap_meta_path   = NULL,     # "scripts/data/cmap_drug_experiments_new.csv"
-    cmap_valid_path  = NULL,     # "scripts/data/cmap_valid_instances.csv"
+    cmap_meta_path   = NULL,     # "scripts/data/cmap_drug_experiments_new.csv" (DEPRECATED - use drug_meta_path)
+    cmap_valid_path  = NULL,     # "scripts/data/cmap_valid_instances.csv" (DEPRECATED - use drug_valid_path)
+    drug_meta_path   = NULL,     # "scripts/data/drug_experiments.csv" (generic drug metadata)
+    drug_valid_path  = NULL,     # "scripts/data/drug_valid_instances.csv" (generic drug validation)
     out_dir          = "scripts/results",
     gene_key         = "SYMBOL",
     logfc_cols_pref  = "log2FC",
@@ -23,6 +25,7 @@ DRP <- R6::R6Class(
     reversal_only    = TRUE,
     seed             = 123,
     verbose          = TRUE,
+    analysis_id      = "cmap",   # "cmap" or "tahoe" - identifies the signature type
     
     # --------- new sweep mode configuration ---------
     mode             = "single",
@@ -82,6 +85,8 @@ DRP <- R6::R6Class(
       disease_pattern = NULL,
       cmap_meta_path  = NULL,
       cmap_valid_path = NULL,
+      drug_meta_path  = NULL,
+      drug_valid_path = NULL,
       out_dir         = "scripts/results",
       gene_key        = "SYMBOL",
       logfc_cols_pref = "log2FC",
@@ -92,6 +97,7 @@ DRP <- R6::R6Class(
       reversal_only   = TRUE,
       seed            = 123,
       verbose         = TRUE,
+      analysis_id     = "cmap",
       mode            = c("single", "sweep"),
       sweep_cutoffs   = NULL,
       sweep_auto_grid = TRUE,
@@ -120,8 +126,29 @@ DRP <- R6::R6Class(
       self$signatures_rdata <- io_resolve_path(signatures_rdata)
       self$disease_path     <- io_resolve_path(disease_path)
       self$disease_pattern  <- disease_pattern
-      self$cmap_meta_path   <- if (!is.null(cmap_meta_path)) io_resolve_path(cmap_meta_path) else NULL
-      self$cmap_valid_path  <- if (!is.null(cmap_valid_path)) io_resolve_path(cmap_valid_path) else NULL
+      
+      # Handle both old and new parameter names for backward compatibility
+      # Priority: new names > old names > NULL
+      self$cmap_meta_path   <- if (!is.null(drug_meta_path)) {
+        io_resolve_path(drug_meta_path)
+      } else if (!is.null(cmap_meta_path)) {
+        io_resolve_path(cmap_meta_path)
+      } else {
+        NULL
+      }
+      
+      self$cmap_valid_path  <- if (!is.null(drug_valid_path)) {
+        io_resolve_path(drug_valid_path)
+      } else if (!is.null(cmap_valid_path)) {
+        io_resolve_path(cmap_valid_path)
+      } else {
+        NULL
+      }
+      
+      # Store new parameter names as well
+      self$drug_meta_path   <- self$cmap_meta_path
+      self$drug_valid_path  <- self$cmap_valid_path
+      
       self$out_dir          <- io_resolve_path(out_dir)
       self$gene_key         <- gene_key
       self$logfc_cols_pref  <- logfc_cols_pref
@@ -132,6 +159,7 @@ DRP <- R6::R6Class(
       self$reversal_only    <- reversal_only
       self$seed             <- seed
       self$verbose          <- verbose
+      self$analysis_id      <- analysis_id
       
       # New parameters with validation
       self$mode            <- match.arg(mode)
@@ -176,7 +204,7 @@ DRP <- R6::R6Class(
 
     # --------- steps: processing ---------
     load_cmap = function() {
-      self$log("Loading CMAP signatures: %s", self$signatures_rdata)
+      self$log("Loading drug signatures (%s): %s", self$analysis_id, self$signatures_rdata)
       stopifnot(file.exists(self$signatures_rdata))
       env <- new.env(parent = emptyenv())
       load(self$signatures_rdata, envir = env)
@@ -447,22 +475,37 @@ DRP <- R6::R6Class(
 
     # --------- steps: analysis / reporting ---------
     annotate_and_filter = function() {
-      if (is.null(self$cmap_meta_path) || is.null(self$cmap_valid_path)) {
-        self$log("Skipping annotation (metadata paths not provided).")
+      if (is.null(self$cmap_meta_path)) {
+        self$log("Skipping annotation (metadata path not provided).")
         self$drugs_valid <- self$drugs
         return(invisible(self))
       }
-      self$log("Annotating with CMAP metadata...")
-      cmap_experiments <- utils::read.csv(self$cmap_meta_path,  stringsAsFactors = FALSE)
-      valid_instances  <- utils::read.csv(self$cmap_valid_path, stringsAsFactors = FALSE)
-      cmap_experiments_valid <- merge(cmap_experiments, valid_instances, by = "id")
-      cmap_experiments_valid <- subset(cmap_experiments_valid, valid == 1 & DrugBank.ID != "NULL")
+      
+      self$log("Annotating with drug metadata (%s)...", self$analysis_id)
+      cmap_experiments <- utils::read.csv(self$cmap_meta_path, stringsAsFactors = FALSE)
+      
+      # If cmap_valid_path is provided, use it for filtering
+      if (!is.null(self$cmap_valid_path)) {
+        valid_instances  <- utils::read.csv(self$cmap_valid_path, stringsAsFactors = FALSE)
+        cmap_experiments_valid <- merge(cmap_experiments, valid_instances, by = "id")
+        cmap_experiments_valid <- subset(cmap_experiments_valid, valid == 1 & DrugBank.ID != "NULL")
+      } else {
+        # If no validation file, use all experiments from metadata
+        cmap_experiments_valid <- cmap_experiments
+      }
 
-      dv <- merge(self$drugs, cmap_experiments_valid, by.x = "exp_id", by.y = "id", all.x = TRUE)
+      dv <- merge(self$drugs, cmap_experiments_valid, by.x = "exp_id", by.y = "id", all.x = FALSE)
+      
+      # Remove any rows with NA in the name column immediately after merge
+      if ("name" %in% names(dv)) {
+        dv <- dv[!is.na(dv$name) & dv$name != "", ]
+      }
+      
       if (self$reversal_only) dv <- subset(dv, cmap_score < 0)
       dv <- subset(dv, q < self$q_thresh)
-
-      if ("name" %in% names(dv)) {
+      
+      # Deduplicate by drug name
+      if ("name" %in% names(dv) && nrow(dv) > 0) {
         dv <- dv |>
           dplyr::group_by(name) |>
           dplyr::slice(which.min(cmap_score)) |>
@@ -522,7 +565,8 @@ DRP <- R6::R6Class(
       
       if (!is.null(self$drugs_valid)) {
         utils::write.csv(self$drugs_valid,
-          file = file.path(self$out_dir, sprintf("%s_hits_q<%.2f.csv", self$dataset_label, self$q_thresh)),
+          file = file.path(self$out_dir, sprintf("%s_hits_logFC_%.2f_q<%.2f.csv", 
+                                                  self$dataset_label, self$logfc_cutoff, self$q_thresh)),
           row.names = FALSE
         )
       }
@@ -547,7 +591,8 @@ DRP <- R6::R6Class(
         self$drugs <- query(
           self$rand_scores,
           self$obs_scores,
-          subset_comparison_id = sprintf("%s_logFC_%s", self$dataset_label, self$logfc_cutoff)
+          subset_comparison_id = sprintf("%s_logFC_%s", self$dataset_label, self$logfc_cutoff),
+          analysis_id = self$analysis_id
         )
         
       } else if (self$combine_log2fc == "each") {
@@ -567,7 +612,8 @@ DRP <- R6::R6Class(
           drugs <- query(
             rand_scores,
             obs_scores,
-            subset_comparison_id = sprintf("%s_%s_logFC_%s", self$dataset_label, sig_name, self$logfc_cutoff)
+            subset_comparison_id = sprintf("%s_%s_logFC_%s", self$dataset_label, sig_name, self$logfc_cutoff),
+            analysis_id = self$analysis_id
           )
           
           all_results[[sig_name]] <- drugs
@@ -584,6 +630,9 @@ DRP <- R6::R6Class(
                                        self$dz_signature_list[[1]]$up_ids, 
                                        self$dz_signature_list[[1]]$down_ids)
       }
+      
+      # Annotate and filter after scoring
+      self$annotate_and_filter()
       
       invisible(self)
     },
@@ -776,10 +825,17 @@ DRP <- R6::R6Class(
             cmap_experiments_valid <- merge(cmap_experiments, valid_instances, by = "id")
             cmap_experiments_valid <- subset(cmap_experiments_valid, valid == 1 & DrugBank.ID != "NULL")
             
-            drugs_valid <- merge(drugs, cmap_experiments_valid, by.x = "exp_id", by.y = "id", all.x = TRUE)
+            drugs_valid <- merge(drugs, cmap_experiments_valid, by.x = "exp_id", by.y = "id", all.x = FALSE)
+            
+            # Remove any rows with NA in the name column immediately after merge
+            if ("name" %in% names(drugs_valid)) {
+              drugs_valid <- drugs_valid[!is.na(drugs_valid$name) & drugs_valid$name != "", ]
+            }
+            
             if (self$reversal_only) drugs_valid <- subset(drugs_valid, cmap_score < 0)
             drugs_valid <- subset(drugs_valid, q < self$q_thresh)
             
+            # Deduplicate by drug name
             if ("name" %in% names(drugs_valid) && nrow(drugs_valid) > 0) {
               drugs_valid <- drugs_valid |>
                 dplyr::group_by(name) |>
@@ -1352,8 +1408,10 @@ DRP <- R6::R6Class(
 #' @param signatures_rdata Path to RData containing `cmap_signatures`
 #' @param disease_path     CSV path OR directory containing the disease file
 #' @param disease_pattern  Pattern to locate CSV inside a directory
-#' @param cmap_meta_path   Path to CMAP experiment metadata CSV (optional)
-#' @param cmap_valid_path  Path to CMAP valid instances CSV (optional)
+#' @param cmap_meta_path   Path to CMAP experiment metadata CSV (optional, DEPRECATED)
+#' @param cmap_valid_path  Path to CMAP valid instances CSV (optional, DEPRECATED)
+#' @param drug_meta_path   Path to drug experiment metadata CSV (optional)
+#' @param drug_valid_path  Path to drug valid instances CSV (optional)
 #' @param out_dir          Output directory
 #' @param gene_key         Column name for gene identifiers (default: "SYMBOL")
 #' @param logfc_cols_pref  Prefix for log fold change columns (default: "log2FC")
@@ -1371,6 +1429,8 @@ run_dr <- function(
   disease_pattern = NULL,
   cmap_meta_path = NULL,
   cmap_valid_path = NULL,
+  drug_meta_path = NULL,
+  drug_valid_path = NULL,
   out_dir = "scripts/results",
   gene_key = "SYMBOL",
   logfc_cols_pref = "log2FC",
@@ -1387,6 +1447,8 @@ run_dr <- function(
     disease_pattern  = disease_pattern,
     cmap_meta_path   = cmap_meta_path,
     cmap_valid_path  = cmap_valid_path,
+    drug_meta_path   = drug_meta_path,
+    drug_valid_path  = drug_valid_path,
     out_dir          = out_dir,
     gene_key         = gene_key,
     logfc_cols_pref  = logfc_cols_pref,
