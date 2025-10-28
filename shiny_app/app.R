@@ -1017,33 +1017,35 @@ server <- function(input, output, session) {
             mode = profile_config$params$mode %||% "single"
           )
           
-          # Add sweep parameters if they exist
-          if (!is.null(profile_config$params$sweep_auto_grid)) {
-            drp_args$sweep_auto_grid <- profile_config$params$sweep_auto_grid
-          }
-          if (!is.null(profile_config$params$sweep_step)) {
-            drp_args$sweep_step <- profile_config$params$sweep_step
-          }
-          if (!is.null(profile_config$params$sweep_min_frac)) {
-            drp_args$sweep_min_frac <- profile_config$params$sweep_min_frac
-          }
-          if (!is.null(profile_config$params$sweep_min_genes)) {
-            drp_args$sweep_min_genes <- profile_config$params$sweep_min_genes
-          }
-          if (!is.null(profile_config$params$sweep_stop_on_small)) {
-            drp_args$sweep_stop_on_small <- profile_config$params$sweep_stop_on_small
-          }
-          if (!is.null(profile_config$params$combine_log2fc)) {
-            drp_args$combine_log2fc <- profile_config$params$combine_log2fc
-          }
-          if (!is.null(profile_config$params$robust_rule)) {
-            drp_args$robust_rule <- profile_config$params$robust_rule
-          }
-          if (!is.null(profile_config$params$robust_k)) {
-            drp_args$robust_k <- profile_config$params$robust_k
-          }
-          if (!is.null(profile_config$params$aggregate)) {
-            drp_args$aggregate <- profile_config$params$aggregate
+          # Add sweep parameters ONLY if mode is "sweep"
+          if (drp_args$mode == "sweep") {
+            if (!is.null(profile_config$params$sweep_auto_grid)) {
+              drp_args$sweep_auto_grid <- profile_config$params$sweep_auto_grid
+            }
+            if (!is.null(profile_config$params$sweep_step)) {
+              drp_args$sweep_step <- profile_config$params$sweep_step
+            }
+            if (!is.null(profile_config$params$sweep_min_frac)) {
+              drp_args$sweep_min_frac <- profile_config$params$sweep_min_frac
+            }
+            if (!is.null(profile_config$params$sweep_min_genes)) {
+              drp_args$sweep_min_genes <- profile_config$params$sweep_min_genes
+            }
+            if (!is.null(profile_config$params$sweep_stop_on_small)) {
+              drp_args$sweep_stop_on_small <- profile_config$params$sweep_stop_on_small
+            }
+            if (!is.null(profile_config$params$combine_log2fc)) {
+              drp_args$combine_log2fc <- profile_config$params$combine_log2fc
+            }
+            if (!is.null(profile_config$params$robust_rule)) {
+              drp_args$robust_rule <- profile_config$params$robust_rule
+            }
+            if (!is.null(profile_config$params$robust_k)) {
+              drp_args$robust_k <- profile_config$params$robust_k
+            }
+            if (!is.null(profile_config$params$aggregate)) {
+              drp_args$aggregate <- profile_config$params$aggregate
+            }
           }
           
           drp <- do.call(DRP$new, drp_args)
