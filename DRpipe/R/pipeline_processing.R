@@ -487,14 +487,31 @@ DRP <- R6::R6Class(
       # If cmap_valid_path is provided, use it for filtering
       if (!is.null(self$cmap_valid_path)) {
         valid_instances  <- utils::read.csv(self$cmap_valid_path, stringsAsFactors = FALSE)
-        cmap_experiments_valid <- merge(cmap_experiments, valid_instances, by = "id")
+        
+        # Check if 'id' column exists in both dataframes before merging
+        if (!"id" %in% names(cmap_experiments)) {
+          stop("Column 'id' not found in cmap_experiments metadata")
+        }
+        if (!"id" %in% names(valid_instances)) {
+          stop("Column 'id' not found in valid_instances")
+        }
+        
+        cmap_experiments_valid <- merge(cmap_experiments, valid_instances, by = "id", all.x = FALSE, all.y = FALSE)
         cmap_experiments_valid <- subset(cmap_experiments_valid, valid == 1 & DrugBank.ID != "NULL")
       } else {
         # If no validation file, use all experiments from metadata
         cmap_experiments_valid <- cmap_experiments
       }
+      
+      # Verify required columns exist before merge
+      if (!"exp_id" %in% names(self$drugs)) {
+        stop("Column 'exp_id' not found in drugs dataframe")
+      }
+      if (!"id" %in% names(cmap_experiments_valid)) {
+        stop("Column 'id' not found in cmap_experiments_valid")
+      }
 
-      dv <- merge(self$drugs, cmap_experiments_valid, by.x = "exp_id", by.y = "id", all.x = FALSE)
+      dv <- merge(self$drugs, cmap_experiments_valid, by.x = "exp_id", by.y = "id", all.x = FALSE, all.y = FALSE)
       
       # Remove any rows with NA in the name column immediately after merge
       if ("name" %in% names(dv)) {

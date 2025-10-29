@@ -360,7 +360,13 @@ server <- function(input, output, session) {
       "Filtered CMAP" = "../scripts/data/drug_rep_cmap_ranks_shared_genes_drugs.RData",
       "Filtered TAHOE" = "../scripts/data/drug_rep_tahoe_ranks_shared_genes_drugs.RData"
     ),
-    selected_drug_signature = "../scripts/data/cmap_signatures.RData"
+    selected_drug_signature = "../scripts/data/cmap_signatures.RData",
+    # Sweep mode specific results
+    drp_object = NULL,
+    is_sweep_mode = FALSE,
+    sweep_robust_hits = NULL,
+    sweep_cutoff_summary = NULL,
+    sweep_img_dir = NULL
   )
   
   # Load configuration profiles on startup
@@ -943,19 +949,49 @@ server <- function(input, output, session) {
         incProgress(0.3)
         if (drp$mode == "single") {
           drp$run_single()
+          # Single mode needs explicit annotation
+          values$analysisLog <- paste0(values$analysisLog, "Annotating results...\n")
+          incProgress(0.2)
+          drp$annotate_and_filter()
         } else {
+          # Sweep mode handles annotation internally during parallel processing
           drp$run_sweep()
+          incProgress(0.2)
         }
         
-        values$analysisLog <- paste0(values$analysisLog, "Annotating results...\n")
-        incProgress(0.2)
-        drp$annotate_and_filter()
+        # Store the DRP object to access sweep results
+        values$drp_object <- drp
+        values$is_sweep_mode <- (drp$mode == "sweep")
         
-        values$results <- drp$drugs
-        values$drugs_valid <- drp$drugs_valid
+        # For sweep mode, capture sweep-specific results
+        if (values$is_sweep_mode) {
+          values$sweep_robust_hits <- drp$robust_hits
+          values$sweep_cutoff_summary <- drp$cutoff_summary
+          values$sweep_img_dir <- file.path(drp$out_dir, "img")
+          
+          # Use robust_hits as drugs_valid for compatibility
+          if (!is.null(drp$robust_hits) && nrow(drp$robust_hits) > 0) {
+            values$drugs_valid <- data.frame(
+              name = drp$robust_hits$name,
+              cmap_score = drp$robust_hits$aggregated_score,
+              q = drp$robust_hits$min_q,
+              n_support = drp$robust_hits$n_support,
+              stringsAsFactors = FALSE
+            )
+            values$results <- values$drugs_valid
+          } else {
+            values$drugs_valid <- data.frame()
+            values$results <- data.frame()
+          }
+        } else {
+          # Single mode: use drugs_valid as normal
+          values$results <- drp$drugs
+          values$drugs_valid <- drp$drugs_valid
+        }
         
+        hit_count <- if (!is.null(values$drugs_valid)) nrow(values$drugs_valid) else 0
         values$analysisLog <- paste0(values$analysisLog, "\nComplete! Found ", 
-                                     nrow(drp$drugs_valid), " significant hits.\n")
+                                     hit_count, " significant hits.\n")
         
         showNotification("Analysis complete!", type = "message")
         updateTabItems(session, "sidebar", "results")
@@ -1054,11 +1090,12 @@ server <- function(input, output, session) {
           
           if (drp$mode == "single") {
             drp$run_single()
+            # Single mode needs explicit annotation
+            drp$annotate_and_filter()
           } else {
+            # Sweep mode handles annotation internally
             drp$run_sweep()
           }
-          
-          drp$annotate_and_filter()
           
           if (!is.null(drp$drugs_valid) && nrow(drp$drugs_valid) > 0) {
             drp$drugs_valid$profile <- profile_name
@@ -1148,32 +1185,73 @@ server <- function(input, output, session) {
   # Dynamic plots UI
   output$plotsUI <- renderUI({
     if (values$analysis_type == "single") {
-      fluidRow(
-        box(
-          title = "Top Drugs by CMap Score",
-          width = 12,
-          status = "primary",
-          solidHeader = TRUE,
-          sliderInput("topN", "Number of drugs:", min = 5, max = 30, value = 15),
-          plotlyOutput("topDrugsPlot", height = "500px")
-        ),
-        
-        box(
-          title = "Score Distribution",
-          width = 6,
-          status = "info",
-          solidHeader = TRUE,
-          plotlyOutput("scoreDist", height = "400px")
-        ),
-        
-        box(
-          title = "Volcano Plot",
-          width = 6,
-          status = "info",
-          solidHeader = TRUE,
-          plotlyOutput("volcanoPlot", height = "400px")
+      # Check if sweep mode to show additional sweep-specific visualizations
+      if (values$is_sweep_mode && !is.null(values$sweep_robust_hits)) {
+        fluidRow(
+          box(
+            title = "Top Drugs by CMap Score",
+            width = 12,
+            status = "primary",
+            solidHeader = TRUE,
+            sliderInput("topN", "Number of drugs:", min = 5, max = 30, value = 15),
+            plotlyOutput("topDrugsPlot", height = "500px")
+          ),
+          
+          box(
+            title = "Score Distribution",
+            width = 6,
+            status = "info",
+            solidHeader = TRUE,
+            plotlyOutput("scoreDist", height = "400px")
+          ),
+          
+          box(
+            title = "Sweep Mode: Cutoff Performance",
+            width = 6,
+            status = "warning",
+            solidHeader = TRUE,
+            p("Interactive visualization of threshold performance"),
+            plotlyOutput("sweepCutoffPlot", height = "400px")
+          ),
+          
+          box(
+            title = "Sweep Mode: Threshold Summary Table",
+            width = 12,
+            status = "info",
+            solidHeader = TRUE,
+            p("Detailed performance metrics for each log2FC threshold tested"),
+            DTOutput("sweepCutoffTable")
+          )
         )
-      )
+      } else {
+        # Standard single mode plots
+        fluidRow(
+          box(
+            title = "Top Drugs by CMap Score",
+            width = 12,
+            status = "primary",
+            solidHeader = TRUE,
+            sliderInput("topN", "Number of drugs:", min = 5, max = 30, value = 15),
+            plotlyOutput("topDrugsPlot", height = "500px")
+          ),
+          
+          box(
+            title = "Score Distribution",
+            width = 6,
+            status = "info",
+            solidHeader = TRUE,
+            plotlyOutput("scoreDist", height = "400px")
+          ),
+          
+          box(
+            title = "Volcano Plot",
+            width = 6,
+            status = "info",
+            solidHeader = TRUE,
+            plotlyOutput("volcanoPlot", height = "400px")
+          )
+        )
+      }
     } else {
       fluidRow(
         box(
@@ -1456,6 +1534,103 @@ server <- function(input, output, session) {
       write.csv(combined, file, row.names = FALSE)
     }
   )
+  
+  # Sweep mode specific outputs
+  output$sweepCutoffTable <- renderDT({
+    req(values$sweep_cutoff_summary)
+    datatable(values$sweep_cutoff_summary, 
+             options = list(scrollX = TRUE, pageLength = 10),
+             caption = "Performance metrics for each log2FC threshold tested")
+  })
+  
+  # Interactive sweep cutoff performance plot
+  output$sweepCutoffPlot <- renderPlotly({
+    req(values$sweep_cutoff_summary)
+    
+    # Create subplot with two y-axes
+    fig <- plot_ly(data = values$sweep_cutoff_summary)
+    
+    # Add trace for number of hits
+    fig <- fig %>% add_trace(
+      x = ~cutoff,
+      y = ~n_hits,
+      name = "Number of Hits",
+      type = "scatter",
+      mode = "lines+markers",
+      line = list(color = "steelblue", width = 3),
+      marker = list(size = 10, color = "steelblue"),
+      hovertemplate = paste(
+        "<b>Cutoff:</b> %{x}<br>",
+        "<b>Hits:</b> %{y}<br>",
+        "<extra></extra>"
+      )
+    )
+    
+    # Add trace for median q-value on secondary y-axis
+    fig <- fig %>% add_trace(
+      x = ~cutoff,
+      y = ~median_q,
+      name = "Median Q-value",
+      type = "scatter",
+      mode = "lines+markers",
+      yaxis = "y2",
+      line = list(color = "darkred", width = 3, dash = "dash"),
+      marker = list(size = 10, color = "darkred"),
+      hovertemplate = paste(
+        "<b>Cutoff:</b> %{x}<br>",
+        "<b>Median Q:</b> %{y:.4f}<br>",
+        "<extra></extra>"
+      )
+    )
+    
+    # Add horizontal line for q-value threshold
+    fig <- fig %>% add_trace(
+      x = values$sweep_cutoff_summary$cutoff,
+      y = rep(0.05, nrow(values$sweep_cutoff_summary)),
+      name = "Q-value Threshold (0.05)",
+      type = "scatter",
+      mode = "lines",
+      yaxis = "y2",
+      line = list(color = "gray", width = 2, dash = "dot"),
+      hoverinfo = "skip",
+      showlegend = TRUE
+    )
+    
+    # Layout with dual y-axes
+    fig <- fig %>% layout(
+      title = "Sweep Mode: Threshold Performance",
+      xaxis = list(
+        title = "Log2FC Cutoff Threshold",
+        gridcolor = "lightgray"
+      ),
+      yaxis = list(
+        title = "Number of Hits",
+        titlefont = list(color = "steelblue"),
+        tickfont = list(color = "steelblue"),
+        gridcolor = "lightgray"
+      ),
+      yaxis2 = list(
+        title = "Median Q-value",
+        titlefont = list(color = "darkred"),
+        tickfont = list(color = "darkred"),
+        overlaying = "y",
+        side = "right",
+        gridcolor = "transparent"
+      ),
+      hovermode = "x unified",
+      legend = list(
+        x = 0.02,
+        y = 0.98,
+        bgcolor = "rgba(255,255,255,0.8)",
+        bordercolor = "gray",
+        borderwidth = 1
+      ),
+      plot_bgcolor = "white",
+      paper_bgcolor = "white"
+    )
+    
+    fig
+  })
 }
 
 # Run app

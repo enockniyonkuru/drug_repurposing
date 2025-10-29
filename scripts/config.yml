@@ -7,7 +7,7 @@
 # Execution configuration - specify which profiles/operations to run
 execution:
   # Profile to use for runall.R (single profile execution)
-  runall_profile: "CMAP_Chronic_granulomatous_disease_0.00"
+  runall_profile: "Sweep_CoreFibroid"
 
   # runall_profile: "Tahoe_Chronic_granulomatous_disease_0.00"
 
@@ -403,3 +403,8 @@ CMAP_Chronic_granulomatous_disease_0.00:
     robust_k: null
     aggregate: null
     weights: null
+
+
+
+
+
