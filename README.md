@@ -1,137 +1,287 @@
 # Drug Repurposing Analysis Pipeline
 
-A comprehensive R package for drug repurposing analysis using disease gene expression signatures and the Connectivity Map (CMap) to identify potential therapeutic compounds.
+A comprehensive R package and Shiny application for drug repurposing analysis using disease gene expression signatures and the Connectivity Map (CMap) to identify potential therapeutic compounds.
 
 This pipeline identifies existing drugs that could be repurposed for new therapeutic applications by analyzing their ability to reverse disease-associated gene expression patterns using the Connectivity Map database.
 
 ---
 
 ## Table of Contents
-1. [Project Overview](#1-project-overview)  
-2. [Repository Structure](#2-repository-structure)  
-3. [Prerequisites](#3-prerequisites)  
-4. [Installation](#4-installation)  
-5. [Quick Start Guide](#5-quick-start-guide)  
-6. [Working Directory Setup](#6-working-directory-setup)
-7. [Understanding Configuration](#7-understanding-configuration)
-8. [Three Main Functionalities](#8-three-main-functionalities)  
-9. [Running via Shiny App (GUI Alternative)](#9-running-via-shiny-app-gui-alternative)
-10. [Configuration Reference](#10-configuration-reference)  
-11. [Data Formats](#11-data-formats)  
-12. [Customizing for Your Dataset](#12-customizing-for-your-dataset)  
-13. [Advanced Topics](#13-advanced-topics)
-14. [Troubleshooting](#14-troubleshooting)
-15. [Methodology](#15-methodology)  
-16. [Citation & License](#16-citation--license)
+1. [What This Repository Does](#1-what-this-repository-does)
+2. [Core Functionalities](#2-core-functionalities)
+3. [Two Ways to Use This Repository](#3-two-ways-to-use-this-repository)
+4. [Getting Started](#4-getting-started)
+5. [Prerequisites & Installation](#5-prerequisites--installation)
+6. [Using the R Package](#6-using-the-r-package)
+7. [Using the Shiny App](#7-using-the-shiny-app)
+8. [Repository Structure](#8-repository-structure)
+9. [Configuration Reference](#9-configuration-reference)
+10. [Data Formats](#10-data-formats)
+11. [Troubleshooting](#11-troubleshooting)
+12. [Methodology](#12-methodology)
+13. [Citation & License](#13-citation--license)
 
 ---
 
-## 1. Project Overview
+## 1. What This Repository Does
 
-**DRpipe** provides three main analysis modes:
+**DRpipe** is a drug repurposing analysis pipeline that helps researchers identify existing drugs that could be repurposed for new therapeutic applications. The pipeline:
 
-1. **Single Profile Analysis** - Run end-to-end drug repurposing analysis with one parameter set
-2. **Profile Comparison** - Compare results across multiple parameter configurations
-3. **Sweep Mode** - Test multiple fold-change cutoffs simultaneously for robust drug discovery
+- **Analyzes disease gene expression signatures** to identify up-regulated and down-regulated genes
+- **Compares disease signatures against the Connectivity Map (CMap)** database of drug-induced gene expression profiles
+- **Identifies drugs that reverse disease signatures** (negative connectivity scores indicate therapeutic potential)
+- **Provides statistical significance testing** using permutation-based methods and FDR correction
+- **Generates comprehensive visualizations** including heatmaps, score distributions, and overlap analyses
+- **Supports multiple analysis modes** for robust drug discovery and parameter sensitivity testing
 
-The pipeline uses the Connectivity Map (CMap) database to find compounds that produce transcriptional signatures opposite to those observed in disease states.
-
----
-
-## 2. Repository Structure
-
-```
-drug_repurposing/
-├── README.md                          # This file
-├── DRpipe/                            # R package
-│   ├── DESCRIPTION, NAMESPACE, LICENSE
-│   └── R/
-│       ├── processing.R               # Core processing functions
-│       ├── analysis.R                 # Plotting/summary helpers
-│       ├── pipeline_processing.R      # DRP class + run_dr()
-│       ├── pipeline_analysis.R        # DRA class + analyze_runs()
-│       ├── io_config.R                # Config & IO helpers
-│       ├── cli.R                      # Command-line interface
-│       └── zzz-imports.R
-├── scripts/                           # Analysis scripts
-│   ├── config.yml                     # Configuration file
-│   ├── load_execution_config.R        # Config management helper
-│   ├── runall.R                       # Single profile analysis
-│   ├── compare_profiles.R             # Profile comparison
-│   ├── data/                          # Input data
-│   └── results/                       # Output directory
-└── dump/                              # Archived/development files
-```
+**Key Concept**: The pipeline finds drugs whose gene expression effects are *opposite* to the disease state, suggesting they may reverse the disease phenotype.
 
 ---
 
-## 3. Prerequisites
+## 2. Core Functionalities
 
-**Required:**
-- R ≥ 4.2
-- Required packages (auto-installed with DRpipe):
-  - `R6`, `dplyr`, `config`, `docopt`, `qvalue`, `pbapply`
+### 2.1 Single Analysis
 
-**Optional (for visualizations):**
-- `pheatmap`, `UpSetR`, `gplots`, `grid`
+Run a complete drug repurposing analysis with one parameter configuration.
 
+**Two Modes:**
+
+#### Single Cutoff Mode
+- Uses one fold-change threshold to define disease signature
+- Fast, straightforward analysis
+- Best when you know your optimal parameters
+
+#### Sweep Mode
+- Tests multiple fold-change thresholds simultaneously
+- Identifies robust drug candidates across parameter ranges
+- Reduces parameter bias and increases confidence in results
+- Aggregates results using median or mean scores
+- Just be aware that this can take up to an hour depending on processing power of your laptop
+
+**Use Cases:**
+- Initial exploration of a disease dataset
+- Standard analysis with known parameters
+- Comprehensive parameter exploration (sweep mode)
+
+---
+
+### 2.2 Comparative Analysis
+
+Compare drug repurposing results across multiple parameter configurations or datasets.
+
+**Two Use Cases:**
+
+#### Parameter Sensitivity Analysis
+- Same disease data, different parameters (e.g., different fold-change cutoffs)
+- Understand how parameter choices affect results
+- Identify robust hits that appear across multiple settings
+
+#### Cross-Dataset Comparison
+- Different disease datasets, same parameters
+- Compare drug candidates across related conditions
+- Find drugs with broad therapeutic potential
+
+**Use Cases:**
+- Validating results across parameter ranges
+- Comparing multiple disease subtypes
+- Finding drugs that work across related conditions
+- Publication-ready comparative analyses
+
+---
+
+## 3. Two Ways to Use This Repository
+
+You can interact with this repository in two ways, depending on your preferences and needs:
+
+### 3.1 R Package (DRpipe)
+
+**Best for:**
+- Batch processing multiple datasets
+- Integration into automated workflows
+- Fine-grained control over all parameters
+- Programmatic access to all functions
+- Running on remote servers or HPC clusters
+
+**Access to Core Functionalities:**
+
+| Functionality | How to Access |
+|--------------|---------------|
+| **Single Analysis - Single Cutoff** | `source("scripts/runall.R")` with `mode: "single"` in config |
+| **Single Analysis - Sweep Mode** | `source("scripts/runall.R")` with `mode: "sweep"` in config |
+| **Comparative Analysis** | `source("scripts/compare_profiles.R")` with multiple profiles |
+
+**Environments:**
+- **RStudio**: Interactive development environment (recommended for beginners)
+- **VS Code**: With R extension for code editing and execution
+- **Terminal**: Command-line execution with `Rscript`
+
+---
+
+### 3.2 Shiny App (Interactive GUI)
+
+**Best for:**
+- Users who prefer graphical interfaces
+- Quick parameter testing and exploration
+- Demonstrating results to collaborators
+- Learning the pipeline without coding
+- Interactive visualization of results
+
+**Access to Core Functionalities:**
+
+| Functionality | How to Access |
+|--------------|---------------|
+| **Single Analysis - Single Cutoff** | Select "Single Analysis" → Configure parameters → Uncheck "Enable Sweep Mode" |
+| **Single Analysis - Sweep Mode** | Select "Single Analysis" → Configure parameters → Check "Enable Sweep Mode" |
+| **Comparative Analysis** | Select "Comparative Analysis" → Create/select multiple profiles |
+
+**Environments:**
+- **RStudio**: Launch with `shiny::runApp("shiny_app")`
+- **VS Code**: Launch with R terminal
+- **Terminal**: Launch with `R -e "shiny::runApp('shiny_app')"`
+
+**See [Section 7: Using the Shiny App](#7-using-the-shiny-app) for detailed tutorial**
+
+---
+
+## 4. Getting Started
+
+### 4.1 Quick Start Overview
+
+**5 Steps to Your First Analysis:**
+
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/enockniyonkuru/drug_repurposing.git
+   cd drug_repurposing
+   ```
+
+2. **Download required data files** (see [Section 5.1](#51-required-data-files))
+   - Download `cmap_signatures.RData` from Google Drive
+   - Place in `scripts/data/` directory
+
+3. **Install the R package**
+   ```r
+   devtools::document("DRpipe")
+   devtools::install("DRpipe")
+   ```
+
+4. **Choose your interface:**
+   - **R Package**: Edit `scripts/config.yml` and run `source("scripts/runall.R")`
+   - **Shiny App**: Launch with `shiny::runApp("shiny_app")`
+
+5. **View results** in `scripts/results/` directory
+
+---
+
+### 4.2 Launching from Different Environments
+
+#### Option 1: RStudio (Recommended for Beginners)
+
+**For R Package:**
 ```r
-install.packages(c("pheatmap", "UpSetR", "gplots"))
+# 1. Open RStudio
+# 2. Set working directory: Session > Set Working Directory > Choose Directory
+#    Navigate to: drug_repurposing/scripts
+# 3. Verify location
+getwd()  # Should show: .../drug_repurposing/scripts
+
+# 4. Run analysis
+source("runall.R")  # For single analysis
+source("compare_profiles.R")  # For comparative analysis
 ```
 
-**Data:**
-- CMap/LINCS reference signatures file (`cmap_signatures.RData`)
-- Disease gene expression signature (CSV format)
-- CMap metadata files (optional but recommended)
+**For Shiny App:**
+```r
+# 1. Set working directory to shiny_app folder
+setwd("path/to/drug_repurposing/shiny_app")
 
-See [Section 3.1: Required Data Files](#31-required-data-files) for download instructions.
+# 2. Launch app
+shiny::runApp()
+```
 
 ---
 
-### 3.1 Required Data Files
+#### Option 2: VS Code
 
-The pipeline requires several data files to run. Due to file size limitations, large files are hosted externally.
+**For R Package:**
+```r
+# 1. Open VS Code with R extension installed
+# 2. Open terminal in VS Code (Terminal > New Terminal)
+# 3. Navigate to scripts directory
+cd /path/to/drug_repurposing/scripts
+
+# 4. Launch R
+R
+
+# 5. Run analysis
+source("runall.R")
+```
+
+**For Shiny App:**
+```r
+# In R terminal within VS Code
+setwd("path/to/drug_repurposing/shiny_app")
+shiny::runApp()
+```
+
+---
+
+#### Option 3: Terminal/Command Line
+
+**For R Package:**
+```bash
+# Navigate to scripts directory
+cd /path/to/drug_repurposing/scripts
+
+# Run single analysis
+Rscript runall.R
+
+# Run comparative analysis
+Rscript compare_profiles.R
+```
+
+**For Shiny App:**
+```bash
+# Navigate to shiny_app directory
+cd /path/to/drug_repurposing/shiny_app
+
+# Launch app
+R -e "shiny::runApp()"
+
+# Or with specific port
+R -e "shiny::runApp(port=3838)"
+```
+
+---
+
+## 5. Prerequisites & Installation
+
+### 5.1 Required Data Files
 
 #### Files Included in Repository
 
 The following small data files are already included in `scripts/data/`:
 
-1. **cmap_drug_experiments_new.csv** (831 KB)
-   - CMap experiment metadata
-   - Contains drug names, cell lines, and experimental conditions
-
-2. **cmap_valid_instances.csv** (41 KB)
-   - Curated list of valid CMap instances
-   - Includes DrugBank IDs and validation flags
-
-3. **CoreFibroidSignature_All_Datasets.csv** (270 KB)
-   - Example disease signature for fibroid analysis
-   - Contains gene symbols and log2 fold-change values
+1. **cmap_drug_experiments_new.csv** (831 KB) - CMap experiment metadata
+2. **cmap_valid_instances.csv** (41 KB) - Curated list of valid CMap instances
+3. **CoreFibroidSignature_All_Datasets.csv** (270 KB) - Example disease signature
 
 #### Large Files (Download Required)
 
-The following files are **required** but must be downloaded separately:
+**Required:**
+- **cmap_signatures.RData** (232 MB) - CMap reference signatures database
 
-1. **cmap_signatures.RData** (232 MB)
-   - CMap reference signatures database
-   - **Required for pipeline execution**
-
-2. **gene_id_conversion_table.tsv** (4.5 MB)
-   - Gene identifier conversion table
-   - Optional but recommended for gene mapping
+**Optional:**
+- **gene_id_conversion_table.tsv** (4.5 MB) - Gene identifier conversion table
 
 #### Download Instructions
 
-**All required data files are available on Google Drive:**
-
-🔗 **[Download Data Files](https://drive.google.com/drive/folders/1LvKiT0u3DGf5sW5bYVJk7scbM5rLmBx-?usp=sharing)**
+🔗 **[Download Data Files from Google Drive](https://drive.google.com/drive/folders/1LvKiT0u3DGf5sW5bYVJk7scbM5rLmBx-?usp=sharing)**
 
 **Steps:**
 1. Visit the Google Drive link above
-2. Download the following files:
-   - `cmap_signatures.RData`
-   - `gene_id_conversion_table.tsv` (optional)
-3. Place downloaded files in the `scripts/data/` directory
+2. Download `cmap_signatures.RData`
+3. Place in `scripts/data/` directory
 
 **Verify your data directory:**
 ```bash
@@ -139,25 +289,38 @@ ls -lh scripts/data/
 ```
 
 You should see:
-- ✓ cmap_drug_experiments_new.csv
-- ✓ cmap_valid_instances.csv
-- ✓ CoreFibroidSignature_All_Datasets.csv
-- ✓ cmap_signatures.RData (after download)
-- ✓ gene_id_conversion_table.tsv (optional, after download)
+- cmap_drug_experiments_new.csv
+- cmap_valid_instances.csv
+- CoreFibroidSignature_All_Datasets.csv
+- cmap_signatures.RData (after download)
 
 ---
 
-## 4. Installation
+### 5.2 Software Requirements
 
-### Step 1: Clone the Repository
+**Required:**
+- R ≥ 4.2
+- RStudio (recommended) or VS Code with R extension
 
+**R Packages (auto-installed with DRpipe):**
+- `R6`, `dplyr`, `config`, `docopt`, `qvalue`, `pbapply`
+
+**Optional (for visualizations):**
+```r
+install.packages(c("pheatmap", "UpSetR", "gplots"))
+```
+
+---
+
+### 5.3 Installation Steps
+
+#### Step 1: Clone Repository
 ```bash
 git clone https://github.com/enockniyonkuru/drug_repurposing.git
 cd drug_repurposing
 ```
 
-### Step 2: Install the Package
-
+#### Step 2: Install DRpipe Package
 ```r
 # Install devtools if needed
 install.packages("devtools", repos = "https://cloud.r-project.org")
@@ -167,214 +330,182 @@ devtools::document("DRpipe")
 devtools::install("DRpipe")
 ```
 
-### Step 3: Verify Installation
-
+#### Step 3: Verify Installation
 ```r
 library(DRpipe)
-?run_dr
+?run_dr  # Should display help documentation
 ```
 
 ---
 
-## 5. Quick Start Guide
+## 6. Using the R Package
 
-### Minimal Setup
+### 6.1 Single Analysis - Single Cutoff
 
-1. **Place your data** in `scripts/data/`:
-   - Disease signature CSV
-   - CMap signatures RData (download from Google Drive)
-   - CMap metadata files
+**Use Case:** Standard analysis with one fold-change threshold
 
-2. **Edit configuration** in `scripts/config.yml`:
-   ```yaml
-   execution:
-     runall_profile: "CoreFibroid_logFC_1"  # Use the name of your chosen profile
-   ```
-   
-   **What is a profile name?** 
-   - A profile name (e.g., "CoreFibroid_logFC_1") is a **user-defined configuration label** in `config.yml`
-   - It is NOT a file name - it's an identifier for a specific analysis setup
-   - The profile defines which input file to use, what parameters to apply, etc.
-   - See [Section 7: Understanding Configuration](#7-understanding-configuration) for details
-
-
-3. **Run analysis** in RStudio:
-   ```r
-   # IMPORTANT: Set working directory to scripts folder
-   setwd("/path/to/drug_repurposing/scripts")
-   
-   # Verify you're in the correct directory
-   getwd()  # Should show: .../drug_repurposing/scripts
-   
-   # Run the analysis
-   source("runall.R")
-   ```
-
-Results will be saved to `scripts/results/<profile_name>_<timestamp>/`
-
----
-
-## 6. Working Directory Setup
-
-**The pipeline requires two steps with different working directories:**
-
-### Step 1 (Terminal): Clone and Install
-
-Run from the repository root:
-
-```bash
-cd /path/to/drug_repurposing
-```
-
-Then install the package in R:
-```r
-devtools::document("DRpipe")
-devtools::install("DRpipe")
-```
-
-### Step 2 (R/RStudio): Run Analysis
-
-**IMPORTANT**: Set working directory to the `scripts/` folder:
-
-```r
-# Option 1: Absolute path (most reliable)
-setwd("/full/path/to/drug_repurposing/scripts")
-
-# Option 2: Relative to home directory
-setwd("~/Desktop/drug_repurposing/scripts")
-
-# Option 3: Using RStudio
-# Session > Set Working Directory > Choose Directory
-# Navigate to: drug_repurposing/scripts
-
-# Verify you're in the correct location
-getwd()  # Should end with: .../drug_repurposing/scripts
-
-# Check that config file exists
-file.exists("config.yml")  # Should return TRUE
-
-# Check that data directory exists
-dir.exists("data")  # Should return TRUE
-
-# Then run the analysis
-source("runall.R")
-```
-
-**Why this matters**: The configuration file (`config.yml`) uses relative paths (e.g., `data/`, `results/`) that are relative to the `scripts/` directory.
-
----
-
-## 7. Understanding Configuration
-
-### Profile Names Explained
-
-**Profile names are user-defined configuration identifiers**, not file names. They serve as:
-
-1. **Configuration Labels**: Each profile in `config.yml` defines a complete analysis setup
-2. **Analysis Identifiers**: Used to select which configuration to run
-3. **Output Naming**: Incorporated into output folder names for traceability
-
-**Example Profile Breakdown:**
-```yaml
-CoreFibroid_logFC_1:        # ← Profile name (you choose this)
-  paths:
-    disease_file: "data/CoreFibroidSignature_All_Datasets.csv"  # ← Input file
-  params:
-    logfc_cutoff: 1         # ← Analysis parameter
-```
-
-**How it works:**
-- `CoreFibroid_logFC_1` is the **profile name** you reference in `execution:`
-- The actual input file is specified in `paths: disease_file:`
-- Output folders will be named: `CoreFibroid_logFC_1_20250107-183045/`
-
-**Naming Convention (Recommended):**
-- Use descriptive names: `<Dataset>_<KeyParameter>_<Value>`
-- Examples: `Endothelial_logFC_0.5`, `Fibroid_Strict`, `MyDisease_Test1`
-- Must match exactly when referenced in `execution: runall_profile:`
-
-### Configuration Structure
-
-#### The "default" Profile (Technical Requirement)
+#### Configuration (`scripts/config.yml`)
 
 ```yaml
-default:
-  paths:
-    signatures: "data/cmap_signatures.RData"
-    # ... other settings
-  params:
-    logfc_cutoff: 0.5
-```
+execution:
+  runall_profile: "CoreFibroid_logFC_1"  # Profile to use
 
-**Purpose**: 
-- Required by the R `config` package (technical requirement)
-- Serves as a **fallback** if no profile is specified
-- **You typically don't use this directly**
-- **Leave unchanged** unless you have specific reasons
-
-#### Custom Profiles (What You Actually Use)
-
-```yaml
-CoreFibroid_logFC_1:      # ← Your actual analysis profile
+CoreFibroid_logFC_1:
   paths:
     disease_file: "data/CoreFibroidSignature_All_Datasets.csv"
+    signatures: "data/cmap_signatures.RData"
+    cmap_meta: "data/cmap_drug_experiments_new.csv"
+    cmap_valid: "data/cmap_valid_instances.csv"
+    out_dir: "results"
   params:
+    gene_key: "SYMBOL"
+    logfc_cols_pref: "log2FC"
     logfc_cutoff: 1.0
+    q_thresh: 0.05
+    mode: "single"  # Single cutoff mode
 ```
 
-**Purpose**:
-- These are your **actual analysis configurations**
-- You reference these in `execution: runall_profile:`
-- Each represents a specific analysis setup
+#### Running the Analysis
 
----
-
-## 8. Three Main Functionalities
-
-### 8.1 Single Profile Analysis
-
-Run a complete drug repurposing analysis with one parameter configuration.
-
-**Use Case:** Standard analysis with known parameters
-
-**How to Run:**
-
+**In RStudio:**
 ```r
-# In RStudio
 setwd("/path/to/drug_repurposing/scripts")
 source("runall.R")
 ```
 
-**Or from terminal:**
+**In Terminal:**
 ```bash
 cd scripts
 Rscript runall.R
 ```
 
-**Configuration:**
-```yaml
-execution:
-  runall_profile: "CoreFibroid_logFC_1"  # Profile to use
+#### Output Structure
 ```
-
-**Output:**
-- `<dataset>_results.RData` - Complete results
-- `<dataset>_hits_q<threshold>.csv` - Significant drug hits
-- `img/` - Visualization plots
-- `sessionInfo.txt` - Session details
+results/CoreFibroid_logFC_1_20250107-183045/
+├── CoreFibroid_results.RData           # Complete results
+├── CoreFibroid_hits_q0.05.csv          # Significant drug hits
+├── img/
+│   ├── CoreFibroid_hist_revsc.jpg      # Score distribution
+│   └── CoreFibroid_cmap_score.jpg      # Top drugs
+└── sessionInfo.txt                      # Session details
+```
 
 ---
 
-### 8.2 Profile Comparison
+### 6.2 Single Analysis - Sweep Mode
 
-Compare drug repurposing results across multiple parameter settings to understand how parameter choices affect results.
+**Use Case:** Test multiple fold-change thresholds to find robust drug candidates
 
-**Use Case:** Parameter sensitivity analysis, finding robust hits
+#### Configuration
 
-**How to Run:**
+```yaml
+execution:
+  runall_profile: "Sweep_CoreFibroid"
+
+Sweep_CoreFibroid:
+  paths:
+    disease_file: "data/CoreFibroidSignature_All_Datasets.csv"
+    # ... other paths same as above
+  params:
+    gene_key: "SYMBOL"
+    logfc_cols_pref: "log2FC"
+    mode: "sweep"                      # Enable sweep mode
+    sweep_cutoffs: null                # Auto-derive cutoffs
+    sweep_auto_grid: true
+    sweep_step: 0.1                    # Step size between cutoffs
+    sweep_min_frac: 0.10               # Min 10% of genes
+    sweep_min_genes: 150               # Min 150 genes per cutoff
+    robust_rule: "k_of_n"              # Filtering rule
+    robust_k: 2                        # Must appear in ≥2 cutoffs
+    aggregate: "median"                # Score aggregation method
+    q_thresh: 0.05
+```
+
+#### Running the Analysis
 
 ```r
-# In RStudio
+setwd("/path/to/drug_repurposing/scripts")
+source("runall.R")  # Uses sweep profile from config
+```
+
+#### Output Structure
+```
+results/Sweep_CoreFibroid_20250107-183045/
+├── cutoff_0.5/                        # Individual cutoff results
+│   └── CoreFibroid_hits_cutoff_0.5.csv
+├── cutoff_1.0/
+├── cutoff_1.5/
+├── aggregate/                         # Final robust results
+│   ├── robust_hits.csv               # Drugs passing robust filtering
+│   └── cutoff_summary.csv            # Summary per cutoff
+└── CoreFibroid_results.RData
+```
+
+#### Key Parameters Explained
+
+| Parameter | Description | Typical Value |
+|-----------|-------------|---------------|
+| `sweep_step` | Spacing between cutoffs | 0.1 |
+| `sweep_min_genes` | Minimum genes per cutoff | 150 |
+| `robust_rule` | "all" or "k_of_n" | "k_of_n" |
+| `robust_k` | Min cutoffs required | 2 |
+| `aggregate` | "mean", "median", or "weighted_mean" | "median" |
+
+---
+
+### 6.3 Comparative Analysis
+
+**Use Case:** Compare results across multiple configurations
+
+#### Two Common Scenarios
+
+**Scenario 1: Parameter Sensitivity (Same Data, Different Parameters)**
+
+```yaml
+execution:
+  compare_profiles: ["Lenient", "Standard", "Strict"]
+
+Lenient:
+  paths:
+    disease_file: "data/my_data.csv"  # Same file
+  params:
+    logfc_cutoff: 0.5                 # Different cutoff
+
+Standard:
+  paths:
+    disease_file: "data/my_data.csv"  # Same file
+  params:
+    logfc_cutoff: 1.0                 # Different cutoff
+
+Strict:
+  paths:
+    disease_file: "data/my_data.csv"  # Same file
+  params:
+    logfc_cutoff: 1.5                 # Different cutoff
+```
+
+**Scenario 2: Cross-Dataset Comparison (Different Data, Same Parameters)**
+
+```yaml
+execution:
+  compare_profiles: ["Dataset1", "Dataset2", "Dataset3"]
+
+Dataset1:
+  paths:
+    disease_file: "data/dataset1.csv"  # Different file
+  params:
+    logfc_cutoff: 1.0                  # Same parameters
+
+Dataset2:
+  paths:
+    disease_file: "data/dataset2.csv"  # Different file
+  params:
+    logfc_cutoff: 1.0                  # Same parameters
+```
+
+#### Running Comparative Analysis
+
+```r
 setwd("/path/to/drug_repurposing/scripts")
 source("compare_profiles.R")
 ```
@@ -385,81 +516,11 @@ cd scripts
 Rscript compare_profiles.R
 ```
 
-**Configuration:**
-```yaml
-execution:
-  compare_profiles: ["CoreFibroid_logFC_0.5", "CoreFibroid_logFC_1", "CoreFibroid_logFC_1.5"]
+#### Output Structure
 ```
-
-#### Two Use Cases for compare_profiles
-
-**Use Case 1: Same Data, Different Parameters (Parameter Sensitivity)**
-
-```yaml
-execution:
-  compare_profiles: ["Lenient", "Standard", "Strict"]
-
-Lenient:
-  paths:
-    disease_file: "data/my_data.csv"  # ← Same file
-  params:
-    logfc_cutoff: 0.5  # ← Different cutoff
-
-Standard:
-  paths:
-    disease_file: "data/my_data.csv"  # ← Same file
-  params:
-    logfc_cutoff: 1.0  # ← Different cutoff
-
-Strict:
-  paths:
-    disease_file: "data/my_data.csv"  # ← Same file
-  params:
-    logfc_cutoff: 1.5  # ← Different cutoff
-```
-
-**Result**: Compares how parameter choices affect results for ONE dataset
-
-**Use Case 2: Different Data, Same Parameters (Cross-Dataset Comparison)**
-
-```yaml
-execution:
-  compare_profiles: ["Dataset1", "Dataset2", "Dataset3"]
-
-Dataset1:
-  paths:
-    disease_file: "data/dataset1.csv"  # ← Different file
-  params:
-    logfc_cutoff: 1.0  # ← Same parameters
-
-Dataset2:
-  paths:
-    disease_file: "data/dataset2.csv"  # ← Different file
-  params:
-    logfc_cutoff: 1.0  # ← Same parameters
-
-Dataset3:
-  paths:
-    disease_file: "data/dataset3.csv"  # ← Different file
-  params:
-    logfc_cutoff: 1.0  # ← Same parameters
-```
-
-**Result**: Compares results across MULTIPLE datasets with consistent parameters
-
-**Important Notes:**
-- `runall_profile:` accepts ONE profile name only
-- `compare_profiles:` accepts an ARRAY of profile names
-- Each profile runs as a **separate analysis**
-- Results are then **compared and visualized together**
-- This is NOT parallel processing (runs sequentially)
-- Use `compare_profiles.R` script, not `runall.R`
-
-**Output Structure:**
-```
-results/profile_comparison/<timestamp>/
+results/profile_comparison_20250107-183045/
 ├── lenient_hits.csv                    # Individual profile results
-├── default_hits.csv
+├── standard_hits.csv
 ├── strict_hits.csv
 ├── combined_profile_hits.csv           # All results combined
 ├── profile_summary_stats.csv           # Summary statistics
@@ -470,231 +531,266 @@ results/profile_comparison/<timestamp>/
     └── profile_upset.jpg
 ```
 
-**Interpreting Results:**
-- Drugs appearing in all profiles are high-confidence candidates
-- Large differences between lenient/strict suggest parameter sensitivity
-- Consistent score patterns indicate robust drug-disease relationships
-
 ---
 
-### 8.3 Sweep Mode Analysis
+## 7. Using the Shiny App
 
-Test multiple fold-change cutoffs simultaneously to identify robust drug candidates that are consistently found across different parameter settings.
+The Shiny app provides an interactive graphical interface for running analyses without writing code.
 
-**Use Case:** Comprehensive parameter exploration, reducing parameter bias
+### 7.1 Launching the Shiny App
 
-**How to Run:**
-
-```r
-# In RStudio
-setwd("/path/to/drug_repurposing/scripts")
-source("runall.R")  # Uses sweep profile from config
-```
-
-**Configuration:**
-```yaml
-execution:
-  runall_profile: "Sweep_CoreFibroid"  # Use sweep mode profile
-
-Sweep_CoreFibroid:
-  params:
-    mode: "sweep"                      # Enable sweep mode
-    sweep_cutoffs: null                # Auto-derive cutoffs
-    sweep_auto_grid: true
-    sweep_step: 0.1                    # Step size
-    sweep_min_frac: 0.10               # Min 10% of genes
-    sweep_min_genes: 150               # Min 150 genes
-    robust_rule: "k_of_n"              # Filtering rule
-    robust_k: 2                        # Must appear in ≥2 cutoffs
-    aggregate: "median"                # Score aggregation method
-```
-
-**Key Parameters:**
-- **`mode`**: Set to `"sweep"` to enable
-- **`sweep_cutoffs`**: Array of cutoffs or `null` for auto-derivation
-- **`robust_rule`**: `"all"` (all cutoffs) or `"k_of_n"` (k of n cutoffs)
-- **`robust_k`**: Minimum cutoffs required for `"k_of_n"` rule
-- **`aggregate`**: `"mean"`, `"median"`, or `"weighted_mean"`
-
-**Output Structure:**
-```
-results/<timestamp>/
-├── cutoff_0.5/                        # Individual cutoff results
-│   └── <dataset>_hits_cutoff_0.5.csv
-├── cutoff_1/
-├── cutoff_1.5/
-├── aggregate/                         # Final robust results
-│   ├── robust_hits.csv               # Drugs passing robust filtering
-│   └── cutoff_summary.csv            # Summary per cutoff
-└── <dataset>_results.RData
-```
-
-**Interpreting Sweep Results:**
-- **`n_support`**: Number of cutoffs where drug was significant (higher = more robust)
-- **`aggregated_score`**: Combined connectivity score (more negative = better reversal)
-- **`min_q`**: Best q-value across all cutoffs
-
-**Advantages:**
-- Reduces parameter sensitivity
-- Identifies robust drug candidates
-- Systematic parameter exploration
-- Enhanced reproducibility
-
----
-
-## 9. Running via Shiny App (GUI Alternative)
-
-For users who prefer a graphical interface over command-line tools, the DRpipe pipeline can also be run through an interactive Shiny web application.
-
-### Overview
-
-The Shiny app provides a user-friendly way to:
-- Upload disease gene expression data through a web form
-- Configure analysis parameters using interactive controls
-- Run single or comparative analyses with a button click
-- View and download results directly in your browser
-- Generate interactive visualizations
-
-### Quick Start
-
-**Step 1: Install the DRpipe package** (if not already done)
-```r
-devtools::document("DRpipe")
-devtools::install("DRpipe")
-```
-
-**Step 2: Navigate to the Shiny app directory**
+**From RStudio:**
 ```r
 setwd("path/to/drug_repurposing/shiny_app")
-```
-
-**Step 3: Launch the app**
-```r
-# Option 1: Direct launch
 shiny::runApp()
-
-# Option 2: Using helper script
-source("run.R")
 ```
 
-**Step 4: Use the app**
-1. Choose analysis type (Single or Comparative)
-2. Upload your disease signature CSV or load example data
-3. Configure parameters through the interface
-4. Click "Run Analysis"
-5. View results and download outputs
+**From Terminal:**
+```bash
+cd shiny_app
+R -e "shiny::runApp()"
+```
 
-### Features
+**From VS Code:**
+```r
+# In R terminal
+setwd("path/to/drug_repurposing/shiny_app")
+shiny::runApp()
+```
 
-**Analysis Types:**
-- **Single Analysis**: Run with one parameter configuration
-- **Comparative Analysis**: Compare results across multiple configurations
-
-**Capabilities:**
-- Full sweep mode support with parameter customization
-- Real-time progress tracking
-- Interactive result tables with filtering and sorting
-- Dynamic visualizations (bar charts, histograms, volcano plots, heatmaps)
-- CSV export of results
-
-### When to Use the Shiny App
-
-**Use the Shiny app when:**
-- You prefer graphical interfaces over command-line tools
-- You want to quickly test different parameters
-- You're new to R or the DRpipe pipeline
-- You need to demonstrate results to collaborators
-
-**Use the command-line pipeline when:**
-- You need to process many datasets in batch
-- You want to integrate into automated workflows
-- You need fine-grained control over all parameters
-- You're running analyses on a remote server
-
-### Documentation
-
-For detailed Shiny app documentation, including:
-- Data format requirements
-- Parameter descriptions
-- Troubleshooting tips
-- Example datasets
-
-See: **[shiny_app/README.md](shiny_app/README.md)**
+The app will open in your default web browser (typically at `http://127.0.0.1:XXXX`).
 
 ---
 
-## 10. Configuration Reference
+### 7.2 Single Analysis via Shiny App
 
-### Configuration File Structure
+#### Step 1: Select Analysis Type
+- Choose **"Single Analysis"** from the dropdown
 
-The `scripts/config.yml` file controls all analysis parameters:
+#### Step 2: Upload Data
+- **Option A**: Upload your disease signature CSV file
+- **Option B**: Load example data (Fibroid or Endothelial)
+
+**Required CSV format:**
+```csv
+SYMBOL,log2FC_1,log2FC_2,p_val_adj
+TP53,2.5,2.3,0.001
+BRCA1,-1.8,-2.1,0.005
+```
+
+#### Step 3: Configure Parameters
+
+**Basic Parameters:**
+- **Gene Column**: Select column containing gene identifiers (e.g., SYMBOL)
+- **Log2FC Prefix**: Prefix for fold-change columns (e.g., log2FC)
+- **Log2FC Cutoff**: Fold-change threshold (e.g., 1.0)
+- **Q-value Threshold**: FDR threshold (e.g., 0.05)
+
+**For Single Cutoff Mode:**
+- Leave "Enable Sweep Mode" unchecked
+
+**For Sweep Mode:**
+- Check "Enable Sweep Mode"
+- Configure sweep parameters:
+  - **Step Size**: Spacing between cutoffs (e.g., 0.1)
+  - **Min Genes**: Minimum genes per cutoff (e.g., 150)
+  - **Robust Rule**: "All cutoffs" or "K of N cutoffs"
+  - **Robust K**: Minimum cutoffs required (e.g., 2)
+  - **Aggregation**: "Median" or "Mean"
+
+#### Step 4: Run Analysis
+- Click **"Run Analysis"** button
+- Monitor progress in real-time
+- Wait for completion message
+
+#### Step 5: View Results
+- **Results Table**: Interactive table with filtering and sorting
+- **Visualizations**: Bar charts, histograms, volcano plots
+- **Download**: Export results as CSV
+
+---
+
+### 7.3 Comparative Analysis via Shiny App
+
+#### Step 1: Select Analysis Type
+- Choose **"Comparative Analysis"** from the dropdown
+
+#### Step 2: Create/Select Profiles
+
+**Option A: Use Existing Profiles**
+- Select 2+ profiles from `config.yml`
+- Profiles must already be defined in configuration file
+
+**Option B: Create Custom Profiles**
+- Click "Add Profile"
+- Configure each profile with:
+  - Profile name
+  - Disease file
+  - Parameters (including sweep settings if desired)
+- Repeat for each profile you want to compare
+
+#### Step 3: Run Comparative Analysis
+- Click **"Run Comparative Analysis"**
+- Each profile runs sequentially
+- Progress shown for each profile
+
+#### Step 4: View Comparative Results
+- **Combined Results Table**: All profiles merged
+- **Profile Overlap Heatmap**: Shows drug overlap between profiles
+- **Score Distribution**: Compare score distributions across profiles
+- **Download**: Export combined results
+
+---
+
+### 7.4 Shiny App Features
+
+**Interactive Tables:**
+- Sort by any column
+- Filter results
+- Search for specific drugs
+- Pagination for large result sets
+
+**Dynamic Visualizations:**
+- Zoom and pan on plots
+- Hover for detailed information
+- Export plots as images
+
+**Real-time Progress:**
+- Progress bars during analysis
+- Status messages
+- Error reporting
+
+**For detailed Shiny app documentation, see: [shiny_app/README.md](shiny_app/README.md)**
+
+---
+
+## 8. Repository Structure
+
+```
+drug_repurposing/
+├── README.md                          # This file
+├── DRpipe/                            # R package
+│   ├── DESCRIPTION, NAMESPACE, LICENSE
+│   ├── README.md                      # Package documentation
+│   └── R/
+│       ├── processing.R               # Core processing functions
+│       ├── analysis.R                 # Plotting/summary helpers
+│       ├── pipeline_processing.R      # DRP class + run_dr()
+│       ├── pipeline_analysis.R        # DRA class + analyze_runs()
+│       ├── io_config.R                # Config & IO helpers
+│       ├── cli.R                      # Command-line interface
+│       └── zzz-imports.R
+├── scripts/                           # Analysis scripts
+│   ├── config.yml                     # Configuration file
+│   ├── runall.R                       # Single analysis script
+│   ├── compare_profiles.R             # Comparative analysis script
+│   ├── data/                          # Input data
+│   │   ├── cmap_signatures.RData      # (Download required)
+│   │   ├── cmap_drug_experiments_new.csv
+│   │   ├── cmap_valid_instances.csv
+│   │   └── CoreFibroidSignature_All_Datasets.csv
+│   └── results/                       # Output directory
+├── shiny_app/                         # Shiny application
+│   ├── app.R                          # Main app file
+│   ├── run.R                          # Helper launch script
+│   └── README.md                      # Shiny app documentation
+└── tahoe_cmap_analysis/               # Analysis of CMAP Vs Tahoe [Still in progress]
+```
+
+---
+
+## 9. Configuration Reference
+
+### 9.1 Understanding Configuration
+
+The `scripts/config.yml` file controls all analysis parameters. It uses **profile names** as configuration identifiers.
+
+**Profile Name Structure:**
+```yaml
+MyProfileName:                         # ← Profile identifier (you choose this)
+  paths:
+    disease_file: "data/my_data.csv"   # ← Actual input file
+  params:
+    logfc_cutoff: 1.0                  # ← Analysis parameters
+```
+
+**Key Concepts:**
+- Profile names are **user-defined labels**, not file names
+- Used to select which configuration to run
+- Incorporated into output folder names for traceability
+
+---
+
+### 9.2 Core Parameters
+
+| Parameter | Type | Typical Values | Description |
+|-----------|------|----------------|-------------|
+| `gene_key` | string | "SYMBOL", "ENSEMBL" | Column name with gene identifiers |
+| `logfc_cols_pref` | string | "log2FC", "fc_" | Prefix for fold-change columns |
+| `logfc_cutoff` | numeric | 0.5 - 2.0 | Absolute log2 fold-change threshold |
+| `pval_key` | string/null | "p_val_adj", null | P-value column (null to skip) |
+| `pval_cutoff` | numeric | 0.01 - 0.1 | P-value threshold |
+| `q_thresh` | numeric | 0.01 - 0.1 | FDR threshold for drug significance |
+| `reversal_only` | boolean | true/false | Keep only reversal drugs |
+| `mode` | string | "single", "sweep" | Analysis mode |
+
+---
+
+### 9.3 Sweep Mode Parameters
+
+| Parameter | Type | Typical Values | Description |
+|-----------|------|----------------|-------------|
+| `sweep_cutoffs` | array/null | [0.5, 1.0, 1.5] or null | Specific cutoffs or auto-generate |
+| `sweep_step` | numeric | 0.1 - 0.5 | Step size for auto-generation |
+| `sweep_min_genes` | integer | 100 - 300 | Minimum genes per cutoff |
+| `robust_rule` | string | "all", "k_of_n" | Filtering rule |
+| `robust_k` | integer | 2 - 5 | Min cutoffs required (for k_of_n) |
+| `aggregate` | string | "mean", "median" | Score aggregation method |
+
+---
+
+### 9.4 Example Configuration
 
 ```yaml
 # Execution settings
 execution:
-  runall_profile: "CoreFibroid_logFC_1"
-  compare_profiles: ["CoreFibroid_logFC_0.5", "CoreFibroid_logFC_1", "CoreFibroid_logFC_1.5"]
+  runall_profile: "MyAnalysis"
+  compare_profiles: ["Lenient", "Standard", "Strict"]
 
-# Profile definitions
-CoreFibroid_logFC_1:
+# Default profile (technical requirement - leave as-is)
+default:
   paths:
     signatures: "data/cmap_signatures.RData"
-    disease_file: "data/CoreFibroidSignature_All_Datasets.csv"
     cmap_meta: "data/cmap_drug_experiments_new.csv"
     cmap_valid: "data/cmap_valid_instances.csv"
     out_dir: "results"
   params:
     gene_key: "SYMBOL"
     logfc_cols_pref: "log2FC"
-    logfc_cutoff: 1
+    logfc_cutoff: 1.0
+    q_thresh: 0.05
+    reversal_only: true
+    seed: 123
+    mode: "single"
+
+# Your custom analysis profile
+MyAnalysis:
+  paths:
+    disease_file: "data/my_disease_data.csv"
+    signatures: "data/cmap_signatures.RData"
+    cmap_meta: "data/cmap_drug_experiments_new.csv"
+    cmap_valid: "data/cmap_valid_instances.csv"
+    out_dir: "results"
+  params:
+    gene_key: "SYMBOL"
+    logfc_cols_pref: "log2FC"
+    logfc_cutoff: 1.0
+    pval_key: null
     q_thresh: 0.05
     reversal_only: true
     seed: 123
     mode: "single"
 ```
-
-### Parameter Reference Guide
-
-#### Core Parameters
-
-| Parameter | Type | Recommended Values | Description |
-|-----------|------|-------------------|-------------|
-| `logfc_cutoff` | numeric | 0.5 - 2.0 | Absolute log2 fold-change threshold. Higher = more stringent. **Typical: 1.0** |
-| `pval_key` | string or null | `"p_val_adj"`, `"FDR"`, `null` | Column name for p-values. Set to `null` to skip p-value filtering |
-| `pval_cutoff` | numeric | 0.01 - 0.1 | P-value threshold (only used if `pval_key` is set). **Typical: 0.05** |
-| `q_thresh` | numeric | 0.01 - 0.1 | FDR threshold for drug significance. **Typical: 0.05** |
-| `reversal_only` | boolean | `true` / `false` | Keep only drugs with negative connectivity (reversal). **Recommended: true** |
-| `seed` | integer | any | Random seed for reproducibility. **Typical: 123** |
-
-#### Gene Identifier Parameters
-
-| Parameter | Type | Options | Description |
-|-----------|------|---------|-------------|
-| `gene_key` | string | `"SYMBOL"`, `"ENSEMBL"`, `"ENTREZ"` | Column name containing gene identifiers in your input file |
-| `logfc_cols_pref` | string | `"log2FC"`, `"logFC_"`, `"fc_"` | Prefix for fold-change columns. Matches columns like `log2FC_1`, `log2FC_2` |
-
-#### Multi-Column Handling
-
-| Parameter | Type | Options | Description |
-|-----------|------|---------|-------------|
-| `combine_log2fc` | string | `"average"`, `"median"`, `"first"` | **How to combine multiple log2FC columns**. If your data has `log2FC_1`, `log2FC_2`, `log2FC_3`, this determines how they're merged into a single value. **Recommended: "average"** |
-
-**Example**: If you have three replicates with log2FC values [2.1, 2.3, 2.0]:
-- `"average"`: Uses 2.13 (mean)
-- `"median"`: Uses 2.1 (middle value)
-- `"first"`: Uses 2.1 (first column only)
-
-#### Sweep Mode Parameters (Advanced)
-
-| Parameter | Type | Recommended Values | Description |
-|-----------|------|-------------------|-------------|
-| `mode` | string | `"single"` / `"sweep"` | Analysis mode. Use `"sweep"` for multi-cutoff analysis |
-| `sweep_cutoffs` | array or null | `[0.5, 1.0, 1.5]` or `null` | Specific cutoffs to test. Use `null` for auto-generation |
-| `sweep_step` | numeric | 0.1 - 0.5 | Step size for auto-generated cutoffs. **Typical: 0.1** |
-| `sweep_min_genes` | integer | 100 - 300 | Minimum genes required per cutoff. **Typical: 150** |
-| `robust_rule` | string | `"all"` / `"k_of_n"` | Drug must appear in all cutoffs or k of n cutoffs |
-| `robust_k` | integer | 2 - 5 | Minimum cutoffs required (for `"k_of_n"` rule) |
-| `aggregate` | string | `"mean"`, `"median"`, `"weighted_mean"` | How to combine scores across cutoffs |
 
 ---
 
@@ -703,8 +799,8 @@ CoreFibroid_logFC_1:
 ### 10.1 Disease Signature CSV
 
 **Required columns:**
-- Gene identifier column (default: `SYMBOL`)
-- One or more fold-change columns with shared prefix (default: `log2FC`)
+- Gene identifier column (e.g., SYMBOL, ENSEMBL)
+- One or more fold-change columns with shared prefix
 
 **Example:**
 
@@ -715,344 +811,96 @@ CoreFibroid_logFC_1:
 | MYC    | 3.2      | 3.0      | 0.0001    |
 
 **Notes:**
-- Multiple log2FC columns are combined based on `combine_log2fc` parameter (default: average)
-- P-value columns (e.g., `p_val_adj`, `FDR`, `pvalue`) are optional but can be used for filtering
-- To enable p-value filtering, set `pval_key` to your column name in the config
-
-### 10.2 CMap Signatures
-
-- `.RData` file containing reference signatures
-- Must have gene identifiers (column `V1`, `gene`, or as values)
-
-### 10.3 CMap Metadata (Optional)
-
-- `cmap_drug_experiments_new.csv` - Experiment annotations
-- `cmap_valid_instances.csv` - Curated flags, DrugBank IDs
+- Multiple log2FC columns are combined (default: average)
+- P-value columns are optional
+- Must have column headers (first row)
 
 ---
 
-## 11. Customizing for Your Dataset
+### 10.2 CMap Reference Files
 
-### Quick Start: Customizing for Your Data
+**cmap_signatures.RData:**
+- Matrix with genes as rows, experiments as columns
+- Required for all analyses
 
-#### Minimal Required Changes (3 steps)
+**cmap_drug_experiments_new.csv:**
+- Experiment metadata
+- Drug names, cell lines, conditions
 
-**Step 1**: Create your profile (copy an existing one)
-```yaml
-MyAnalysis:  # ← Choose your profile name
-  paths:
-    disease_file: "data/my_disease_data.csv"  # ← Your input file
-    signatures: "data/cmap_signatures.RData"   # ← Keep as-is
-    cmap_meta: "data/cmap_drug_experiments_new.csv"  # ← Keep as-is
-    cmap_valid: "data/cmap_valid_instances.csv"      # ← Keep as-is
-    out_dir: "results"  # ← Keep as-is
-```
-
-**Step 2**: Update parameters for your data
-```yaml
-  params:
-    gene_key: "SYMBOL"        # ← Match YOUR gene column name
-    logfc_cols_pref: "log2FC" # ← Match YOUR fold-change column prefix
-    logfc_cutoff: 1.0         # ← Adjust threshold as needed
-    pval_key: null            # ← Set to your p-value column or null
-    # ... other params can use defaults
-```
-
-**Step 3**: Reference your profile
-```yaml
-execution:
-  runall_profile: "MyAnalysis"  # ← Use your profile name
-```
-
-#### What NOT to Change
-
-**Leave these as-is** (unless you have specific reasons):
-- `default:` section (technical requirement)
-- CMap reference file paths (`signatures`, `cmap_meta`, `cmap_valid`)
-- `out_dir: "results"` (unless you want a different output location)
-- Most advanced parameters (unless you understand their purpose)
-
-#### Full Customization Checklist
-
-- [ ] **Profile name**: Choose descriptive name
-- [ ] **disease_file**: Path to your CSV file
-- [ ] **gene_key**: Column name with gene identifiers
-- [ ] **logfc_cols_pref**: Prefix for your fold-change columns
-- [ ] **logfc_cutoff**: Threshold appropriate for your data
-- [ ] **pval_key**: P-value column name (or null)
-- [ ] **execution: runall_profile**: Reference your profile name
-
-### Common Customizations
-
-**Different gene identifiers:**
-```yaml
-params:
-  gene_key: "ENSEMBL"  # Instead of "SYMBOL"
-```
-
-**Different fold-change prefix:**
-```yaml
-params:
-  logfc_cols_pref: "fc_"  # Matches fc_1, fc_2, etc.
-```
-
-**Enable p-value filtering:**
-```yaml
-params:
-  pval_key: "p_val_adj"    # Column name for p-values
-  pval_cutoff: 0.05        # P-value threshold
-```
-
-**Note:** P-value filtering is applied BEFORE fold-change filtering. Set `pval_key: null` to disable.
-
-**Multiple disease files:**
-```yaml
-paths:
-  disease_dir: "data/diseases/"
-  disease_pattern: ".*_signature\\.csv"
-```
+**cmap_valid_instances.csv:**
+- Curated valid instances
+- DrugBank IDs and validation flags
 
 ---
 
-## 12. Advanced Topics
+## 11. Troubleshooting
 
-### 12.1 Working with Multiple Input Files
+### 11.1 Common Issues
 
-#### Option 1: Multiple Profiles (Recommended for Different Parameters)
+**"Cannot find config.yml"**
+- **Solution**: Ensure working directory is `scripts/`
+- **Check**: `getwd()` should show `.../drug_repurposing/scripts`
+- **Fix**: `setwd("path/to/drug_repurposing/scripts")`
 
-Define multiple profiles in `config.yml` and switch between them:
+**"Disease file not found"**
+- **Solution**: Verify path in `disease_file:` is relative to `scripts/`
+- **Check**: `file.exists("data/your_file.csv")`
 
-```yaml
-execution:
-  runall_profile: "Dataset1_Analysis"  # ← Change this to switch profiles
+**"Gene column not found" or "No genes matched"**
+- **Solution**: Verify `gene_key` matches your actual column name
+- **Check**: `colnames(read.csv("data/your_file.csv"))`
+- **Common cause**: Missing column headers in CSV
 
-Dataset1_Analysis:
-  paths:
-    disease_file: "data/dataset1.csv"
-  params:
-    logfc_cutoff: 1.0
+**"P-value column not found"**
+- **Solution**: Set `pval_key: null` if no p-values
+- **Or**: Verify column name matches your CSV
 
-Dataset2_Analysis:
-  paths:
-    disease_file: "data/dataset2.csv"
-  params:
-    logfc_cutoff: 1.5
-```
-
-**To run different analyses**: Edit only the `runall_profile:` line, then re-run `source("runall.R")`
-
-#### Option 2: Directory Pattern Matching (For Batch Processing)
-
-Process multiple files automatically using pattern matching:
-
-```yaml
-MyBatchAnalysis:
-  paths:
-    disease_dir: "data/my_datasets/"      # Directory containing files
-    disease_pattern: ".*_signature\\.csv"  # Regex pattern to match files
-  params:
-    logfc_cutoff: 1.0
-```
-
-This will process ALL files matching the pattern in one run.
-
-#### Option 3: Profile Comparison Mode
-
-See [Section 8.2: Profile Comparison](#82-profile-comparison) for details.
-
-### 12.2 Organizing Multiple Projects
-
-#### Strategy 1: Subdirectories (Recommended)
-
-```
-scripts/data/
-├── project1/
-│   ├── disease_signature.csv
-│   └── metadata.txt
-├── project2/
-│   ├── disease_signature.csv
-│   └── metadata.txt
-└── shared/
-    ├── cmap_signatures.RData
-    ├── cmap_drug_experiments_new.csv
-    └── cmap_valid_instances.csv
-```
-
-**Configuration:**
-```yaml
-Project1_Analysis:
-  paths:
-    disease_file: "data/project1/disease_signature.csv"
-    signatures: "data/shared/cmap_signatures.RData"
-```
-
-#### Strategy 2: Descriptive Filenames
-
-```
-scripts/data/
-├── fibroid_study_2024_signature.csv
-├── endothelial_pilot_signature.csv
-├── cancer_validation_signature.csv
-├── cmap_signatures.RData
-└── cmap_drug_experiments_new.csv
-```
-
-**Configuration:**
-```yaml
-Fibroid2024:
-  paths:
-    disease_file: "data/fibroid_study_2024_signature.csv"
-```
-
-#### Strategy 3: Separate Results Directories
-
-```yaml
-Project1:
-  paths:
-    disease_file: "data/project1_data.csv"
-    out_dir: "results/project1"  # ← Project-specific output
-
-Project2:
-  paths:
-    disease_file: "data/project2_data.csv"
-    out_dir: "results/project2"  # ← Project-specific output
-```
-
-**Results structure:**
-```
-scripts/results/
-├── project1/
-│   └── Project1_20250107-183045/
-└── project2/
-    └── Project2_20250107-184523/
-```
-
-#### Best Practices
-
-1. **Use descriptive names**: Include project, date, or version in filenames
-2. **Separate outputs**: Use different `out_dir` for each project
-3. **Document**: Keep a README in each project subdirectory
-4. **Version control**: Consider using git to track configuration changes
-5. **Backup**: Keep original data files in a separate backup location
+**CSV file format issues**
+- **Solution**: Verify your CSV has column headers (first row)
+- **Check**:
+  ```r
+  data <- read.csv("scripts/data/your_file.csv", nrows = 5)
+  colnames(data)  # Should show proper names, not "V1", "V2"
+  ```
 
 ---
 
-## 13. Troubleshooting
-
-### 13.1 Verifying cmap_signatures.RData
-
-If you encounter errors loading `cmap_signatures.RData`:
+### 11.2 Verifying Installation
 
 ```r
-# Test if file loads correctly
-test_load <- try(load("scripts/data/cmap_signatures.RData"), silent = TRUE)
+# Test package installation
+library(DRpipe)
+?run_dr  # Should display help
 
+# Test data file
+test_load <- try(load("scripts/data/cmap_signatures.RData"), silent = TRUE)
 if (inherits(test_load, "try-error")) {
-  cat("ERROR: File appears corrupted. Please re-download.\n")
+  cat("ERROR: File corrupted. Re-download from Google Drive.\n")
 } else {
   cat("SUCCESS: File loaded correctly.\n")
-  cat("Objects loaded:", test_load, "\n")
 }
-```
 
-**If corrupted**:
-1. Delete the existing file
-2. Re-download from [Google Drive link](https://drive.google.com/drive/folders/1LvKiT0u3DGf5sW5bYVJk7scbM5rLmBx-?usp=sharing)
-3. Verify file size: Should be ~232 MB
-4. Check MD5 checksum if available
-
-### 13.2 Understanding gene_key Parameter
-
-The `gene_key` parameter specifies **which column in YOUR disease signature file** contains gene identifiers:
-
-```yaml
-params:
-  gene_key: "SYMBOL"  # ← Column name in YOUR input CSV
-```
-
-**Common scenarios:**
-
-| Your CSV has | Use gene_key |
-|--------------|--------------|
-| Column named "SYMBOL" | `gene_key: "SYMBOL"` |
-| Column named "gene_name" | `gene_key: "gene_name"` |
-| Column named "Gene" | `gene_key: "Gene"` |
-| Column named "ENSEMBL" | `gene_key: "ENSEMBL"` |
-
-**To check your column names:**
-```r
-# Read your disease signature file
-data <- read.csv("scripts/data/your_file.csv")
-colnames(data)  # Shows all column names
-```
-
-### 13.3 Common Issues
-
-**Issue**: "Cannot find config.yml"
-- **Solution**: Ensure you're in the `scripts/` directory: `setwd("<your_path>/drug_repurposing/scripts")`
-- **Example**: `setwd("~/Desktop/drug_repurposing/scripts")` or `setwd("/Users/username/projects/drug_repurposing/scripts")`
-
-**Issue**: "Disease file not found"
-- **Solution**: Check that the path in `disease_file:` is relative to `scripts/` directory
-
-**Issue**: "No genes matched" or "gene_key column not found"
-- **Solution**: Verify `gene_key` matches your actual column name
-- **Common cause**: Missing column headers in your CSV file
-
-**Issue**: "P-value column not found"
-- **Solution**: Set `pval_key: null` if you don't have p-values, or verify the column name
-
-**Issue**: "Error reading disease signature file" or unexpected results
-- **Solution**: **Verify your CSV has column headers!** This is a very common issue.
-- **How to check**:
-  ```r
-  # Read first few lines of your file
-  data <- read.csv("scripts/data/your_file.csv", nrows = 5)
-  head(data)
-  colnames(data)  # Should show proper column names, not "V1", "V2", etc.
-  ```
-- **If headers are missing**: Add them manually to your CSV file before running the pipeline
-- **Example header row**: `SYMBOL,log2FC_1,log2FC_2,p_val_adj`
-
-### 13.4 CSV File Format Checklist
-
-Before running the pipeline, verify your disease signature CSV file:
-
-- [ ] **Has column headers** (first row contains column names, not data)
-- [ ] **Gene identifier column** matches your `gene_key` parameter
-- [ ] **Fold-change columns** match your `logfc_cols_pref` parameter
-- [ ] **No special characters** in column names (use underscores instead of spaces)
-- [ ] **Consistent formatting** (no mixed delimiters, proper CSV format)
-
-**Quick verification:**
-```r
-# Load your file
-data <- read.csv("scripts/data/your_file.csv")
-
-# Check structure
-str(data)  # Should show proper column names and data types
-
-# Verify required columns exist
-"SYMBOL" %in% colnames(data)  # Should be TRUE (or your gene_key value)
-any(grepl("^log2FC", colnames(data)))  # Should be TRUE (or your logfc_cols_pref)
+# Verify working directory
+getwd()  # Should end with: .../drug_repurposing/scripts
+file.exists("config.yml")  # Should return TRUE
 ```
 
 ---
 
-## 14. Methodology
+## 12. Methodology
 
-### Pipeline Steps
+### 12.1 Pipeline Steps
 
 1. **Disease Signature Preparation**
    - Load differential expression results
-   - Combine multiple fold-change columns (based on `combine_log2fc` parameter)
-   - Filter by p-value threshold (optional, if `pval_key` is specified)
-   - Filter by absolute fold-change threshold
+   - Combine multiple fold-change columns
+   - Filter by p-value (optional) and fold-change thresholds
    - Map to reference gene universe
 
 2. **Connectivity Scoring**
    - Compare disease up/down gene sets to CMap profiles
    - Compute reversal scores for each drug-disease pair
+   - Negative scores indicate reversal (desired)
 
 3. **Statistical Analysis**
    - Generate null distributions via random sampling
@@ -1065,28 +913,25 @@ any(grepl("^log2FC", colnames(data)))  # Should be TRUE (or your logfc_cols_pref
    - Summarize per-drug results
    - Generate visualizations
 
-### Scoring Method
+### 12.2 Scoring Method
 
 The pipeline uses connectivity scoring to measure how well a drug reverses the disease signature:
-- Negative scores indicate reversal (desired)
-- Positive scores indicate similarity (undesired)
-- Statistical significance determined by permutation testing
+- **Negative scores**: Drug reverses disease signature (therapeutic potential)
+- **Positive scores**: Drug mimics disease signature (avoid)
+- **Statistical significance**: Determined by permutation testing and FDR correction
 
 ---
 
-## 15. Citation & License
+## 13. Citation & License
 
-### Authors
+### 13.1 Authors
 
 - **Enock Niyonkuru** - *Author, Maintainer* - [enock.niyonkuru@ucsf.edu](mailto:enock.niyonkuru@ucsf.edu)
 - **Xinyu Tang** - *Author* - [Xinyu.Tang@ucsf.edu](mailto:Xinyu.Tang@ucsf.edu)
 - **Marina Sirota** - *Author* - [Marina.Sirota@ucsf.edu](mailto:Marina.Sirota@ucsf.edu)
 
-### License
 
-MIT License - see [`DRpipe/LICENSE`](DRpipe/LICENSE)
-
-### Citation
+### 13.3 Citation
 
 *Citation information will be added upon publication*
 
@@ -1095,9 +940,4 @@ MIT License - see [`DRpipe/LICENSE`](DRpipe/LICENSE)
 ## Support
 
 For questions or issues:
-- Open an issue on GitHub
-- Contact the maintainers via email
-
----
-
-**Last Updated:** January 2025
+- Open an issue on [GitHub repository](https://github.com/enockniyonkuru/drug_repurposing) or send an email to enock.niyonkuru@ucsf.edu

@@ -791,6 +791,17 @@ server <- function(input, output, session) {
         profile <- values$config_profiles[[input$selectedExistingProfile]]
         
         if (!is.null(profile) && !is.null(values$data)) {
+          # IMPORTANT: Load the drug signature path from the profile
+          # Adjust path to be relative to shiny_app directory
+          if (!is.null(profile$paths$signatures)) {
+            sig_path <- profile$paths$signatures
+            # If path doesn't start with "/" or "../", prepend "../scripts/"
+            if (!grepl("^/|^\\.\\./", sig_path)) {
+              sig_path <- file.path("../scripts", sig_path)
+            }
+            values$selected_drug_signature <- sig_path
+          }
+          
           # Update UI inputs with profile values
           updateSelectInput(session, "customGeneKey", 
                            selected = profile$params$gene_key %||% "SYMBOL")
@@ -1034,9 +1045,21 @@ server <- function(input, output, session) {
           pval_key_val <- profile_config$params$pval_key
           if (!is.null(pval_key_val) && pval_key_val == "") pval_key_val <- NULL
           
+          # IMPORTANT: Use the drug signature from the profile, not the global selection
+          profile_drug_signature <- if (!is.null(profile_config$paths$signatures)) {
+            sig_path <- profile_config$paths$signatures
+            # If path doesn't start with "/" or "../", prepend "../scripts/"
+            if (!grepl("^/|^\\.\\./", sig_path)) {
+              sig_path <- file.path("../scripts", sig_path)
+            }
+            sig_path
+          } else {
+            values$selected_drug_signature
+          }
+          
           # Build DRP arguments including sweep parameters if present
           drp_args <- list(
-            signatures_rdata = values$selected_drug_signature,
+            signatures_rdata = profile_drug_signature,
             disease_path = temp_file,
             drug_meta_path = "../scripts/data/cmap_drug_experiments_new.csv",
             drug_valid_path = "../scripts/data/cmap_valid_instances.csv",
