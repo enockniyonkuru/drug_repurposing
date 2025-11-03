@@ -131,6 +131,10 @@ tahoe_cmap_analysis/results/*
 # Ignore large annotated hits files (exceed GitHub limits)
 tahoe_cmap_analysis/data/*annotated_hits*.csv
 
+# Ignore large Tahoe data files (multi-GB files)
+tahoe_cmap_analysis/data/drug_signatures/tahoe/aggregated.h5
+tahoe_cmap_analysis/data/drug_signatures/tahoe/*.parquet
+
 # Temporary documentation files
 README_UPDATES.md
 

@@ -1,0 +1,29 @@
+===============================================
+  CMap Drug Signature Versions Report
+===============================================
+
+This report summarizes the dimensions (genes, signatures) of the three
+generated CMap .RData files.
+
+
+--- 1. Original Signatures ---
+File:     cmap_signatures.RData
+Genes:    13,071
+Sigs:     6,100 (Total columns - 1 for gene ID)
+Shape:    (13071, 6101)
+
+
+--- 2. Gene-Filtered Signatures ---
+File:     cmap_genes_filtered.RData
+Filter:   Filtered to include ONLY genes shared with Tahoe.
+Genes:    12,544
+Sigs:     6,100 (Total columns - 1 for gene ID)
+Shape:    (12544, 6101)
+
+
+--- 3. Gene- and Drug-Filtered Signatures ---
+File:     cmap_genes_drugs.RData
+Filter:   Filtered by shared genes AND shared drugs.
+Genes:    12,544
+Sigs:     433 (Total columns - 1 for gene ID)
+Shape:    (12544, 434)

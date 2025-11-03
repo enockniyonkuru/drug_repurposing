@@ -97,9 +97,9 @@ run_pipeline <- function(sig_path, sig_name, disease_file, disease_name, batch_t
     logfc_cols_pref  = "log2FC",
     logfc_cutoff     = 0.0,    # NO logFC filtering - accept all genes
     pval_key         = NULL,   # NO p-value filtering
-    pval_cutoff      = 1.0,    # Accept all p-values (if pval_key were set)
-    q_thresh         = 1.0,    # Accept all q-values - very lenient!
-    reversal_only    = FALSE,  # Accept both reversal AND mimicry
+    pval_cutoff      = 0.05,    # Accept all p-values (if pval_key were set)
+    q_thresh         = 0.05,    
+    reversal_only    = TRUE,  # Accept both reversal AND mimicry
     seed             = 123,
     verbose          = TRUE,
     analysis_id      = sig_name,  # Pass "CMAP" or "TAHOE" as analysis_id

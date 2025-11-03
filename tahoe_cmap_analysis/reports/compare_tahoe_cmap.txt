@@ -1,0 +1,37 @@
+========================================
+
+  Tahoe vs. CMap Comparison Report
+
+========================================
+
+--- 1. Cell Line Overlap Summary ---
+- CMap Unique Cell Lines:  5
+- Tahoe Unique Cell Lines: 50
+- Shared Cell Lines:       0
+- Cell Lines Only in CMap: 5
+- Cell Lines Only in Tahoe:50
+
+[INFO] No shared cell lines found after normalization.
+
+--- 2. Drug Overlap Summary ---
+- CMap Unique Drugs:  1307
+- Tahoe Unique Drugs: 356
+- Shared Drugs:       85
+- Drugs Only in CMap: 1222
+- Drugs Only in Tahoe:271
+
+[SUCCESS] Saved 90 shared drug mappings to: /Users/enockniyonkuru/Desktop/drug_repurposing/tahoe_cmap_analysis/reports/shared_drugs_tahoe_cmap.csv
+
+--- 3. Gene Overlap Summary ---
+Loaded 13,071 unique Entrez IDs from CMap.
+Mapped 25,084 out of 62,710 Tahoe genes.
+
+--- Gene Statistics ---
+Total Unique CMap Genes:  13,071
+Total Mapped Tahoe Genes: 25,084
+-----------------------------------
+Shared Genes (in both):   12,544
+Genes Unique to CMap:     527
+Genes Unique to Tahoe:    12,540
+
+[SUCCESS] Saved 12556 shared genes to: /Users/enockniyonkuru/Desktop/drug_repurposing/tahoe_cmap_analysis/reports/shared_genes_tahoe_cmap.csv
