@@ -294,12 +294,51 @@ query <- function(rand_cmap_scores, dz_cmap_scores, subset_comparison_id, analys
     # --- Two-sided p-values from the empirical null (frequency method) --------
     message("COMPUTING p-values")
     p_values <- sapply(dz_cmap_scores, function(score) {
-        sum(abs(rand_cmap_scores) >= abs(score)) / length(rand_cmap_scores)
+        count_extreme <- sum(abs(rand_cmap_scores) >= abs(score))
+        p_val <- count_extreme / length(rand_cmap_scores)
+        
+        # CRITICAL FIX: Prevent p-values from being exactly 0
+        # Use permutation-based minimum: 1/(N+1) as per Phipson & Smyth (2010)
+        if (p_val == 0) {
+            p_val <- 1 / (length(rand_cmap_scores) + 1)
+        }
+        
+        return(p_val)
     })
+    
+    # --- Diagnostic logging ---------------------------------------------------
+    message(sprintf("P-values computed: %d", length(p_values)))
+    message(sprintf("P-values == 0: %d (%.1f%%)", 
+                    sum(p_values == 0), 100 * mean(p_values == 0)))
+    message(sprintf("P-value range: [%.10f, %.10f]", 
+                    min(p_values), max(p_values)))
+    message(sprintf("P-values < 0.05: %d (%.1f%%)", 
+                    sum(p_values < 0.05), 100 * mean(p_values < 0.05)))
 
     # --- q-values (FDR correction) --------------------------------------------
     message("COMPUTING q-values")
-    q_values <- qvalue::qvalue(p_values)$qvalues
+    
+    # Add error handling for qvalue package
+    q_values <- tryCatch({
+        qvalue::qvalue(p_values)$qvalues
+    }, error = function(e) {
+        warning(sprintf("qvalue() failed: %s. Using p.adjust() instead.", e$message))
+        p.adjust(p_values, method = "BH")
+    })
+    
+    # --- Diagnostic logging for q-values --------------------------------------
+    message(sprintf("Q-values computed: %d", length(q_values)))
+    message(sprintf("Q-values == 0: %d (%.1f%%)", 
+                    sum(q_values == 0), 100 * mean(q_values == 0)))
+    message(sprintf("Q-value range: [%.10f, %.10f]", 
+                    min(q_values), max(q_values)))
+    message(sprintf("Q-values < 0.05: %d (%.1f%%)", 
+                    sum(q_values < 0.05), 100 * mean(q_values < 0.05)))
+    
+    # --- Final safety check ---------------------------------------------------
+    if (all(q_values == 0)) {
+        stop("CRITICAL ERROR: All q-values are 0. This indicates a problem with FDR correction.")
+    }
 
     # Annotate result set with provided analysis_id
     drugs <- data.frame(

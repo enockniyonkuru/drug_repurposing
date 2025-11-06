@@ -694,8 +694,26 @@ drug_repurposing/
 │   ├── app.R                          # Main app file
 │   ├── run.R                          # Helper launch script
 │   └── README.md                      # Shiny app documentation
-└── tahoe_cmap_analysis/               # Analysis of CMAP Vs Tahoe [Still in progress]
+└── tahoe_cmap_analysis/               # UNDER DEVELOPMENT - DO NOT USE
+    └── README.md                      # See directory README for details
 ```
+
+---
+
+## Important Note: Tahoe Integration Status
+
+**The `tahoe_cmap_analysis/` directory is currently under active development and is NOT fully integrated into the main pipeline.**
+
+- This directory contains experimental work comparing CMAP and TAHOE drug signature databases
+- The analysis tools and workflows in this directory are still being validated
+- **Please ignore this directory for now** if you're using the R package or Shiny app for standard drug repurposing analyses
+
+**For standard drug repurposing analyses using CMAP only:**
+- Use the DRpipe R package (see Section 6)
+- Use the Shiny app (see Section 7)
+- Both are fully functional and validated
+
+For more information about the TAHOE analysis work in progress, see [tahoe_cmap_analysis/README.md](tahoe_cmap_analysis/README.md).
 
 ---
 

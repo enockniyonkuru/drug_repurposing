@@ -1,10 +1,33 @@
 # TAHOE-CMAP Analysis Directory
 
-This directory contains the complete analysis comparing CMAP and TAHOE drug signature databases for drug repurposing across 58 disease signatures.
+## IMPORTANT: UNDER DEVELOPMENT - NOT FOR PRODUCTION USE
 
-## Quick Overview
+**This directory contains experimental work that is still under active development and validation.**
 
-This analysis systematically evaluated two computational drug repurposing methods (CMAP and TAHOE) to identify potential therapeutic candidates for 58 diseases. The study identified **6,161 total drug-disease associations** with **33 high-confidence drugs** validated by both methods.
+### Current Status
+- **TAHOE integration is NOT fully complete**
+- **Analysis tools are being validated**
+- **Results should be considered preliminary**
+- **Workflows are subject to change**
+
+### For Production Drug Repurposing Analysis
+**Please use the main DRpipe package and Shiny app instead:**
+- See main repository [README.md](../README.md) for instructions
+- Use DRpipe R package (Section 6)
+- Use Shiny app (Section 7)
+- Both are fully functional and validated for CMAP-based analyses
+
+---
+
+## About This Directory
+
+This directory contains experimental analysis comparing CMAP and TAHOE drug signature databases for drug repurposing across 58 disease signatures. The work is part of ongoing research to evaluate and integrate TAHOE as an alternative/complementary drug signature database.
+
+### Preliminary Findings
+
+This analysis systematically evaluated two computational drug repurposing methods (CMAP and TAHOE) to identify potential therapeutic candidates for 58 diseases. The preliminary study identified **6,161 total drug-disease associations** with **33 high-confidence drugs** validated by both methods.
+
+**Note:** These findings are preliminary and subject to further validation.
 
 ## Directory Structure
 
@@ -159,7 +182,7 @@ Each folder name follows the pattern: `[Disease]_[CMAP|TAHOE]_[Timestamp]`
   - Execution times
   - Quality metrics
 
-## 🔧 Scripts Directory (`scripts/`)
+## Scripts Directory (`scripts/`)
 
 Contains Python and R scripts for data processing and analysis:
 
@@ -281,7 +304,7 @@ cat results_1/Alzheimers_disease_CMAP_*/file*_hits_q\<1.00.csv
 4. Colorectal cancer (207 hits)
 5. Eczema (208 hits)
 
-## 🔍 Understanding the Analysis
+## Understanding the Analysis
 
 ### Two Analysis Strategies
 
@@ -322,7 +345,7 @@ Drug hits are validated against:
 - `../scripts/` - Main analysis scripts and configuration
 - `../shiny_app/` - Interactive visualization application
 
-## 💡 Tips for Navigation
+## Tips for Navigation
 
 1. **Start with the report**: Read `COMPREHENSIVE_STUDY_REPORT.md` for context
 2. **Check summaries first**: Use `data/*_summary_*.csv` files for overview
@@ -330,7 +353,7 @@ Drug hits are validated against:
 4. **Use filtered results**: Start with `results/filtered_q0p1/` for high-confidence hits
 5. **Validate with evidence**: Check `*_annotated_hits_with_open_targets.csv` files
 
-## ❓ Common Questions
+## Common Questions
 
 **Q: What's the difference between CMAP and TAHOE?**
 A: CMAP has broader drug coverage (1,309 drugs) while TAHOE has deeper profiling per drug (56,827 experiments). CMAP is better for discovery, TAHOE for validation.
@@ -346,5 +369,3 @@ A: 40.5% have existing evidence. Consensus predictions (both methods agree) have
 
 **Q: Where can I find drugs for my disease of interest?**
 A: Check `data/full_summary_drug_sets_by_disease.csv` or search in `data/drug_disease_combined.json`.
-
-

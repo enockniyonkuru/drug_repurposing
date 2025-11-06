@@ -156,7 +156,32 @@ Required R packages:
 - tidyverse
 - yaml
 - shinyjs
+- pheatmap
+- UpSetR
 - DRpipe (custom package)
+
+### Installation
+
+Install the required packages using:
+
+```r
+# Install CRAN packages
+install.packages(c(
+  "shiny",
+  "shinydashboard",
+  "DT",
+  "plotly",
+  "tidyverse",
+  "yaml",
+  "shinyjs",
+  "pheatmap",
+  "UpSetR"
+))
+
+# Install DRpipe (custom package)
+# Navigate to the DRpipe directory and install
+install.packages("path/to/DRpipe", repos = NULL, type = "source")
+```
 
 ## File Structure
 
@@ -184,4 +209,3 @@ shiny_app/
 - Try adjusting the log2FC cutoff (lower = more lenient)
 - Increase the q-value threshold
 - Check that your disease signature has sufficient genes
-

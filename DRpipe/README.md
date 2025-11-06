@@ -247,7 +247,7 @@ rand_scores <- random_score(
   cmap_signatures, 
   length(genes_up), 
   length(genes_down),
-  N_PERMUTATIONS = 100000,
+  N_PERMUTATIONS = 1000000,
   seed = 123
 )
 

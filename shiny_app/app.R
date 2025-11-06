@@ -989,6 +989,8 @@ server <- function(input, output, session) {
               n_support = drp$robust_hits$n_support,
               stringsAsFactors = FALSE
             )
+            # Sort by absolute cmap_score (strength) in descending order
+            values$drugs_valid <- values$drugs_valid[order(abs(values$drugs_valid$cmap_score), decreasing = TRUE), ]
             values$results <- values$drugs_valid
           } else {
             values$drugs_valid <- data.frame()
@@ -998,6 +1000,10 @@ server <- function(input, output, session) {
           # Single mode: use drugs_valid as normal
           values$results <- drp$drugs
           values$drugs_valid <- drp$drugs_valid
+          # Sort by absolute cmap_score (strength) in descending order
+          if (!is.null(values$drugs_valid) && nrow(values$drugs_valid) > 0) {
+            values$drugs_valid <- values$drugs_valid[order(abs(values$drugs_valid$cmap_score), decreasing = TRUE), ]
+          }
         }
         
         hit_count <- if (!is.null(values$drugs_valid)) nrow(values$drugs_valid) else 0
@@ -1122,6 +1128,8 @@ server <- function(input, output, session) {
           
           if (!is.null(drp$drugs_valid) && nrow(drp$drugs_valid) > 0) {
             drp$drugs_valid$profile <- profile_name
+            # Sort by absolute cmap_score (strength) in descending order
+            drp$drugs_valid <- drp$drugs_valid[order(abs(drp$drugs_valid$cmap_score), decreasing = TRUE), ]
             values$comparison_results[[profile_name]] <- drp$drugs_valid
             values$analysisLog <- paste0(values$analysisLog, "  → ", nrow(drp$drugs_valid), " hits\n")
           } else {

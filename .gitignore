@@ -134,6 +134,23 @@ tahoe_cmap_analysis/data/*annotated_hits*.csv
 # Ignore large Tahoe data files (multi-GB files)
 tahoe_cmap_analysis/data/drug_signatures/tahoe/aggregated.h5
 tahoe_cmap_analysis/data/drug_signatures/tahoe/*.parquet
+tahoe_cmap_analysis/data/drug_signatures/cmap/*.RData
+tahoe_cmap_analysis/data/drug_signatures/tahoe/*.RData
+tahoe_cmap_analysis/data/filtered_tahoe/*.parquet
+tahoe_cmap_analysis/data/analysis/
+tahoe_cmap_analysis/data/disease_signatures/
+tahoe_cmap_analysis/data/drug_evidence/
+tahoe_cmap_analysis/data/processed_data/
+tahoe_cmap_analysis/data/theodoris_lab/
+tahoe_cmap_analysis/dump/
+tahoe_cmap_analysis/reports/*.txt
+tahoe_cmap_analysis/reports/*.csv
+tahoe_cmap_analysis/reports/*.md
+tahoe_cmap_analysis/reports/*.png
+tahoe_cmap_analysis/reports/comparison_plots/
+tahoe_cmap_analysis/reports/corefibroid_diagnostics/
+tahoe_cmap_analysis/scripts/__pycache__/
+tahoe_cmap_analysis/venv/
 
 # Temporary documentation files
 README_UPDATES.md

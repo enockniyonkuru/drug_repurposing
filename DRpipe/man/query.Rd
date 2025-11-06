@@ -4,7 +4,12 @@
 \alias{query}
 \title{Assemble per-experiment results with p-values and q-values}
 \usage{
-query(rand_cmap_scores, dz_cmap_scores, subset_comparison_id)
+query(
+  rand_cmap_scores,
+  dz_cmap_scores,
+  subset_comparison_id,
+  analysis_id = "cmap"
+)
 }
 \arguments{
 \item{rand_cmap_scores}{numeric vector of null scores from random_score()}
@@ -12,6 +17,8 @@ query(rand_cmap_scores, dz_cmap_scores, subset_comparison_id)
 \item{dz_cmap_scores}{numeric vector of observed scores from query_score()}
 
 \item{subset_comparison_id}{string label for this query (e.g., dataset name)}
+
+\item{analysis_id}{string label for the analysis type (default: "cmap")}
 }
 \value{
 data.frame with experiment id, score, p, q, subset_comparison_id, analysis_id

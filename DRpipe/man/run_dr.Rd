@@ -10,6 +10,8 @@ run_dr(
   disease_pattern = NULL,
   cmap_meta_path = NULL,
   cmap_valid_path = NULL,
+  drug_meta_path = NULL,
+  drug_valid_path = NULL,
   out_dir = "scripts/results",
   gene_key = "SYMBOL",
   logfc_cols_pref = "log2FC",
@@ -28,9 +30,13 @@ run_dr(
 
 \item{disease_pattern}{Pattern to locate CSV inside a directory}
 
-\item{cmap_meta_path}{Path to CMAP experiment metadata CSV (optional)}
+\item{cmap_meta_path}{Path to CMAP experiment metadata CSV (optional, DEPRECATED)}
 
-\item{cmap_valid_path}{Path to CMAP valid instances CSV (optional)}
+\item{cmap_valid_path}{Path to CMAP valid instances CSV (optional, DEPRECATED)}
+
+\item{drug_meta_path}{Path to drug experiment metadata CSV (optional)}
+
+\item{drug_valid_path}{Path to drug valid instances CSV (optional)}
 
 \item{out_dir}{Output directory}
 
