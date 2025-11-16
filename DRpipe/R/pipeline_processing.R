@@ -52,7 +52,7 @@ DRP <- R6::R6Class(
     save_count_files     = FALSE,   # save per-threshold count files
     
     # --------- permutation configuration ---------
-    n_permutations    = 100000,   # fixed 100k permutations
+    n_permutations    = 100000,   # fixed 100k permutations for better p-value resolution
     save_null_scores  = FALSE,      # save cmap_random_scores_*.RData files
     
     # --------- output configuration ---------

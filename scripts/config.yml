@@ -9,9 +9,7 @@ execution:
   # Profile to use for runall.R (single profile execution)
   # runall_profile: "Sweep_CoreFibroid"
 
-  # runall_profile: "Tahoe_Chronic_granulomatous_disease_0.00"
-  # runall_profile: "CMAP_Chronic_granulomatous_disease_0.00"
-  runall_profile: "OG_CMAP_Chronic_granulomatous_disease_0.00"
+  runall_profile: "temp_1_CoreFibroid_tahoe_filtered_1M"
 
 
 
@@ -439,4 +437,55 @@ OG_CMAP_Chronic_granulomatous_disease_0.00:
 
 
 
+temp_1_CoreFibroid_cmap_filtered:
+  paths:
+    signatures: "/Users/enockniyonkuru/Desktop/drug_repurposing/tahoe_cmap_analysis/data/drug_signatures/cmap/cmap_genes_filtered.RData"
+    disease_file: "/Users/enockniyonkuru/Desktop/drug_repurposing/tahoe_cmap_analysis/data/disease_signatures/temp_singnatures/CoreFibroid_signature.csv"
+    drug_meta: "/Users/enockniyonkuru/Desktop/drug_repurposing/tahoe_cmap_analysis/data/drug_signatures/cmap/cmap_drug_experiments_new.csv"
+    drug_valid: null
+    out_dir: "results/temp_1_CoreFibroid_cmap_filtered"
+  params:
+    gene_key: "gene_symbol"
+    logfc_cols_pref: "common_experiment"
+    logfc_cutoff: 0.00        
+    pval_key: null           
+    pval_cutoff: 0.05       
+    q_thresh: 0.5
+    reversal_only: true
+    seed: 123
+    mode: "single"
+    sweep_cutoffs: null
+    sweep_min_frac: 0.20
+    sweep_min_genes: 200
+    combine_log2fc: "average"
+    robust_rule: "all"
+    robust_k: null
+    aggregate: "mean"
+    weights: null
 
+
+temp_1_CoreFibroid_tahoe_filtered_1M:
+  paths:
+    signatures: "/Users/enockniyonkuru/Desktop/drug_repurposing/tahoe_cmap_analysis/data/drug_signatures/tahoe/tahoe_genes_filtered.RData"
+    disease_file: "/Users/enockniyonkuru/Desktop/drug_repurposing/tahoe_cmap_analysis/data/disease_signatures/temp_singnatures/CoreFibroid_signature.csv"
+    drug_meta: "/Users/enockniyonkuru/Desktop/drug_repurposing/tahoe_cmap_analysis/data/drug_signatures/tahoe/tahoe_drug_experiments_new.csv"
+    drug_valid: null
+    out_dir: "results/temp_1_CoreFibroid_tahoe_filtered_1M"
+  params:
+    gene_key: "gene_symbol"
+    logfc_cols_pref: "common_experiment"
+    logfc_cutoff: 0.00        
+    pval_key: null           
+    pval_cutoff: 0.05       
+    q_thresh: 0.5
+    reversal_only: true
+    seed: 123
+    mode: "single"
+    sweep_cutoffs: null
+    sweep_min_frac: 0.20
+    sweep_min_genes: 200
+    combine_log2fc: "average"
+    robust_rule: "all"
+    robust_k: null
+    aggregate: "mean"
+    weights: null
