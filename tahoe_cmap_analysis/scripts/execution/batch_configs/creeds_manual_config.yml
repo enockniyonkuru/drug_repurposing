@@ -1,0 +1,48 @@
+# CREEDS MANUAL Disease Signatures Batch Configuration
+# This config file contains all parameters needed to run the DRpipe batch analysis
+# for CREEDS MANUAL disease signatures
+
+# ============================================================================
+# DISEASE CONFIGURATION
+# ============================================================================
+disease:
+  source: "CREEDS MANUAL"
+  directory: "/Users/enockniyonkuru/Desktop/drug_repurposing/tahoe_cmap_analysis/data/disease_signatures/creeds_manual_disease_signatures_standardised"
+
+# ============================================================================
+# CMAP DRUG SIGNATURES CONFIGURATION
+# ============================================================================
+cmap:
+  signatures: "/Users/enockniyonkuru/Desktop/drug_repurposing/tahoe_cmap_analysis/data/drug_signatures/cmap/cmap_signatures.RData"
+  metadata: "/Users/enockniyonkuru/Desktop/drug_repurposing/tahoe_cmap_analysis/data/drug_signatures/cmap/cmap_drug_experiments_new.csv"
+  valid_instances: "/Users/enockniyonkuru/Desktop/drug_repurposing/tahoe_cmap_analysis/data/drug_signatures/cmap/cmap_valid_instances_OG_015.csv"
+
+# ============================================================================
+# TAHOE DRUG SIGNATURES CONFIGURATION
+# ============================================================================
+tahoe:
+  signatures: "/Users/enockniyonkuru/Desktop/drug_repurposing/tahoe_cmap_analysis/data/drug_signatures/tahoe/tahoe_signatures.RData"
+  metadata: "/Users/enockniyonkuru/Desktop/drug_repurposing/tahoe_cmap_analysis/data/drug_signatures/tahoe/tahoe_drug_experiments_new.csv"
+
+# ============================================================================
+# GENE CONVERSION AND ANALYSIS
+# ============================================================================
+analysis:
+  gene_table: "/Users/enockniyonkuru/Desktop/drug_repurposing/tahoe_cmap_analysis/data/gene_id_conversion_table.tsv"
+  logfc_cutoff: 0.0
+  qval_threshold: 0.5
+
+# ============================================================================
+# OUTPUT CONFIGURATION
+# ============================================================================
+output:
+  root_directory: "/Users/enockniyonkuru/Desktop/drug_repurposing/tahoe_cmap_analysis/results/creed_manual_standardised_results_OG_exp_8"
+  report_directory: "/Users/enockniyonkuru/Desktop/drug_repurposing/tahoe_cmap_analysis/reports"
+  report_prefix: "creeds_manual"
+
+# ============================================================================
+# RUNTIME OPTIONS
+# ============================================================================
+runtime:
+  skip_existing_results: true
+  verbose: true

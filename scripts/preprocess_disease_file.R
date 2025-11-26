@@ -1,6 +1,9 @@
 #!/usr/bin/env Rscript
-# Preprocess disease signature file to match DRpipe expected format
-# This script renames gene_symbol to SYMBOL and keeps mean_logfc
+#' Preprocess Disease Signature Files
+#'
+#' Standardizes disease signature files to match DRpipe expected format.
+#' Renames columns (gene_symbol to SYMBOL, mean_logfc to log2FC) for
+#' compatibility with downstream analysis pipeline.
 
 args <- commandArgs(trailingOnly = TRUE)
 if (length(args) < 2) {

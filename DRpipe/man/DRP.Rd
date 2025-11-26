@@ -74,7 +74,7 @@ and can run the whole pipeline with a single call.
   heterogeneity_thresh = 0.05,
   gene_conversion_table = NULL,
   save_count_files = FALSE,
-  n_permutations = 1e+06,
+  n_permutations = 1e+05,
   save_null_scores = FALSE,
   per_threshold_dirs = FALSE,
   blood_label = "blood",

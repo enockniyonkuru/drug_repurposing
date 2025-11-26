@@ -26,6 +26,8 @@ man/*.pdf
 *_cache/
 cache/
 dump/
+manuscript/
+tahoe_cmap_analysis/dump/
 *.utf8.md
 *.knit.md
 .Rhistory
@@ -46,6 +48,7 @@ renv/library/
 renv/staging/
 packrat/lib*/
 packrat/src/
+tahoe_cmap_analysis/venv/
 
 ############################
 # Compiled code (Rcpp, etc.)

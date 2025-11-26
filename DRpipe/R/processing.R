@@ -1,22 +1,8 @@
-# ------------------------------------------------------------------------------
-# File: processing.R
-#
-# Core functions for processing disease differential expression (DEG) signatures
-# and comparing them against Connectivity Map (CMap) drug perturbation profiles.
-# Includes:
-#   - clean_table(): preprocess/filter a DEG table, map to Entrez IDs, restrict
-#                    to the CMap gene universe
-#   - cmap_score():  compute connectivity (reversal) score between a gene
-#                    signature and a single drug signature
-#   - random_score():generate a null distribution of connectivity scores by
-#                    sampling random up/down genes
-#   - query_score(): compute connectivity scores for a disease signature across
-#                    all drug signatures/experiments
-#   - query():       assemble per-experiment scores with p- and q-values
-#
-# These building blocks support a drug repurposing pipeline that prioritizes
-# compounds whose transcriptional effects oppose the disease signature.
-# ------------------------------------------------------------------------------
+#' Core Drug Repurposing Processing Functions
+#'
+#' Functions for processing disease differential expression signatures and
+#' comparing them against drug perturbation profiles. Includes cleaning,
+#' scoring, and statistical evaluation of drug-disease connections.
 
 # --- Dependencies via roxygen imports (populates NAMESPACE) -------------------
 #' @keywords internal

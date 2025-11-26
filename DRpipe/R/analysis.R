@@ -1,16 +1,8 @@
-# ------------------------------------------------------------------------------
-# File: analysis.R
-#
-# Visualization and downstream analysis utilities for the drug-repurposing
-# pipeline. These functions:
-#   • summarize and plot score distributions across datasets,
-#   • filter/annotate valid drug instances via CMAP metadata,
-#   • prepare matrices for reversal heatmaps and overlap summaries,
-#   • draw heatmaps and UpSet/venn-style intersections,
-#   • assemble per-drug score/q-value tables for reporting.
-# Use together with the processing step to compare disease signatures to CMAP
-# and visualize consistent candidate drugs across datasets.
-# ------------------------------------------------------------------------------
+#' Visualization and Analysis Functions
+#'
+#' Functions for visualizing and analyzing drug repurposing results. Includes
+#' score distribution plots, filtering valid instances, preparing matrices for
+#' heatmaps, and generating summary reports across multiple analyses.
 
 
 # ---- Plot the distribution of reversal scores --------------------------------
@@ -88,7 +80,10 @@ valid_instance <- function(x, cmap_exp) {
 #'
 #' @return The input matrix with column names replaced by drug names.
 #' @export
-h_drug_names <- function(cmap_sig, cmap_exp = cmap_experiments_valid) {
+h_drug_names <- function(cmap_sig, cmap_exp) {
+    if (missing(cmap_exp)) {
+        stop("`cmap_exp` parameter is required. Please provide the experiment metadata.", call. = FALSE)
+    }
     if (!is.null(dim(cmap_sig))) {
         old_id <- colnames(cmap_sig)
         new_id <- strtoi(sub("^V", "", old_id)) - 1
@@ -111,14 +106,25 @@ h_drug_names <- function(cmap_sig, cmap_exp = cmap_experiments_valid) {
 #' @param x data.frame with at least \code{exp_id} for selected experiments.
 #' @param dz_sig data.frame with columns \code{GeneID}, \code{logFC}.
 #' @param cmap_sig matrix/data.frame: first column Entrez IDs, others ranks.
+#' @param cmap_exp data.frame with \code{id} and drug \code{name} for mapping experiment IDs to drug names.
 #' @return data.frame with \code{GeneID}, disease rank, and ranked drug columns.
 #' @export
-prepare_heatmap <- function(x, dz_sig, cmap_sig = cmap_signatures) {
+prepare_heatmap <- function(x, dz_sig, cmap_sig = cmap_signatures, cmap_exp = NULL) {
     # Convert `exp_id` (1-based across experiments) to CMAP column indices (+1 to account for GeneID column)
     cmap_idx <- x$exp_id + 1
 
     # Subset CMAP to (GeneID + selected experiment columns)
     drug_sig <- cmap_sig[, c(1, cmap_idx)]  # first col is gene id
+
+    # Ensure gene ID types match between disease signature and cmap signatures.
+    # Some inputs have GeneID as character while cmap's V1 is integer; coerce
+    # both to character to make the merge robust.
+    if (ncol(drug_sig) >= 1) {
+        drug_sig[, 1] <- as.character(drug_sig[, 1])
+    }
+    if (!is.null(dz_sig$GeneID)) {
+        dz_sig$GeneID <- as.character(dz_sig$GeneID)
+    }
 
     if (!is.null(dim(drug_sig))) {
         # Merge DZ signature with selected drug signatures on GeneID
@@ -136,8 +142,13 @@ prepare_heatmap <- function(x, dz_sig, cmap_sig = cmap_signatures) {
         }
 
         # Replace generic "Vxxx" experiment labels with drug names
-        temp <- h_drug_names(drug_dz_sig[, c(-1, -2), drop = FALSE])
-        drug_dz_sig <- cbind(drug_dz_sig[, 1:2], temp)
+        if (!is.null(cmap_exp)) {
+            temp <- h_drug_names(drug_dz_sig[, c(-1, -2), drop = FALSE], cmap_exp = cmap_exp)
+            drug_dz_sig <- cbind(drug_dz_sig[, 1:2], temp)
+        } else {
+            # If cmap_exp not provided, keep original column names
+            warning("cmap_exp not provided to prepare_heatmap; keeping original column names")
+        }
         return(drug_dz_sig)
     } else {
         return(NULL)
@@ -163,10 +174,10 @@ prepare_heatmap <- function(x, dz_sig, cmap_sig = cmap_signatures) {
 #' @importFrom gplots redblue
 #' @importFrom grDevices jpeg dev.off
 #' @importFrom graphics layout par image axis text
-pl_heatmap <- function(x, dz_sig, cmap_sig = cmap_signatures, dataset,
+pl_heatmap <- function(x, dz_sig, cmap_sig = cmap_signatures, dataset, cmap_exp = NULL,
                        width = 12, height = 10, units = "in", res = 300,
                        save = "heatmap_cmap_hits.jpg", path = dir.out.img) {
-    drug_dz_sig <- prepare_heatmap(x, dz_sig, cmap_sig)
+    drug_dz_sig <- prepare_heatmap(x, dz_sig, cmap_sig, cmap_exp = cmap_exp)
     if (!is.null(drug_dz_sig)) {
         # Drop the GeneID column for image()
         drug_dz_sig <- drug_dz_sig[, -1]

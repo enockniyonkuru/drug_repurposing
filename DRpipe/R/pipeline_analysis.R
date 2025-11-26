@@ -1,6 +1,8 @@
-#' DRA: Drug Repurposing Analysis (R6)
-#' Works from saved *_results.RData, annotates, plots, and summarizes across runs.
-#' @export
+#' DRA: Drug Repurposing Analysis Class
+#'
+#' R6 class for post-processing and analyzing completed pipeline runs. Loads
+#' results, filters valid instances, annotates drugs, and generates plots and
+#' comprehensive summary reports across multiple experiments.
 DRA <- R6::R6Class(
   "DRA",
   public = list(
@@ -66,6 +68,8 @@ DRA <- R6::R6Class(
       }
       report_runs(self$drugs, self$signatures,
                   cmap_signatures_path = self$cmap_signatures_path,
+                  cmap_meta_path = self$cmap_meta_path,
+                  cmap_valid_path = self$cmap_valid_path,
                   out_dir = self$analysis_dir)
       invisible(self)
     },
@@ -132,29 +136,74 @@ annotate_filter_runs <- function(drugs_list, cmap_meta_path, cmap_valid_path,
 #' @param drugs_list Named list of drug result data frames from multiple runs
 #' @param signatures_list Named list of signature data frames from multiple runs
 #' @param cmap_signatures_path Path to RData file containing CMAP signatures
+#' @param cmap_meta_path Path to CMAP experiment metadata CSV file (optional)
+#' @param cmap_valid_path Path to CMAP valid instances CSV file (optional)
 #' @param out_dir Output directory for reports and plots (default: "scripts/results/analysis")
 #' @export
 report_runs <- function(drugs_list, signatures_list, cmap_signatures_path,
+                        cmap_meta_path = NULL, cmap_valid_path = NULL,
                         out_dir = "scripts/results/analysis") {
-  io_ensure_dir(out_dir); io_ensure_dir(file.path(out_dir, "img"))
+  io_ensure_dir(out_dir)
+  img_dir <- file.path(out_dir, "img")
+  io_ensure_dir(img_dir)
+  
   env <- new.env(parent = emptyenv())
   load(cmap_signatures_path, envir = env)
   cmap_signatures <- if (exists("cmap_signatures", envir = env)) get("cmap_signatures", envir = env) else get(ls(env)[[1]], envir = env)
+  
   # distributions
-  try(pl_hist_revsc(drugs_list, save = "dist_rev_score.jpeg",
-                    path = file.path(out_dir, "img"), width = 1500), silent = TRUE)
+  tryCatch({
+    pl_hist_revsc(drugs_list, save = "dist_rev_score.jpeg",
+                  path = img_dir, width = 1500)
+    cat("[report_runs] Generated distribution plot\n")
+  }, error = function(e) {
+    warning("Failed to generate distribution plot: ", e$message)
+  })
+  
   for (nm in names(drugs_list)) {
     x  <- drugs_list[[nm]]
     dz <- signatures_list[[nm]]
-    try(pl_cmap_score(x, save = file.path(out_dir, "img", paste0(nm, "_cmap_score.jpg"))), silent = TRUE)
-    try(pl_heatmap(x, dz, cmap_signatures, nm,
-                   width = 12, height = 10, units = "in",
-                   save = file.path(out_dir, "img", paste0(nm, "_heatmap_cmap_hits.jpg"))), silent = TRUE)
-    try({
-      tab <- prepare_heatmap(x, dz_sig = dz, cmap_signatures)
+    
+    # Plot CMap scores
+    tryCatch({
+      pl_cmap_score(x, path = img_dir, save = paste0(nm, "_cmap_score.jpg"))
+      cat("[report_runs] Generated CMap score plot for:", nm, "\n")
+    }, error = function(e) {
+      warning("Failed to generate CMap score plot for ", nm, ": ", e$message)
+    })
+    
+    # Plot heatmap
+    tryCatch({
+      # Load cmap_experiments_valid for drug name mapping
+      cmap_exp_for_heatmap <- NULL
+      if (!is.null(cmap_meta_path) && !is.null(cmap_valid_path) && 
+          file.exists(cmap_meta_path) && file.exists(cmap_valid_path)) {
+        cmap_experiments <- utils::read.csv(cmap_meta_path, stringsAsFactors = FALSE)
+        valid_instances <- utils::read.csv(cmap_valid_path, stringsAsFactors = FALSE)
+        cmap_exp_for_heatmap <- merge(cmap_experiments, valid_instances, by = "id")
+        cmap_exp_for_heatmap <- subset(cmap_exp_for_heatmap, valid == 1 & DrugBank.ID != "NULL")
+      }
+      
+      pl_heatmap(x, dz, cmap_signatures, nm, cmap_exp = cmap_exp_for_heatmap,
+                 width = 12, height = 10, units = "in",
+                 path = img_dir, save = "heatmap_cmap_hits.jpg")
+      cat("[report_runs] Generated heatmap for:", nm, "\n")
+    }, error = function(e) {
+      warning("Failed to generate heatmap for ", nm, ": ", e$message)
+    })
+    
+    # Save signature table
+    tryCatch({
+      tab <- prepare_heatmap(x, dz_sig = dz, cmap_signatures, cmap_exp = cmap_exp_for_heatmap)
       utils::write.csv(tab, file = file.path(out_dir, paste0(nm, "_drug_dz_signature_all_hits.csv")), row.names = FALSE)
-    }, silent = TRUE)
-    if (nrow(x)) utils::write.csv(x, file = file.path(out_dir, paste0(nm, "_hits.csv")), row.names = FALSE)
+    }, error = function(e) {
+      warning("Failed to save signature table for ", nm, ": ", e$message)
+    })
+    
+    # Save hits table
+    if (nrow(x)) {
+      utils::write.csv(x, file = file.path(out_dir, paste0(nm, "_hits.csv")), row.names = FALSE)
+    }
   }
   invisible(TRUE)
 }
@@ -164,13 +213,38 @@ report_runs <- function(drugs_list, signatures_list, cmap_signatures_path,
 #' @param out_dir Output directory for summary plots and files (default: "scripts/results/analysis")
 #' @export
 summarize_across_runs <- function(drugs_list, out_dir = "scripts/results/analysis") {
-  io_ensure_dir(out_dir); io_ensure_dir(file.path(out_dir, "img"))
+  io_ensure_dir(out_dir)
+  img_dir <- file.path(out_dir, "img")
+  io_ensure_dir(img_dir)
+  
   drugs_integrated <- do.call("rbind", drugs_list)
-  try(pl_overlap(drugs_integrated, save = file.path(out_dir, "img", "hits_overlap_heatmap.jpg")), silent = TRUE)
-  try(pl_overlap(drugs_integrated, at_least2 = TRUE, width = 7,
-                 save = file.path(out_dir, "img", "hits_overlap_atleast2_heatmap.jpg")), silent = TRUE)
-  ls <- prepare_upset_drug(drugs_integrated)
-  try(pl_upset(ls, save = file.path(out_dir, "img", "upset.jpg")), silent = TRUE)
+  
+  # Overlap heatmap (all drugs)
+  tryCatch({
+    pl_overlap(drugs_integrated, path = img_dir, save = "hits_overlap_heatmap.jpg")
+    cat("[summarize_across_runs] Generated overlap heatmap (all drugs)\n")
+  }, error = function(e) {
+    warning("Failed to generate overlap heatmap: ", e$message)
+  })
+  
+  # Overlap heatmap (at least 2 datasets)
+  tryCatch({
+    pl_overlap(drugs_integrated, at_least2 = TRUE, width = 7,
+               path = img_dir, save = "hits_overlap_atleast2_heatmap.jpg")
+    cat("[summarize_across_runs] Generated overlap heatmap (at least 2 datasets)\n")
+  }, error = function(e) {
+    warning("Failed to generate overlap heatmap (at least 2): ", e$message)
+  })
+  
+  # UpSet plot
+  tryCatch({
+    ls <- prepare_upset_drug(drugs_integrated)
+    pl_upset(ls, path = img_dir, save = "upset.jpg")
+    cat("[summarize_across_runs] Generated UpSet plot\n")
+  }, error = function(e) {
+    warning("Failed to generate UpSet plot: ", e$message)
+  })
+  
   invisible(TRUE)
 }
 

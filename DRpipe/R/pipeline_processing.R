@@ -1,9 +1,8 @@
-#' DRP: Drug Repurposing Pipeline (R6)
+#' DRP: Drug Repurposing Pipeline Class
 #'
-#' Wraps the processing + analysis flow so users set parameters once
-#' and can run the whole pipeline with a single call.
-#'
-#' @export
+#' R6 class for complete drug repurposing pipeline execution. Orchestrates disease
+#' signature processing, drug comparison, statistical analysis, and result generation
+#' with support for parameter sweeps and meta-analysis filters.
 DRP <- R6::R6Class(
   "DRP",
   public = list(
@@ -64,11 +63,13 @@ DRP <- R6::R6Class(
 
     # --------- pipeline state (filled as it runs) ---------
     cmap_signatures    = NULL,
+    cmap_sig           = NULL,  # backward-compatible alias for cmap_signatures
     dz_signature_raw   = NULL,
     dz_signature       = NULL,
     dz_signature_list  = NULL,  # for combine_log2fc handling
     dz_genes_up        = NULL,
     dz_genes_down      = NULL,
+    disease_sig        = NULL,  # backward-compatible alias for dz_signature
     rand_scores        = NULL,
     obs_scores         = NULL,
     drugs              = NULL,
@@ -216,6 +217,8 @@ DRP <- R6::R6Class(
         if (!length(nm)) stop("No objects found in ", self$signatures_rdata)
         self$cmap_signatures <- get(nm[[1]], envir = env)
       }
+      # Backward-compatible alias expected by some callers
+      self$cmap_sig <- self$cmap_signatures
       invisible(self)
     },
 
@@ -385,6 +388,8 @@ DRP <- R6::R6Class(
         
         # For backward compatibility, also set the original fields
         self$dz_signature <- cleaned
+        # Backward-compatible alias expected by some callers (shiny/test scripts)
+        self$disease_sig <- self$dz_signature
         self$dz_genes_up <- self$dz_signature_list[["average"]]$up_ids
         self$dz_genes_down <- self$dz_signature_list[["average"]]$down_ids
         
@@ -453,6 +458,8 @@ DRP <- R6::R6Class(
         # For backward compatibility, use first column as default
         first_col <- lc_cols[[1]]
         self$dz_signature <- self$dz_signature_list[[first_col]]$signature
+        # Backward-compatible alias
+        self$disease_sig <- self$dz_signature
         self$dz_genes_up <- self$dz_signature_list[[first_col]]$up_ids
         self$dz_genes_down <- self$dz_signature_list[[first_col]]$down_ids
       }
@@ -543,7 +550,7 @@ DRP <- R6::R6Class(
       # Plot histogram of reversal scores
       tryCatch({
         pl_hist_revsc(list(self$drugs), 
-                      save = "imgdist_rev_score.jpeg", 
+                      save = "dist_rev_score.jpeg", 
                       path = img_dir)
         self$log("Generated histogram of reversal scores")
       }, error = function(e) {
@@ -554,13 +561,39 @@ DRP <- R6::R6Class(
       if (!is.null(self$drugs_valid) && nrow(self$drugs_valid) > 0) {
         tryCatch({
           pl_cmap_score(self$drugs_valid, 
-                        save = file.path(img_dir, "cmap_score.jpg"))
+                        path = file.path(img_dir, "cmap_score.jpg"))
           self$log("Generated CMap score plot")
         }, error = function(e) {
           self$log("Warning: Could not generate CMap score plot - %s", e$message)
         })
+        
+        # Generate heatmap if we have disease signature and cmap signatures
+        if (!is.null(self$dz_signature) && !is.null(self$cmap_signatures)) {
+          tryCatch({
+            # Load cmap_experiments_valid for drug name mapping
+            cmap_exp_for_heatmap <- NULL
+            if (!is.null(self$cmap_meta_path) && !is.null(self$cmap_valid_path) && 
+                file.exists(self$cmap_meta_path) && file.exists(self$cmap_valid_path)) {
+              cmap_experiments <- utils::read.csv(self$cmap_meta_path, stringsAsFactors = FALSE)
+              valid_instances <- utils::read.csv(self$cmap_valid_path, stringsAsFactors = FALSE)
+              cmap_exp_for_heatmap <- merge(cmap_experiments, valid_instances, by = "id")
+              cmap_exp_for_heatmap <- subset(cmap_exp_for_heatmap, valid == 1 & DrugBank.ID != "NULL")
+            }
+            
+            pl_heatmap(self$drugs_valid, 
+                      self$dz_signature, 
+                      self$cmap_signatures, 
+                      dataset = self$dataset_label,
+                      cmap_exp = cmap_exp_for_heatmap,
+                      path = img_dir,
+                      save = "heatmap_cmap_hits.jpg")
+            self$log("Generated disease-drug reversal heatmap")
+          }, error = function(e) {
+            self$log("Warning: Could not generate heatmap - %s", e$message)
+          })
+        }
       } else {
-        self$log("No valid drugs found for CMap score plot")
+        self$log("No valid drugs found for CMap score plot and heatmap")
       }
       
       invisible(self)

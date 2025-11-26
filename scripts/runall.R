@@ -1,8 +1,10 @@
 #!/usr/bin/env Rscript
-
-suppressPackageStartupMessages(library(DRpipe))
-
-# 0) Load helper function and execution config to get profile
+#' Run Complete Drug Repurposing Pipeline
+#'
+#' Executes the full drug repurposing analysis pipeline using configuration
+#' from YAML file. Supports single and sweep modes for parameter exploration
+#' and generates comprehensive ranked drug candidate results.
+library(DRpipe)
 source("load_execution_config.R")
 exec_cfg <- load_execution_config("config.yml")
 profile_to_use <- exec_cfg$runall_profile %||% "default"

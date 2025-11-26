@@ -9,7 +9,7 @@ execution:
   # Profile to use for runall.R (single profile execution)
   # runall_profile: "Sweep_CoreFibroid"
 
-  runall_profile: "temp_1_CoreFibroid_tahoe_filtered_1M"
+  runall_profile: "Tahoe_Chronic_granulomatous_disease_0.00"
 
 
 
@@ -321,6 +321,44 @@ Sweep_CoreFibroid:
 
 
 
+# Sample TAHOE analysis profile
+Tahoe_Chronic_granulomatous_disease_0.00:
+  paths:
+    # TAHOE drug reference signatures database
+    signatures: "data/drug_signatures/tahoe_signatures.RData"
+    
+    # Disease gene expression signature (using available CoreFibroid data)
+    disease_file: "data/disease_signatures/CoreFibroidSignature_All_Datasets.csv"
+    
+    # TAHOE drug metadata
+    drug_meta: "data/drug_signatures/tahoe_drug_experiments_new.csv"
+    
+    # TAHOE valid instances list
+    drug_valid: "data/drug_signatures/tahoe_valid_instances_OG_035.csv"
+    
+    # Output directory
+    out_dir: "results"
+    
+  params:
+    gene_key: "SYMBOL"
+    logfc_cols_pref: "log2FC"
+    logfc_cutoff: 0.0
+    pval_key: null
+    pval_cutoff: 0.05
+    q_thresh: 0.05
+    reversal_only: true
+    seed: 123
+    mode: "single"
+    sweep_cutoffs: null
+    sweep_min_frac: 0.20
+    sweep_min_genes: 200
+    combine_log2fc: "average"
+    robust_rule: "all"
+    robust_k: null
+    aggregate: "mean"
+    weights: null
+
+
 # Production profile template (customize paths/thresholds as needed)
 production:
   paths:
@@ -350,142 +388,3 @@ production:
     weights: null
 
 
-
-
-Tahoe_Chronic_granulomatous_disease_0.00:
-  paths:
-    signatures: "/Users/enockniyonkuru/Desktop/drug_repurposing/scripts/data/drug_rep_tahoe_ranks_shared_genes_drugs.RData"
-    disease_file: "/Users/enockniyonkuru/Desktop/tahoe_analysis/data/disease_signature/creeds_disease_signature/Chronic_granulomatous_disease_signature.csv"
-    drug_meta: "data/tahoe_drug_experiments_new.csv"  # Use tahoe metadata for tahoe experiments
-    drug_valid: null  # Do NOT filter by drug validation instances
-    out_dir: "results"
-  params:
-    gene_key: "gene_symbol"
-    logfc_cols_pref: "common_experiment"
-    logfc_cutoff: 0.00
-    pval_key: null      
-    pval_cutoff: 0.05        # P-value threshold for filtering genes
-    q_thresh: 0.05            # Changed from 0.00 to 1.0 to accept all q-values
-    reversal_only: false     # Changed from true to false to accept both reversal and mimicry
-    seed: 123
-    mode: "single"
-    analysis_id: "tahoe"     # Identify this as TAHOE analysis
-    sweep_cutoffs: null
-    sweep_min_frac: 0.20
-    sweep_min_genes: 200
-    combine_log2fc: null
-    robust_rule: "all"
-    robust_k: null
-    aggregate: null
-    weights: null
-
-CMAP_Chronic_granulomatous_disease_0.00:
-  paths:
-    signatures: "/Users/enockniyonkuru/Desktop/drug_repurposing/scripts/data/drug_rep_cmap_ranks_shared_genes_drugs.RData"
-    disease_file: "/Users/enockniyonkuru/Desktop/tahoe_analysis/data/disease_signature/creeds_disease_signature/Chronic_granulomatous_disease_signature.csv"
-    drug_meta: "data/cmap_drug_experiments_new.csv"  # Use cmap metadata for cmap experiments
-    drug_valid: null  # Do NOT filter by drug validation instances
-    out_dir: "results"
-  params:
-    gene_key: "gene_symbol"
-    logfc_cols_pref: "common_experiment"
-    logfc_cutoff: 0.00
-    pval_key: null
-    pval_cutoff: 0.05        
-    q_thresh: 0.05            # Changed from 0.00 to 1.0 to accept all q-values
-    reversal_only: false     # Changed from true to false to accept both reversal and mimicry
-    seed: 123
-    mode: "single"
-    analysis_id: "CMAP"     
-    sweep_cutoffs: null
-    sweep_min_frac: 0.20
-    sweep_min_genes: 200
-    combine_log2fc: null
-    robust_rule: "all"
-    robust_k: null
-    aggregate: null
-    weights: null
-
-
-OG_CMAP_Chronic_granulomatous_disease_0.00:
-  paths:
-    signatures: "/Users/enockniyonkuru/Desktop/drug_repurposing/scripts/data/cmap_signatures.RData"
-    disease_file: "/Users/enockniyonkuru/Desktop/tahoe_analysis/data/disease_signature/creeds_disease_signature/Chronic_granulomatous_disease_signature.csv"
-    drug_meta: "data/cmap_drug_experiments_new.csv"  # Use cmap metadata for cmap experiments
-    drug_valid: null  # Do NOT filter by drug validation instances
-    out_dir: "results"
-  params:
-    gene_key: "gene_symbol"
-    logfc_cols_pref: "common_experiment"
-    logfc_cutoff: 0.00
-    pval_key: null
-    pval_cutoff: 0.05        
-    q_thresh: 0.05            # Changed from 0.00 to 1.0 to accept all q-values
-    reversal_only: false     # Changed from true to false to accept both reversal and mimicry
-    seed: 123
-    mode: "single"
-    analysis_id: "CMAP"     
-    sweep_cutoffs: null
-    sweep_min_frac: 0.20
-    sweep_min_genes: 200
-    combine_log2fc: null
-    robust_rule: "all"
-    robust_k: null
-    aggregate: null
-    weights: null
-
-
-
-
-temp_1_CoreFibroid_cmap_filtered:
-  paths:
-    signatures: "/Users/enockniyonkuru/Desktop/drug_repurposing/tahoe_cmap_analysis/data/drug_signatures/cmap/cmap_genes_filtered.RData"
-    disease_file: "/Users/enockniyonkuru/Desktop/drug_repurposing/tahoe_cmap_analysis/data/disease_signatures/temp_singnatures/CoreFibroid_signature.csv"
-    drug_meta: "/Users/enockniyonkuru/Desktop/drug_repurposing/tahoe_cmap_analysis/data/drug_signatures/cmap/cmap_drug_experiments_new.csv"
-    drug_valid: null
-    out_dir: "results/temp_1_CoreFibroid_cmap_filtered"
-  params:
-    gene_key: "gene_symbol"
-    logfc_cols_pref: "common_experiment"
-    logfc_cutoff: 0.00        
-    pval_key: null           
-    pval_cutoff: 0.05       
-    q_thresh: 0.5
-    reversal_only: true
-    seed: 123
-    mode: "single"
-    sweep_cutoffs: null
-    sweep_min_frac: 0.20
-    sweep_min_genes: 200
-    combine_log2fc: "average"
-    robust_rule: "all"
-    robust_k: null
-    aggregate: "mean"
-    weights: null
-
-
-temp_1_CoreFibroid_tahoe_filtered_1M:
-  paths:
-    signatures: "/Users/enockniyonkuru/Desktop/drug_repurposing/tahoe_cmap_analysis/data/drug_signatures/tahoe/tahoe_genes_filtered.RData"
-    disease_file: "/Users/enockniyonkuru/Desktop/drug_repurposing/tahoe_cmap_analysis/data/disease_signatures/temp_singnatures/CoreFibroid_signature.csv"
-    drug_meta: "/Users/enockniyonkuru/Desktop/drug_repurposing/tahoe_cmap_analysis/data/drug_signatures/tahoe/tahoe_drug_experiments_new.csv"
-    drug_valid: null
-    out_dir: "results/temp_1_CoreFibroid_tahoe_filtered_1M"
-  params:
-    gene_key: "gene_symbol"
-    logfc_cols_pref: "common_experiment"
-    logfc_cutoff: 0.00        
-    pval_key: null           
-    pval_cutoff: 0.05       
-    q_thresh: 0.5
-    reversal_only: true
-    seed: 123
-    mode: "single"
-    sweep_cutoffs: null
-    sweep_min_frac: 0.20
-    sweep_min_genes: 200
-    combine_log2fc: "average"
-    robust_rule: "all"
-    robust_k: null
-    aggregate: "mean"
-    weights: null

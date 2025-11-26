@@ -1,0 +1,8 @@
+
+=== CMAP VALIDATION STATISTICS ===
+Filter Mode: rvalue | Threshold: 0.15
+------------------------------
+Total experiments: 6099
+Valid (1):         1968
+Invalid (0):       4131
+Percentage valid:  32.27%
