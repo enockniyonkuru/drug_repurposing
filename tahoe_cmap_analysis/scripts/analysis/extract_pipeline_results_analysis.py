@@ -5,7 +5,6 @@ Analyze Pipeline Results Across Diseases
 Comprehensively analyzes drug discovery pipeline outputs for multiple diseases.
 Filters by q-value thresholds, compares CMAP vs Tahoe hits, and crossreferences
 with known drugs. Generates detailed analysis summaries and reports.
-"""
 
 This script is designed to be reusable. It:
 1.  Accepts an input directory of pipeline results (e.g., .../sirota_lab_disease_results_genes_drugs).
@@ -29,9 +28,10 @@ This script is designed to be reusable. It:
 6.  Generates a single summary report.
 
 Example usage:
-python tahoe_cmap_analysis/scripts/extract_pipeline_results_analysis.py \
-    --input_dir tahoe_cmap_analysis/results/sirota_lab_disease_results_genes_drugs \
-    --output_dir tahoe_cmap_analysis/data/analysis
+python tahoe_cmap_analysis/scripts/analysis/extract_pipeline_results_analysis.py \
+    --input_dir tahoe_cmap_analysis/results/creed_manual_standardised_results_OG_exp_8 \
+    --output_dir tahoe_cmap_analysis/data/creed_manual_analysis_exp_8
+
 """
 
 import pandas as pd
@@ -45,14 +45,14 @@ from collections import defaultdict
 
 # --- 1. Configuration: Path Generation ---
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-BASE_DIR = os.path.dirname(SCRIPT_DIR)
+BASE_DIR = os.path.dirname(os.path.dirname(SCRIPT_DIR))  # Go up to tahoe_cmap_analysis
 
 # --- 2. Constants ---
 Q_THRESHOLDS = [0.5, 0.1, 0.05]
-DISEASE_INFO_FILE = os.path.join(BASE_DIR, 'data/processed_data/disease_info_data.parquet')
-DRUG_INFO_FILE = os.path.join(BASE_DIR, 'data/processed_data/known_drug_info_data.parquet')
-CMAP_EXPERIMENTS_FILE = os.path.join(os.path.dirname(BASE_DIR), 'scripts/data/cmap_drug_experiments_new.csv')
-TAHOE_EXPERIMENTS_FILE = os.path.join(os.path.dirname(BASE_DIR), 'scripts/data/tahoe_drug_experiments_new.csv')
+DISEASE_INFO_FILE = os.path.join(BASE_DIR, 'data/known_drugs/disease.parquet')
+DRUG_INFO_FILE = os.path.join(BASE_DIR, 'data/known_drugs/known_drug_info_data.parquet')
+CMAP_EXPERIMENTS_FILE = os.path.join(os.path.dirname(BASE_DIR), 'scripts/data/drug_signatures/cmap_drug_experiments_new.csv')
+TAHOE_EXPERIMENTS_FILE = os.path.join(os.path.dirname(BASE_DIR), 'scripts/data/drug_signatures/tahoe_drug_experiments_new.csv')
 
 # --- 3. Helper Functions ---
 
@@ -99,8 +99,8 @@ def load_disease_info_maps(disease_info_path: str) -> tuple:
         return None, None
     
     # Pass 1: Name-to-ID map
-    df_disease_info['cleaned_name'] = df_disease_info['disease_name'].apply(clean_text)
-    name_to_id_map = df_disease_info.set_index('cleaned_name')['disease_id'].to_dict()
+    df_disease_info['cleaned_name'] = df_disease_info['name'].apply(clean_text)
+    name_to_id_map = df_disease_info.set_index('cleaned_name')['id'].to_dict()
     
     # Pass 2: Synonym-to-ID map
     print("[Info] Building disease synonym map...")
@@ -108,8 +108,8 @@ def load_disease_info_maps(disease_info_path: str) -> tuple:
     synonym_keys = ['hasExactSynonym', 'hasRelatedSynonym', 'hasNarrowSynonym', 'hasBroadSynonym']
     
     for _, row in df_disease_info.iterrows():
-        disease_id = row['disease_id']
-        synonyms_struct = row['disease_synonyms']
+        disease_id = row['id']
+        synonyms_struct = row['synonyms']
         if not isinstance(synonyms_struct, dict):
             continue
         

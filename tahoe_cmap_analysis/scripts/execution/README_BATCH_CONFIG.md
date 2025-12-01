@@ -109,6 +109,14 @@ To create a configuration for a new disease source:
 - `gene_table` - Path to gene ID conversion table
 - `logfc_cutoff` - LogFC threshold (default: 0.0)
 - `qval_threshold` - Q-value threshold (default: 0.5)
+- `logfc_column_selection` - Which logFC column(s) to use:
+  - `"all"` - Use all columns matching the prefix (e.g., `logfc_dz:1`, `logfc_dz:2`, etc.)
+  - Custom column name (e.g., `"mean_logfc"`, `"log2FC"`) - Use a specific column from your disease file
+  - Multiple columns (comma-separated) - e.g., `"logfc_dz:459,logfc_dz:297"`
+  - **Note:** Custom column names are automatically mapped to `logfc_dz` internally for the DRP pipeline
+- `use_averaging` - How to handle logFC columns:
+  - `true` - Average selected columns into a single `logfc_dz` column
+  - `false` - Use column(s) as-is (single columns are still mapped to `logfc_dz`)
 
 ### Output Section
 - `root_directory` - Where to save analysis results
@@ -120,6 +128,38 @@ To create a configuration for a new disease source:
 - `verbose` - Verbose output (default: true)
 
 ## Key Features
+
+### LogFC Column Handling
+
+The batch system provides flexible handling of logFC columns to work with disease signatures in any format:
+
+**How Column Selection Works:**
+
+The `logfc_column_selection` parameter allows you to specify which logFC column(s) to use from your disease signature file. The system automatically handles custom column names:
+
+```yaml
+analysis:
+  logfc_column_selection: "mean_logfc"  # Use the mean_logfc column
+  use_averaging: true                   # Average selected columns
+```
+
+**Column Name Mapping:**
+
+Regardless of what you name your column in the disease file (e.g., `mean_logfc`, `log2FC`, `fold_change`), the script automatically maps it to `logfc_dz` internally. This ensures the DRP pipeline can find the logFC values without requiring a specific column name in your input files.
+
+**Examples:**
+
+| Scenario | Configuration | Result |
+|----------|--------------|--------|
+| Single custom column | `logfc_column_selection: "mean_logfc"` `use_averaging: true` | Maps `mean_logfc` → `logfc_dz` |
+| Multiple columns average | `logfc_column_selection: "logfc_dz:1,logfc_dz:2"` `use_averaging: true` | Averages columns 1 & 2 → `logfc_dz` |
+| All columns with prefix | `logfc_column_selection: "all"` `use_averaging: true` | Averages all `logfc_dz:*` columns |
+| Custom column, no averaging | `logfc_column_selection: "fold_change"` `use_averaging: false` | Maps `fold_change` → `logfc_dz` |
+
+**Important Notes:**
+- Custom column names (like `mean_logfc`) are **not** matched by the `logfc_dz` prefix - they must be specified exactly in `logfc_column_selection`
+- When using `"all"`, the script looks for columns starting with the `logfc_dz` prefix
+- Single columns are always mapped to `logfc_dz`, even when `use_averaging: false`
 
 ### Skip Existing Results
 When `skip_existing_results: true` in the config (or `--skip_existing TRUE` on command line):

@@ -56,15 +56,22 @@ tryCatch({
   gene_conv_table  <- config$analysis$gene_table
   gene_key         <- config$analysis$gene_key %||% "gene_symbol"
   logfc_cols_pref  <- config$analysis$logfc_cols_pref %||% "logfc_dz"
+  logfc_col_select <- config$analysis$logfc_column_selection %||% "all"
+  use_averaging    <- config$analysis$use_averaging
   out_root         <- config$output$root_directory
   report_dir       <- config$output$report_directory
   report_prefix    <- config$output$report_prefix
   skip_existing    <- as.logical(config$runtime$skip_existing_results)
   verbose          <- as.logical(config$runtime$verbose)
+  start_from       <- config$runtime$start_from_disease %||% 1
+  end_at           <- config$runtime$end_at_disease
   
   # Handle NA values and defaults
   if (is.na(skip_existing)) skip_existing <- FALSE
   if (is.na(verbose)) verbose <- TRUE
+  if (is.na(use_averaging)) use_averaging <- TRUE
+  if (is.na(start_from) || is.null(start_from)) start_from <- 1
+  if (!is.null(end_at) && is.na(end_at)) end_at <- NULL
   
 }, error = function(e) {
   cat("Error extracting configuration values:", conditionMessage(e), "\n")
@@ -90,6 +97,8 @@ if (verbose) {
   cat("  Gene table:", gene_conv_table, "\n")
   cat("  LogFC cutoff:", config$analysis$logfc_cutoff, "\n")
   cat("  Q-value threshold:", config$analysis$qval_threshold, "\n")
+  cat("  LogFC column selection:", ifelse(is.character(logfc_col_select) && logfc_col_select == "all", "all", paste(logfc_col_select, collapse=", ")), "\n")
+  cat("  Use averaging:", use_averaging, "\n")
   cat("\nOutput Configuration:\n")
   cat("  Root directory:", out_root, "\n")
   cat("  Report directory:", report_dir, "\n")
@@ -97,6 +106,8 @@ if (verbose) {
   cat("\nRuntime Options:\n")
   cat("  Skip existing results:", skip_existing, "\n")
   cat("  Verbose:", verbose, "\n")
+  cat("  Start from disease:", start_from, "\n")
+  cat("  End at disease:", ifelse(is.null(end_at), "(all remaining)", end_at), "\n")
   cat("================================================================================\n\n")
 }
 
@@ -134,11 +145,28 @@ cmd_args <- c(
   sprintf("--logfc_cols_pref '%s'", logfc_cols_pref),
   sprintf("--out_root '%s'", out_root),
   sprintf("--report_dir '%s'", report_dir),
-  sprintf("--report_prefix '%s'", report_prefix)
+  sprintf("--report_prefix '%s'", report_prefix),
+  sprintf("--start_from %d", start_from)
 )
 
 if (skip_existing) {
   cmd_args <- c(cmd_args, "--skip_existing TRUE")
+}
+
+if (!is.null(end_at)) {
+  cmd_args <- c(cmd_args, sprintf("--end_at %d", end_at))
+}
+
+# Handle logfc column selection (can be "all" or specific columns)
+if (is.character(logfc_col_select) && length(logfc_col_select) == 1) {
+  cmd_args <- c(cmd_args, sprintf("--logfc_col_select '%s'", logfc_col_select))
+} else if (is.character(logfc_col_select) && length(logfc_col_select) > 1) {
+  # Multiple columns: join with comma
+  cmd_args <- c(cmd_args, sprintf("--logfc_col_select '%s'", paste(logfc_col_select, collapse=",")))
+}
+
+if (!use_averaging) {
+  cmd_args <- c(cmd_args, "--use_averaging FALSE")
 }
 
 # Execute the batch script

@@ -9,7 +9,7 @@ execution:
   # Profile to use for runall.R (single profile execution)
   # runall_profile: "Sweep_CoreFibroid"
 
-  runall_profile: "Tahoe_Chronic_granulomatous_disease_0.00"
+  runall_profile: "Tahoe_Eczema_creeds"
 
 
 
@@ -37,20 +37,20 @@ default:
     # Path to CMap reference signatures database (RData file)
     # This file contains the drug-induced gene expression signatures
     # REQUIRED: Must be downloaded separately (see README Section 3.1)
-    signatures: "data/cmap_signatures.RData"
+    signatures: "data/drug_signatures/cmap_signatures.RData"
     
     # Path to YOUR disease gene expression signature (CSV file)
     # Must contain: gene identifiers + log2 fold-change values
     # IMPORTANT: Verify your CSV has column headers! Missing headers is a common issue.
-    disease_file: "data/CoreFibroidSignature_All_Datasets.csv"
+    disease_file: "data/disease_signatures/CoreFibroidSignature_All_Datasets.csv"
     
     # Path to drug experiment metadata (optional but recommended)
     # Contains drug names, cell lines, experimental conditions
-    drug_meta: "data/cmap_drug_experiments_new.csv"
+    drug_meta: "data/drug_signatures/cmap_drug_experiments_new.csv"
     
     # Path to drug valid instances list (optional but recommended)
     # Contains curated list of valid experiments with DrugBank IDs
-    drug_valid: "data/cmap_valid_instances.csv"
+    drug_valid: "data/drug_signatures/cmap_valid_instances.csv"
     
     # Output directory for results (relative to scripts/ folder)
     out_dir: "results"
@@ -155,10 +155,10 @@ default:
 # Strict p-value threshold profile
 Endothelial_Strict:
   paths:
-    signatures: "data/cmap_signatures.RData"
-    disease_file: "data/Endothelia_DEG.csv"
-    drug_meta: "data/cmap_drug_experiments_new.csv"
-    drug_valid: "data/cmap_valid_instances.csv"
+    signatures: "data/drug_signatures/cmap_signatures.RData"
+    disease_file: "data/disease_signatures/Endothelia_DEG.csv"
+    drug_meta: "data/drug_signatures/cmap_drug_experiments_new.csv"
+    drug_valid: "data/drug_signatures/cmap_valid_instances.csv"
     out_dir: "results"
   params:
     gene_key: "SYMBOL"
@@ -174,10 +174,10 @@ Endothelial_Strict:
 # Standard p-value threshold profile
 Endothelial_Standard:
   paths:
-    signatures: "data/cmap_signatures.RData"
-    disease_file: "data/Endothelia_DEG.csv"
-    drug_meta: "data/cmap_drug_experiments_new.csv"
-    drug_valid: "data/cmap_valid_instances.csv"
+    signatures: "data/drug_signatures/cmap_signatures.RData"
+    disease_file: "data/disease_signatures/Endothelia_DEG.csv"
+    drug_meta: "data/drug_signatures/cmap_drug_experiments_new.csv"
+    drug_valid: "data/drug_signatures/cmap_valid_instances.csv"
     out_dir: "results"
   params:
     gene_key: "SYMBOL"
@@ -193,10 +193,10 @@ Endothelial_Standard:
 # Lenient p-value threshold profile
 Endothelial_Lenient:
   paths:
-    signatures: "data/cmap_signatures.RData"
-    disease_file: "data/Endothelia_DEG.csv"
-    drug_meta: "data/cmap_drug_experiments_new.csv"
-    drug_valid: "data/cmap_valid_instances.csv"
+    signatures: "data/drug_signatures/cmap_signatures.RData"
+    disease_file: "data/disease_signatures/Endothelia_DEG.csv"
+    drug_meta: "data/drug_signatures/cmap_drug_experiments_new.csv"
+    drug_valid: "data/drug_signatures/cmap_valid_instances.csv"
     out_dir: "results"
   params:
     gene_key: "SYMBOL"
@@ -212,10 +212,10 @@ Endothelial_Lenient:
 
 CoreFibroid_logFC_0.25:
   paths:
-    signatures: "data/cmap_signatures.RData"
-    disease_file: "data/CoreFibroidSignature_All_Datasets.csv"
-    drug_meta: "data/cmap_drug_experiments_new.csv"
-    drug_valid: "data/cmap_valid_instances.csv"
+    signatures: "data/drug_signatures/cmap_signatures.RData"
+    disease_file: "data/disease_signatures/CoreFibroidSignature_All_Datasets.csv"
+    drug_meta: "data/drug_signatures/cmap_drug_experiments_new.csv"
+    drug_valid: "data/drug_signatures/cmap_valid_instances.csv"
     out_dir: "results"
   params:
     gene_key: "SYMBOL"
@@ -238,10 +238,10 @@ CoreFibroid_logFC_0.25:
 
 CoreFibroid_logFC_0.5:
   paths:
-    signatures: "data/cmap_signatures.RData"
-    disease_file: "data/CoreFibroidSignature_All_Datasets.csv"
-    drug_meta: "data/cmap_drug_experiments_new.csv"
-    drug_valid: "data/cmap_valid_instances.csv"
+    signatures: "data/drug_signatures/cmap_signatures.RData"
+    disease_file: "data/disease_signatures/CoreFibroidSignature_All_Datasets.csv"
+    drug_meta: "data/drug_signatures/cmap_drug_experiments_new.csv"
+    drug_valid: "data/drug_signatures/cmap_valid_instances.csv"
     out_dir: "results"
   params:
     gene_key: "SYMBOL"
@@ -264,10 +264,10 @@ CoreFibroid_logFC_0.5:
 
 CoreFibroid_logFC_1:
   paths:
-    signatures: "data/cmap_signatures.RData"
-    disease_file: "data/CoreFibroidSignature_All_Datasets.csv"
-    drug_meta: "data/cmap_drug_experiments_new.csv"
-    drug_valid: "data/cmap_valid_instances.csv"
+    signatures: "data/drug_signatures/cmap_signatures.RData"
+    disease_file: "data/disease_signatures/CoreFibroidSignature_All_Datasets.csv"
+    drug_meta: "data/drug_signatures/cmap_drug_experiments_new.csv"
+    drug_valid: "data/drug_signatures/cmap_valid_instances.csv"
     out_dir: "results"
   params:
     gene_key: "SYMBOL"
@@ -291,10 +291,10 @@ CoreFibroid_logFC_1:
 # Example sweep mode profile - tests multiple cutoffs for robust results
 Sweep_CoreFibroid:
   paths:
-    signatures: "data/cmap_signatures.RData"
-    disease_file: "data/CoreFibroidSignature_All_Datasets.csv"
-    drug_meta: "data/cmap_drug_experiments_new.csv"
-    drug_valid: "data/cmap_valid_instances.csv"
+    signatures: "data/drug_signatures/cmap_signatures.RData"
+    disease_file: "data/disease_signatures/CoreFibroidSignature_All_Datasets.csv"
+    drug_meta: "data/drug_signatures/cmap_drug_experiments_new.csv"
+    drug_valid: "data/drug_signatures/cmap_valid_instances.csv"
     out_dir: "results"
   params:
     gene_key: "SYMBOL"
@@ -333,8 +333,8 @@ Tahoe_Chronic_granulomatous_disease_0.00:
     # TAHOE drug metadata
     drug_meta: "data/drug_signatures/tahoe_drug_experiments_new.csv"
     
-    # TAHOE valid instances list
-    drug_valid: "data/drug_signatures/tahoe_valid_instances_OG_035.csv"
+    # TAHOE valid instances list (null - no filtering, matches batch script)
+    drug_valid: null
     
     # Output directory
     out_dir: "results"
@@ -345,9 +345,111 @@ Tahoe_Chronic_granulomatous_disease_0.00:
     logfc_cutoff: 0.0
     pval_key: null
     pval_cutoff: 0.05
-    q_thresh: 0.05
+    q_thresh: 0.5
     reversal_only: true
     seed: 123
+    analysis_id: "tahoe"
+    mode: "single"
+    sweep_cutoffs: null
+    sweep_min_frac: 0.20
+    sweep_min_genes: 200
+    combine_log2fc: "average"
+    robust_rule: "all"
+    robust_k: null
+    aggregate: "mean"
+    weights: null
+
+
+# TAHOE analysis profile for Fibroids
+Tahoe_CoreFibroid:
+  paths:
+    # TAHOE drug reference signatures database
+    signatures: "data/drug_signatures/tahoe_signatures.RData"
+    
+    # Disease gene expression signature for fibroids
+    disease_file: "data/disease_signatures/CoreFibroidSignature_All_Datasets.csv"
+    
+    # TAHOE drug metadata
+    drug_meta: "data/drug_signatures/tahoe_drug_experiments_new.csv"
+    
+    # TAHOE valid instances list (null - no filtering, matches batch script)
+    drug_valid: null
+    
+    # Output directory
+    out_dir: "results"
+    
+  params:
+    gene_key: "SYMBOL"
+    logfc_cols_pref: "log2FC"
+    logfc_cutoff: 0.5
+    pval_key: null
+    pval_cutoff: 0.05
+    q_thresh: 0.5
+    reversal_only: true
+    seed: 123
+    analysis_id: "tahoe"
+    mode: "single"
+    sweep_cutoffs: null
+    sweep_min_frac: 0.20
+    sweep_min_genes: 200
+    combine_log2fc: "average"
+    robust_rule: "all"
+    robust_k: null
+    aggregate: "mean"
+    weights: null
+
+
+
+# TAHOE analysis profile for Eczema (CREEDS)
+Tahoe_Eczema_creeds:
+  paths:
+    signatures: "data/drug_signatures/tahoe_signatures.RData"
+    disease_file: "data/disease_signatures/Eczema_creeds_signature.csv"
+    drug_meta: "data/drug_signatures/tahoe_drug_experiments_new.csv"
+    drug_valid: null
+    out_dir: "results"
+    
+  params:
+    gene_key: "gene_symbol"
+    logfc_cols_pref: "logfc_dz"
+    logfc_cutoff: 0.0
+    pval_key: null
+    pval_cutoff: 0.05
+    q_thresh: 0.5
+    reversal_only: true
+    seed: 123
+    analysis_id: "tahoe"
+    mode: "single"
+    sweep_cutoffs: null
+    sweep_min_frac: 0.20
+    sweep_min_genes: 200
+    combine_log2fc: "average"
+    robust_rule: "all"
+    robust_k: null
+    aggregate: "mean"
+    weights: null
+
+
+# CMAP analysis profile for Eczema (CREEDS)
+CMAP_Eczema_creeds:
+  paths:
+    signatures: "data/drug_signatures/cmap_signatures.RData"
+    disease_file: "data/disease_signatures/Eczema_creeds_signature.csv"
+    drug_meta: "data/drug_signatures/cmap_drug_experiments_new.csv"
+    # CMAP valid instances list - use specific file or null for no filtering
+    drug_valid: "data/drug_signatures/cmap_valid_instances_OG_015.csv"
+    out_dir: "results"
+    
+  params:
+    gene_key: "gene_symbol"
+    logfc_cols_pref: "logfc_dz"
+    logfc_cutoff: 0.0
+    pval_key: null
+    pval_cutoff: 0.05
+    q_thresh: 0.5
+    reversal_only: true
+    seed: 123
+    analysis_id: "cmap"
     mode: "single"
     sweep_cutoffs: null
     sweep_min_frac: 0.20

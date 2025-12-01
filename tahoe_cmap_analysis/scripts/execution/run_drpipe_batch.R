@@ -37,6 +37,14 @@ parser$add_argument("--report_prefix", type = "character", required = TRUE,
                     help = "File prefix for report and summary files (e.g., 'creeds_automatic')")
 parser$add_argument("--skip_existing", type = "logical", default = FALSE,
                     help = "Skip diseases that have existing result folders (default: FALSE)")
+parser$add_argument("--start_from", type = "integer", default = 1,
+                    help = "Start processing from this disease number (1-indexed, default: 1)")
+parser$add_argument("--end_at", type = "integer", default = NULL,
+                    help = "End processing at this disease number (1-indexed, default: NULL = all)")
+parser$add_argument("--logfc_col_select", type = "character", default = "all",
+                    help = "LogFC column selection: 'all' or specific columns (comma-separated)")
+parser$add_argument("--use_averaging", type = "logical", default = TRUE,
+                    help = "Use averaging across selected columns (default: TRUE)")
 
 # Parse arguments
 args <- parser$parse_args()
@@ -55,7 +63,10 @@ out_root         <- args$out_root
 report_dir       <- args$report_dir
 report_prefix    <- args$report_prefix
 skip_existing    <- args$skip_existing
-skip_existing    <- args$skip_existing
+start_from       <- args$start_from
+end_at           <- args$end_at
+logfc_col_select <- args$logfc_col_select
+use_averaging    <- args$use_averaging
 
 # Common parameters (from original script)
 cmap_valid <- NULL
@@ -79,11 +90,31 @@ if (!file.exists(gene_conv_table)) {
 }
 
 # Get all disease signature files
-disease_files <- list.files(disease_dir, pattern = "_signature\\.csv$", full.names = TRUE)
-cat("Found", length(disease_files), "disease signature files from source:", disease_source, "\n\n")
+all_disease_files <- list.files(disease_dir, pattern = "_signature\\.csv$", full.names = TRUE)
+cat("Found", length(all_disease_files), "disease signature files from source:", disease_source, "\n")
+
+# Apply disease range filtering
+if (is.null(end_at)) {
+  end_at <- length(all_disease_files)
+}
+
+if (start_from < 1 || start_from > length(all_disease_files)) {
+  cat("Error: start_from (", start_from, ") is out of range. Must be between 1 and", length(all_disease_files), "\n")
+  quit(status = 1)
+}
+
+if (end_at < start_from || end_at > length(all_disease_files)) {
+  cat("Error: end_at (", end_at, ") is invalid. Must be between", start_from, "and", length(all_disease_files), "\n")
+  quit(status = 1)
+}
+
+disease_files <- all_disease_files[start_from:end_at]
+
+cat("Processing diseases", start_from, "to", end_at, "(", length(disease_files), "diseases)\n\n")
 cat("Diseases to process:\n")
-for (f in disease_files) {
-  cat("  -", gsub("_signature\\.csv$", "", basename(f)), "\n")
+for (i in seq_along(disease_files)) {
+  actual_index <- start_from + i - 1
+  cat("  [", actual_index, "]", gsub("_signature\\.csv$", "", basename(disease_files[i])), "\n", sep="")
 }
 cat("\n")
 
@@ -141,7 +172,7 @@ run_pipeline <- function(sig_path, sig_name, disease_file, disease_name, batch_t
   cat("Running", sig_name, "for", disease_name, "\n")
   cat("========================================\n")
   
-  # Preprocess the disease file - rename gene_key column but keep logFC columns as-is
+  # Preprocess the disease file - rename gene_key column and handle column selection
   preprocessed_file <- tempfile(fileext = ".csv")
   df <- read.csv(disease_file, stringsAsFactors = FALSE, check.names = FALSE)
   
@@ -150,11 +181,51 @@ run_pipeline <- function(sig_path, sig_name, disease_file, disease_name, batch_t
     colnames(df)[colnames(df) == gene_key] <- "SYMBOL"
   }
   
-  # Keep only SYMBOL column and any logFC columns that start with logfc_cols_pref
-  logfc_cols <- grep(paste0("^", logfc_cols_pref), colnames(df), value = TRUE)
-  cols_to_keep <- c("SYMBOL", logfc_cols)
-  cols_to_keep <- cols_to_keep[cols_to_keep %in% colnames(df)]
+  # Determine which logFC columns to use
+  if (logfc_col_select == "all") {
+    # Use all columns matching the prefix
+    logfc_cols <- grep(paste0("^", logfc_cols_pref), colnames(df), value = TRUE)
+  } else {
+    # Parse column selection (may be comma-separated)
+    if (grepl(",", logfc_col_select)) {
+      selected_cols <- strsplit(logfc_col_select, ",")[[1]]
+      selected_cols <- trimws(selected_cols)
+    } else {
+      selected_cols <- logfc_col_select
+    }
+    
+    # Validate that selected columns exist
+    logfc_cols <- selected_cols[selected_cols %in% colnames(df)]
+    
+    if (length(logfc_cols) == 0) {
+      cat("Warning: None of the selected columns found in", basename(disease_file), "\n")
+      cat("  Selected:", paste(selected_cols, collapse=", "), "\n")
+      cat("  Available:", paste(grep(paste0("^", logfc_cols_pref), colnames(df), value = TRUE), collapse=", "), "\n")
+      return(list(success = FALSE, out_dir = NA, error_msg = "Selected columns not found"))
+    }
+  }
   
+  # Handle averaging if requested
+  if (use_averaging && length(logfc_cols) >= 1) {
+    # Calculate mean of selected columns and rename to logfc_dz
+    df$logfc_dz <- rowMeans(df[, logfc_cols, drop = FALSE], na.rm = TRUE)
+    cols_to_keep <- c("SYMBOL", "logfc_dz")
+  } else if (!use_averaging && length(logfc_cols) >= 1) {
+    # When not averaging, rename the first/only selected column to logfc_dz 
+    # to ensure DRP can find it, regardless of original column name
+    if (length(logfc_cols) == 1) {
+      df$logfc_dz <- df[[logfc_cols[1]]]
+      cols_to_keep <- c("SYMBOL", "logfc_dz")
+    } else {
+      # Multiple columns without averaging - use as-is
+      cols_to_keep <- c("SYMBOL", logfc_cols)
+    }
+  } else {
+    # Fallback: use columns as-is
+    cols_to_keep <- c("SYMBOL", logfc_cols)
+  }
+  
+  cols_to_keep <- cols_to_keep[cols_to_keep %in% colnames(df)]
   df_out <- df[, cols_to_keep, drop = FALSE]
   write.csv(df_out, preprocessed_file, row.names = FALSE, quote = FALSE)
   disease_file <- preprocessed_file

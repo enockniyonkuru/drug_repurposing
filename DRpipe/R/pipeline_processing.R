@@ -518,8 +518,13 @@ DRP <- R6::R6Class(
         stop("Column 'id' not found in cmap_experiments_valid")
       }
 
+      self$log("  [DEBUG] Before merge: drugs has %d rows, cmap_experiments_valid has %d rows", nrow(self$drugs), nrow(cmap_experiments_valid))
+      self$log("  [DEBUG] drugs exp_id range: %s to %s", min(self$drugs$exp_id, na.rm=TRUE), max(self$drugs$exp_id, na.rm=TRUE))
+      self$log("  [DEBUG] metadata id range: %s to %s", min(cmap_experiments_valid$id, na.rm=TRUE), max(cmap_experiments_valid$id, na.rm=TRUE))
+      
       dv <- merge(self$drugs, cmap_experiments_valid, by.x = "exp_id", by.y = "id", all.x = FALSE, all.y = FALSE)
       
+      self$log("  [DEBUG] After merge: dv has %d rows", nrow(dv))
       # Remove any rows with NA in the name column immediately after merge
       if ("name" %in% names(dv)) {
         dv <- dv[!is.na(dv$name) & dv$name != "", ]
@@ -1055,13 +1060,14 @@ DRP <- R6::R6Class(
         if (nrow(hits) > 0) {
           data.frame(
             name = hits$name,
+            exp_id = if ("exp_id" %in% names(hits)) hits$exp_id else NA,
             cutoff = as.numeric(cutoff),
             cmap_score = hits$cmap_score,
             q = hits$q,
             stringsAsFactors = FALSE
           )
         } else {
-          data.frame(name = character(0), cutoff = numeric(0), 
+          data.frame(name = character(0), exp_id = integer(0), cutoff = numeric(0), 
                      cmap_score = numeric(0), q = numeric(0))
         }
       }))
@@ -1107,6 +1113,7 @@ DRP <- R6::R6Class(
       self$robust_hits <- filtered_table |>
         dplyr::group_by(name) |>
         dplyr::summarise(
+          exp_id = exp_id[1],  # Take first (most stringent cutoff)
           aggregated_score = switch(self$aggregate,
             "mean" = mean(cmap_score, na.rm = TRUE),
             "median" = median(cmap_score, na.rm = TRUE),
@@ -1181,7 +1188,11 @@ DRP <- R6::R6Class(
       # Create a consolidated drugs dataframe that mimics single mode output
       # Use the robust hits with proper column names for analysis pipeline
       consolidated_drugs <- data.frame(
-        exp_id = 1:nrow(self$robust_hits),  # Create synthetic experiment IDs
+        exp_id = if ("exp_id" %in% names(self$robust_hits) && !all(is.na(self$robust_hits$exp_id))) {
+          self$robust_hits$exp_id
+        } else {
+          1:nrow(self$robust_hits)  # Fallback: create synthetic experiment IDs if exp_id is missing
+        },
         cmap_score = self$robust_hits$aggregated_score,
         q = self$robust_hits$min_q,
         subset_comparison_id = sprintf("%s_sweep_aggregated", self$dataset_label),

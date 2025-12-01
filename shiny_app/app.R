@@ -9,11 +9,33 @@
 library(shiny)
 library(DRpipe)
 library(shinydashboard)
+library(fresh)
+library(shinyWidgets)
+library(shinycssloaders)
 library(DT)
 library(plotly)
 library(tidyverse)
 library(yaml)
 library(shinyjs)
+
+# Create modern "Scientific SaaS" theme
+my_theme <- fresh::create_theme(
+  fresh::adminlte_color(
+    light_blue = "#093052",  # Deeper Ocean Blue (Header)
+    aqua = "#3282B8",        # Accents
+    green = "#00BFA5",       # Teal (Success/Action buttons)
+    red = "#E05D5D"
+  ),
+  fresh::adminlte_sidebar(
+    width = "280px",
+    dark_bg = "#1B262C",     # Dark Slate Sidebar
+    dark_hover_bg = "#093052",
+    dark_color = "#BBE1FA"
+  ),
+  fresh::adminlte_global(
+    content_bg = "#F4F6F9"   # Soft Gray Background
+  )
+)
 
 # UI Definition
 ui <- dashboardPage(
@@ -28,14 +50,147 @@ ui <- dashboardPage(
       menuItem("4. Run Analysis", tabName = "analysis", icon = icon("play")),
       menuItem("5. Results", tabName = "results", icon = icon("table")),
       menuItem("6. Visualizations", tabName = "plots", icon = icon("chart-bar")),
+      menuItem("Upload Results", tabName = "upload_results", icon = icon("file-upload")),
       menuItem("Help", tabName = "help", icon = icon("question-circle"))
     )
   ),
   
   dashboardBody(
     useShinyjs(),
+    fresh::use_theme(my_theme),
     tags$head(
       tags$style(HTML("
+        /* Import Inter Font */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap');
+
+        body, h1, h2, h3, h4, h5, h6 { font-family: 'Inter', sans-serif !important; }
+
+        /* Modernize Boxes/Cards */
+        .box {
+          border-top: 0px solid transparent !important;
+          border-radius: 12px !important;
+          box-shadow: 0 4px 20px rgba(0,0,0,0.05) !important;
+          border: 1px solid #E1E5EB;
+        }
+
+        /* Modernize Buttons */
+        .btn {
+          border-radius: 6px !important;
+          font-weight: 600;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+          box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+          border: none;
+          color: #ffffff !important;
+        }
+        .btn:hover, .btn:active, .btn:focus {
+          color: #ffffff !important;
+        }
+        .btn-success { background-color: #00BFA5 !important; } /* Teal Action Button */
+        .btn-success:hover, .btn-success:active, .btn-success:focus {
+          color: #ffffff !important;
+          background-color: #00a896 !important;
+        }
+        .btn-primary {
+          color: #ffffff !important;
+        }
+        .btn-primary:hover, .btn-primary:active, .btn-primary:focus {
+          color: #ffffff !important;
+        }
+        .btn-info {
+          color: #ffffff !important;
+        }
+        .btn-info:hover, .btn-info:active, .btn-info:focus {
+          color: #ffffff !important;
+        }
+        .btn-lg {
+          color: #ffffff !important;
+        }
+        
+        /* File Input Styling */
+        .form-group.shiny-input-container {
+          margin-bottom: 20px;
+        }
+        .form-group label {
+          color: #0F4C75;
+          font-weight: 600;
+          margin-bottom: 8px;
+          display: block;
+        }
+        input[type='file'] {
+          border: 2px dashed #3282B8 !important;
+          border-radius: 8px !important;
+          padding: 15px !important;
+          background-color: #f8f9fa !important;
+          cursor: pointer;
+          transition: all 0.3s ease;
+          width: 100%;
+        }
+        input[type='file']:hover {
+          border-color: #0F4C75 !important;
+          background-color: #e9ecef !important;
+        }
+        /* Style the Browse button */
+        input[type='file']::file-selector-button {
+          background-color: #87CEEB !important;
+          color: #ffffff !important;
+          border: none !important;
+          padding: 10px 20px !important;
+          border-radius: 5px !important;
+          cursor: pointer !important;
+          font-weight: 700 !important;
+          margin-right: 10px !important;
+          transition: all 0.3s ease !important;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.2) !important;
+        }
+        input[type='file']::-webkit-file-upload-button {
+          background-color: #87CEEB !important;
+          color: #ffffff !important;
+          border: none !important;
+          padding: 10px 20px !important;
+          border-radius: 5px !important;
+          cursor: pointer !important;
+          font-weight: 700 !important;
+          margin-right: 10px !important;
+          transition: all 0.3s ease !important;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.2) !important;
+        }
+        input[type='file']::-ms-browse {
+          background-color: #87CEEB !important;
+          color: #ffffff !important;
+          border: none !important;
+          padding: 10px 20px !important;
+          border-radius: 5px !important;
+          cursor: pointer !important;
+          font-weight: 700 !important;
+          margin-right: 10px !important;
+        }
+        input[type='file']::file-selector-button:hover,
+        input[type='file']::-webkit-file-upload-button:hover,
+        input[type='file']::-ms-browse:hover {
+          background-color: #5BA5D1 !important;
+          color: #ffffff !important;
+        }
+        .progress-bar {
+          background-color: #00BFA5 !important;
+        }
+        
+        /* Hero Section for Home Tab */
+        .home-hero {
+          background: linear-gradient(135deg, #faf8ff 0%, #f5f2ff 50%, #f8f6ff 100%);
+          background-image: 
+            radial-gradient(rgba(65,105,225,0.16) 2px, transparent 2px),
+            linear-gradient(135deg, #faf8ff 0%, #f5f2ff 50%, #f8f6ff 100%);
+          background-size: 20px 20px, 100%;
+          background-position: 0 0, 0 0;
+          padding: 60px 40px;
+          border-radius: 12px;
+          text-align: center;
+          margin-bottom: 30px;
+          border: 1px solid #c0d8e8;
+        }
+        
+        /* Keep existing analysis-type-card and other styles */
         .analysis-type-card {
           border: 2px solid #ddd;
           border-radius: 10px;
@@ -73,40 +228,236 @@ ui <- dashboardPage(
           border-color: #4CAF50;
           border-width: 2px;
         }
+        
+        .home-header {
+          background: linear-gradient(135deg, #0F4C75 0%, #09344A 100%);
+          color: white;
+          padding: 40px 20px;
+          border-radius: 12px;
+          margin-bottom: 30px;
+          box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .home-title {
+          font-size: 36px;
+          font-weight: bold;
+          margin: 0 0 10px 0;
+          display: inline-block;
+          background: #093052; /* Deepened header color */
+          color: #ffffff;
+          padding: 10px 18px;
+          border-radius: 12px;
+          box-shadow: 0 2px 8px rgba(9,48,82,0.25);
+        }
+        .home-subtitle {
+          font-size: 18px;
+          opacity: 0.95;
+          margin: 0;
+        }
+        .feature-card {
+          border: none;
+          border-radius: 12px;
+          padding: 25px;
+          margin-bottom: 20px;
+          background: linear-gradient(to bottom right, #f8f9fa, #e9ecef);
+          border-left: 4px solid #0F4C75;
+          transition: all 0.3s ease;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .feature-card:hover {
+          box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+          transform: translateY(-2px);
+        }
+        .feature-card h4 {
+          color: #0F4C75;
+          margin-top: 0;
+          font-weight: bold;
+        }
+        .feature-icon {
+          font-size: 24px;
+          color: #0F4C75;
+          margin-right: 10px;
+        }
+        .section-title {
+          color: #0F4C75;
+          border-bottom: 2px solid #3282B8;
+          padding-bottom: 10px;
+          margin-top: 30px;
+          margin-bottom: 20px;
+          font-weight: bold;
+          font-size: 20px;
+        }
+        .workflow-step {
+          display: flex;
+          align-items: flex-start;
+          margin: 15px 0;
+        }
+        .workflow-number {
+          background-color: #0F4C75;
+          color: white;
+          width: 35px;
+          height: 35px;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-weight: bold;
+          margin-right: 15px;
+          flex-shrink: 0;
+        }
+        .workflow-content {
+          flex: 1;
+        }
+        .github-link {
+          display: inline-block;
+          padding: 10px 20px;
+          background-color: #333;
+          color: white;
+          border-radius: 5px;
+          text-decoration: none;
+          margin-top: 10px;
+          transition: background-color 0.3s;
+        }
+        .github-link:hover {
+          background-color: #555;
+          text-decoration: none;
+          color: white;
+        }
+        .start-buttons {
+          display: flex;
+          gap: 15px;
+          margin-top: 20px;
+          flex-wrap: wrap;
+        }
       "))
     ),
     
     tabItems(
       # Home Tab
       tabItem(tabName = "home",
+        # Header
         fluidRow(
-          box(
-            title = "Welcome to Drug Repurposing Pipeline",
-            width = 12,
-            status = "primary",
-            solidHeader = TRUE,
-            h3("About This Application"),
-            p("This application identifies existing drugs that could be repurposed for new therapeutic applications."),
-            
-            h4("Workflow:"),
-            tags$ol(
-              tags$li(strong("Choose Analysis Type:"), " Select Single or Comparative analysis"),
-              tags$li(strong("Upload Data:"), " Upload your disease gene expression signature"),
-              tags$li(strong("Configure:"), " Select profile(s) and customize parameters (including sweep mode)"),
-              tags$li(strong("Run Analysis:"), " Execute the pipeline"),
-              tags$li(strong("View Results:"), " Explore drug candidates and visualizations")
-            ),
-            
-            h4("Analysis Types:"),
-            tags$ul(
-              tags$li(strong("Single Analysis:"), " Run with one configuration to identify drug candidates"),
-              tags$li(strong("Comparative Analysis:"), " Compare multiple configurations to find robust candidates")
-            ),
-            
-            hr(),
-            actionButton("startBtn", "Start Analysis →", 
-                        class = "btn-success btn-lg", 
-                        icon = icon("play-circle"))
+          column(12,
+            div(class = "home-hero",
+              div(class = "home-title", "🔬 Drug Repurposing Pipeline"),
+              div(class = "home-subtitle", "Identify existing drugs for new therapeutic applications")
+            )
+          )
+        ),
+        
+        # About Section
+        fluidRow(
+          column(12,
+            box(
+              title = "About This Application",
+              width = 12,
+              status = "primary",
+              solidHeader = TRUE,
+              collapsible = TRUE,
+              collapsed = FALSE,
+              p("The Drug Repurposing Pipeline is a comprehensive analysis tool that identifies existing FDA-approved and other known drugs that could be repurposed for new therapeutic applications. By analyzing disease gene expression signatures and comparing them against drug-induced transcriptional profiles, this application helps researchers discover potential new uses for existing medications."),
+              p("This approach can significantly accelerate drug discovery and reduce development costs by leveraging extensive existing safety data and known pharmacological properties of established drugs."),
+              p(
+                strong("Learn more about the project on GitHub: "),
+                a(href = "https://github.com/enockniyonkuru/drug_repurposing", 
+                  target = "_blank",
+                  class = "github-link",
+                  icon("github"), " View Repository")
+              )
+            )
+          )
+        ),
+        
+        # Workflow Section
+        fluidRow(
+          column(12,
+            div(class = "section-title", "📋 How It Works")
+          )
+        ),
+        
+        fluidRow(
+          column(6,
+            div(class = "feature-card",
+              h4(icon("exchange-alt", class = "feature-icon"), "Your Own Analysis"),
+              div(class = "workflow-step",
+                div(class = "workflow-number", "1"),
+                div(class = "workflow-content",
+                  strong("Choose Analysis Type:"), br(),
+                  "Single analysis with one profile or comparative analysis across multiple profiles."
+                )
+              ),
+              div(class = "workflow-step",
+                div(class = "workflow-number", "2"),
+                div(class = "workflow-content",
+                  strong("Upload Your Data:"), br(),
+                  "Provide your disease gene expression signature (gene symbols and log2 fold-change values)."
+                )
+              ),
+              div(class = "workflow-step",
+                div(class = "workflow-number", "3"),
+                div(class = "workflow-content",
+                  strong("Configure Parameters:"), br(),
+                  "Select analysis profiles (CMAP/TAHOE) and customize settings."
+                )
+              ),
+              div(class = "workflow-step",
+                div(class = "workflow-number", "4"),
+                div(class = "workflow-content",
+                  strong("Run Analysis:"), br(),
+                  "Execute the pipeline (7-30 minutes depending on configuration)."
+                )
+              ),
+              div(class = "workflow-step",
+                div(class = "workflow-number", "5"),
+                div(class = "workflow-content",
+                  strong("View Results:"), br(),
+                  "Explore drug candidates, rankings, and interactive visualizations."
+                )
+              )
+            )
+          ),
+          
+          column(6,
+            div(class = "feature-card",
+              h4(icon("file-import", class = "feature-icon"), "Pre-computed Results"),
+              p("Already have results from running the pipeline? You can upload your pre-computed results files here to visualize and interact with the data without re-running the analysis."),
+              p("This option is useful if you:"),
+              tags$ul(
+                tags$li("Ran the analysis via command-line terminal"),
+                tags$li("Have existing results from previous analyses"),
+                tags$li("Want to visualize results without keeping a browser window open"),
+                tags$li("Need to upload and share results for collaborative analysis")
+              ),
+              p(style = "margin-top: 20px; padding: 10px; background-color: #e3f2fd; border-radius: 5px;",
+                strong("Note:"), " You can access the upload results feature anytime through the 'Upload Results' menu item in the sidebar."
+              )
+            )
+          )
+        ),
+        
+        # Quick Start Section
+        fluidRow(
+          column(12,
+            div(class = "section-title", "🚀 Quick Start")
+          )
+        ),
+        
+        fluidRow(
+          column(12,
+            box(
+              title = "Ready to get started?",
+              width = 12,
+              status = "success",
+              solidHeader = TRUE,
+              p("Choose how you'd like to proceed:"),
+              div(class = "start-buttons",
+                actionButton("startBtn", "Start New Analysis →", 
+                            class = "btn-success btn-lg", 
+                            icon = icon("play-circle")),
+                actionButton("uploadResultsBtn", "Upload Results →", 
+                            class = "btn-info btn-lg", 
+                            icon = icon("file-upload"))
+              )
+            )
           )
         )
       ),
@@ -115,16 +466,16 @@ ui <- dashboardPage(
       tabItem(tabName = "choose_type",
         fluidRow(
           box(
-            title = "Step 1: Choose Your Analysis Type",
+            title = "Step 1: Choose Your Path",
             width = 12,
             status = "primary",
             solidHeader = TRUE,
-            h4("Select the type of analysis you want to perform:")
+            h4("Select how you'd like to proceed:")
           )
         ),
         
         fluidRow(
-          column(6,
+          column(4,
             div(id = "singleAnalysisCard", class = "analysis-type-card",
               onclick = "Shiny.setInputValue('analysisTypeClick', 'single', {priority: 'event'});",
               div(style = "text-align: center;",
@@ -143,7 +494,7 @@ ui <- dashboardPage(
             )
           ),
           
-          column(6,
+          column(4,
             div(id = "comparativeAnalysisCard", class = "analysis-type-card",
               onclick = "Shiny.setInputValue('analysisTypeClick', 'comparative', {priority: 'event'});",
               div(style = "text-align: center;",
@@ -160,12 +511,31 @@ ui <- dashboardPage(
                 )
               )
             )
+          ),
+          
+          column(4,
+            div(id = "uploadResultsCard", class = "analysis-type-card",
+              onclick = "Shiny.setInputValue('analysisTypeClick', 'upload', {priority: 'event'});",
+              div(style = "text-align: center;",
+                icon("file-upload", class = "fa-4x", style = "color: #dd4b39;"),
+                h3("Upload Results"),
+                p(style = "font-size: 16px; margin-top: 15px;",
+                  "Load pre-computed results for visualization."
+                ),
+                tags$ul(style = "text-align: left; margin-top: 20px;",
+                  tags$li("Upload your pre-computed results"),
+                  tags$li("Visualize and interact with data"),
+                  tags$li("No need to re-run analysis"),
+                  tags$li("Quick access to saved findings")
+                )
+              )
+            )
           )
         ),
         
         fluidRow(
           box(
-            title = "Selected Analysis Type",
+            title = "Selected Option",
             width = 12,
             status = "info",
             solidHeader = TRUE,
@@ -228,7 +598,11 @@ ui <- dashboardPage(
             width = 12,
             status = "success",
             solidHeader = TRUE,
-            DTOutput("dataPreview"),
+            shinycssloaders::withSpinner(
+              DTOutput("dataPreview"),
+              type = 4,
+              color = "#0F4C75"
+            ),
             br(),
             actionButton("confirmDataBtn", "Confirm & Continue →", 
                         class = "btn-primary btn-lg")
@@ -274,6 +648,30 @@ ui <- dashboardPage(
             solidHeader = TRUE,
             uiOutput("analysisHeader"),
             hr(),
+            # Warning/Info box about runtime
+            box(
+              title = "Important: Runtime Information",
+              width = 12,
+              status = "warning",
+              solidHeader = TRUE,
+              collapsible = TRUE,
+              collapsed = FALSE,
+              h4("Expected Analysis Duration:"),
+              tags$ul(
+                tags$li(strong("CMAP Analysis: "), "8-15 minutes per profile"),
+                tags$li(strong("TAHOE Analysis: "), "30-50 minutes per profile")
+              ),
+              h4("Important Requirements:"),
+              tags$ul(
+                tags$li(strong("Keep your browser open"), " - The analysis runs in your current session and will stop if you close the browser or leave the page"),
+                tags$li(strong("Do not refresh the page"), " - You will lose progress if you refresh"),
+                tags$li(strong("Stable internet connection"), " - Required for the entire duration of analysis")
+              ),
+              h4("Alternative Option:"),
+              p("If you prefer not to keep the browser open, you can run the analysis from the command line terminal and then upload the results here using the 'Upload Results' tab to visualize and interact with them."),
+              style = "background-color: #fff3cd; border-left: 5px solid #ff9800;"
+            ),
+            hr(),
             actionButton("runBtn", "Run Analysis", 
                         class = "btn-success btn-lg", 
                         icon = icon("play-circle")),
@@ -312,6 +710,117 @@ ui <- dashboardPage(
         ),
         
         uiOutput("plotsUI")
+      ),
+      
+      # Upload Pre-computed Results Tab
+      tabItem(tabName = "upload_results",
+        fluidRow(
+          box(
+            title = "Upload Pre-computed Results",
+            width = 12,
+            status = "primary",
+            solidHeader = TRUE,
+            p("If you have already run the pipeline from the terminal, you can upload the generated results CSV file here to visualize and interact with the data without re-running the analysis."),
+            hr(),
+            h4("How to generate results file:"),
+            tags$ol(
+              tags$li("Run the pipeline from terminal: ", tags$code("Rscript scripts/runall.R")),
+              tags$li("Look in ", tags$code("scripts/results/[analysis_folder]/"), " for files named ", tags$code("*_hits_logFC_*.csv")),
+              tags$li("Upload that CSV file below")
+            )
+          )
+        ),
+        
+        fluidRow(
+          box(
+            title = "Upload Results CSV",
+            width = 6,
+            status = "info",
+            solidHeader = TRUE,
+            fileInput("uploadResultsFile", "Choose CSV File",
+                     accept = c("text/csv", ".csv")),
+            hr(),
+            actionButton("loadResultsBtn", "Load Results", 
+                        class = "btn-primary", icon = icon("upload"))
+          ),
+          
+          box(
+            title = "File Information",
+            width = 6,
+            status = "success",
+            solidHeader = TRUE,
+            h4("Expected CSV columns:"),
+            tags$ul(
+              tags$li("exp_id - Experiment ID"),
+              tags$li("name - Drug name"),
+              tags$li("cmap_score - CMap reversal score"),
+              tags$li("q - Q-value (significance)"),
+              tags$li("cell_line - Cell line used"),
+              tags$li("concentration - Drug concentration"),
+              tags$li("array_platform - Platform used")
+            ),
+            h4("Result statistics:"),
+            textOutput("uploadedResultsStats")
+          )
+        ),
+        
+        fluidRow(
+          box(
+            title = "Preview",
+            width = 12,
+            status = "success",
+            solidHeader = TRUE,
+            shinycssloaders::withSpinner(
+              DTOutput("uploadedResultsTable"),
+              type = 4,
+              color = "#0F4C75"
+            ),
+            br(),
+            downloadButton("downloadUploadedResults", "Download Results"),
+            style = "display: none;",
+            id = "uploadedResultsPanel"
+          )
+        ),
+        
+        fluidRow(
+          box(
+            title = "Visualizations",
+            width = 12,
+            status = "info",
+            solidHeader = TRUE,
+            tabsetPanel(
+              tabPanel(
+                "Score Distribution",
+                br(),
+                shinycssloaders::withSpinner(
+                  plotly::plotlyOutput("uploadedScorePlot", height = "500px"),
+                  type = 4,
+                  color = "#0F4C75"
+                )
+              ),
+              tabPanel(
+                "Top Drugs",
+                br(),
+                shinycssloaders::withSpinner(
+                  plotly::plotlyOutput("uploadedTopDrugsPlot", height = "500px"),
+                  type = 4,
+                  color = "#0F4C75"
+                )
+              ),
+              tabPanel(
+                "Drug Details",
+                br(),
+                shinycssloaders::withSpinner(
+                  DTOutput("uploadedDrugDetailsTable"),
+                  type = 4,
+                  color = "#0F4C75"
+                )
+              )
+            ),
+            style = "display: none;",
+            id = "uploadedVisualizationsPanel"
+          )
+        )
       ),
       
       # Help Tab
@@ -364,10 +873,10 @@ server <- function(input, output, session) {
     config_profiles = list(),
     comparison_results = list(),
     drug_signatures = list(
-      "CMAP" = "../scripts/data/cmap_signatures.RData",
+      "CMAP" = "../scripts/data/drug_signatures/cmap_signatures.RData",
       "TAHOE" = "../scripts/data/drug_signatures/tahoe_signatures.RData"
     ),
-    selected_drug_signature = "../scripts/data/cmap_signatures.RData",
+    selected_drug_signature = "../scripts/data/drug_signatures/cmap_signatures.RData",
     # Sweep mode specific results
     drp_object = NULL,
     is_sweep_mode = FALSE,
@@ -396,7 +905,7 @@ server <- function(input, output, session) {
   observeEvent(input$drugSignatureChoice, {
     req(input$drugSignatureChoice)
     signature_map <- list(
-      cmap = "../scripts/data/cmap_signatures.RData",
+      cmap = "../scripts/data/drug_signatures/cmap_signatures.RData",
       tahoe = "../scripts/data/drug_signatures/tahoe_signatures.RData"
     )
     values$selected_drug_signature <- signature_map[[input$drugSignatureChoice]]
@@ -406,7 +915,7 @@ server <- function(input, output, session) {
   observeEvent(input$compDrugSignatureChoice, {
     req(input$compDrugSignatureChoice)
     signature_map <- list(
-      cmap = "../scripts/data/cmap_signatures.RData",
+      cmap = "../scripts/data/drug_signatures/cmap_signatures.RData",
       tahoe = "../scripts/data/drug_signatures/tahoe_signatures.RData"
     )
     values$selected_drug_signature <- signature_map[[input$compDrugSignatureChoice]]
@@ -415,6 +924,10 @@ server <- function(input, output, session) {
   # Navigation buttons
   observeEvent(input$startBtn, {
     updateTabItems(session, "sidebar", "choose_type")
+  })
+  
+  observeEvent(input$uploadResultsBtn, {
+    updateTabItems(session, "sidebar", "upload_results")
   })
   
   observeEvent(input$confirmDataBtn, {
@@ -431,9 +944,11 @@ server <- function(input, output, session) {
     values$analysis_type <- input$analysisTypeClick
     
     if (input$analysisTypeClick == "single") {
-      runjs("$('#singleAnalysisCard').addClass('selected'); $('#comparativeAnalysisCard').removeClass('selected');")
-    } else {
-      runjs("$('#comparativeAnalysisCard').addClass('selected'); $('#singleAnalysisCard').removeClass('selected');")
+      runjs("$('#singleAnalysisCard').addClass('selected'); $('#comparativeAnalysisCard').removeClass('selected'); $('#uploadResultsCard').removeClass('selected');")
+    } else if (input$analysisTypeClick == "comparative") {
+      runjs("$('#comparativeAnalysisCard').addClass('selected'); $('#singleAnalysisCard').removeClass('selected'); $('#uploadResultsCard').removeClass('selected');")
+    } else if (input$analysisTypeClick == "upload") {
+      runjs("$('#uploadResultsCard').addClass('selected'); $('#singleAnalysisCard').removeClass('selected'); $('#comparativeAnalysisCard').removeClass('selected');")
     }
   })
   
@@ -441,13 +956,15 @@ server <- function(input, output, session) {
   output$selectedAnalysisType <- renderUI({
     if (is.null(values$analysis_type)) {
       return(p(style = "color: #999; font-style: italic;", 
-              icon("info-circle"), " Please select an analysis type above"))
+              icon("info-circle"), " Please select an option above"))
     }
     
     type_text <- if (values$analysis_type == "single") {
       "Single Analysis - Run with one configuration profile"
-    } else {
+    } else if (values$analysis_type == "comparative") {
       "Comparative Analysis - Compare multiple configuration profiles"
+    } else if (values$analysis_type == "upload") {
+      "Upload Results - Visualize pre-computed results"
     }
     
     tags$div(
@@ -460,10 +977,18 @@ server <- function(input, output, session) {
   # Confirm analysis type
   observeEvent(input$confirmAnalysisType, {
     req(values$analysis_type)
-    updateTabItems(session, "sidebar", "upload")
-    showNotification(paste("Analysis type set to:", 
-                          ifelse(values$analysis_type == "single", "Single Analysis", "Comparative Analysis")), 
-                    type = "message")
+    
+    if (values$analysis_type == "upload") {
+      # Directly go to upload results tab
+      updateTabItems(session, "sidebar", "upload_results")
+      showNotification("Proceeding to upload results...", type = "message")
+    } else {
+      # Go to data upload for analysis
+      updateTabItems(session, "sidebar", "upload")
+      showNotification(paste("Analysis type set to:", 
+                            ifelse(values$analysis_type == "single", "Single Analysis", "Comparative Analysis")), 
+                      type = "message")
+    }
   })
   
   # Analysis type reminder
@@ -599,7 +1124,7 @@ server <- function(input, output, session) {
           
           numericInput("customPvalCutoff", "P-value Cutoff:", value = 0.05, min = 0, max = 1, step = 0.01),
           numericInput("customQThresh", "Q-value Threshold:", value = 0.05, min = 0, max = 1, step = 0.01),
-          checkboxInput("customReversalOnly", "Reversal Only", value = TRUE),
+          shinyWidgets::materialSwitch("customReversalOnly", "Reversal Only", value = TRUE, status = "success"),
           
           selectInput("customMode", "Analysis Mode:", 
                      choices = c("Single Cutoff" = "single", "Sweep Mode" = "sweep"),
@@ -609,22 +1134,22 @@ server <- function(input, output, session) {
           conditionalPanel(
             condition = "input.customMode == 'sweep'",
             h4("Sweep Mode Settings"),
-            checkboxInput("customSweepAutoGrid", "Auto-generate threshold grid", value = TRUE),
+            shinyWidgets::materialSwitch("customSweepAutoGrid", "Auto-generate threshold grid", value = TRUE, status = "success"),
             numericInput("customSweepStep", "Step size:", value = 0.1, min = 0.05, step = 0.05),
             numericInput("customSweepMinFrac", "Min fraction of genes:", value = 0.20, min = 0.05, max = 1, step = 0.05),
             numericInput("customSweepMinGenes", "Min number of genes:", value = 200, min = 50, step = 50),
-            checkboxInput("customSweepStopOnSmall", "Stop if signature too small", value = FALSE),
-            selectInput("customCombineLogFC", "Combine log2FC columns:", 
+            shinyWidgets::materialSwitch("customSweepStopOnSmall", "Stop if signature too small", value = FALSE, status = "success"),
+            shinyWidgets::pickerInput("customCombineLogFC", "Combine log2FC columns:", 
                        choices = c("Average" = "average", "Median" = "median", "First" = "first"),
                        selected = "average"),
-            selectInput("customRobustRule", "Robust drug rule:", 
+            shinyWidgets::pickerInput("customRobustRule", "Robust drug rule:", 
                        choices = c("All cutoffs" = "all", "K of N cutoffs" = "k_of_n"),
                        selected = "all"),
             conditionalPanel(
               condition = "input.customRobustRule == 'k_of_n'",
               numericInput("customRobustK", "Minimum cutoffs (k):", value = 2, min = 1, step = 1)
             ),
-            selectInput("customAggregate", "Score aggregation:", 
+            shinyWidgets::pickerInput("customAggregate", "Score aggregation:", 
                        choices = c("Mean" = "mean", "Median" = "median"),
                        selected = "mean")
           ),
@@ -683,7 +1208,7 @@ server <- function(input, output, session) {
           
           numericInput("compCustomPvalCutoff", "P-value Cutoff:", value = 0.05, min = 0, max = 1, step = 0.01),
           numericInput("compCustomQThresh", "Q-value Threshold:", value = 0.05, min = 0, max = 1, step = 0.01),
-          checkboxInput("compCustomReversalOnly", "Reversal Only", value = TRUE),
+          shinyWidgets::materialSwitch("compCustomReversalOnly", "Reversal Only", value = TRUE, status = "success"),
           
           selectInput("compCustomMode", "Analysis Mode:", 
                      choices = c("Single Cutoff" = "single", "Sweep Mode" = "sweep"),
@@ -693,22 +1218,22 @@ server <- function(input, output, session) {
           conditionalPanel(
             condition = "input.compCustomMode == 'sweep'",
             h4("Sweep Mode Settings"),
-            checkboxInput("compCustomSweepAutoGrid", "Auto-generate threshold grid", value = TRUE),
+            shinyWidgets::materialSwitch("compCustomSweepAutoGrid", "Auto-generate threshold grid", value = TRUE, status = "success"),
             numericInput("compCustomSweepStep", "Step size:", value = 0.1, min = 0.05, step = 0.05),
             numericInput("compCustomSweepMinFrac", "Min fraction of genes:", value = 0.20, min = 0.05, max = 1, step = 0.05),
             numericInput("compCustomSweepMinGenes", "Min number of genes:", value = 200, min = 50, step = 50),
-            checkboxInput("compCustomSweepStopOnSmall", "Stop if signature too small", value = FALSE),
-            selectInput("compCustomCombineLogFC", "Combine log2FC columns:", 
+            shinyWidgets::materialSwitch("compCustomSweepStopOnSmall", "Stop if signature too small", value = FALSE, status = "success"),
+            shinyWidgets::pickerInput("compCustomCombineLogFC", "Combine log2FC columns:", 
                        choices = c("Average" = "average", "Median" = "median", "First" = "first"),
                        selected = "average"),
-            selectInput("compCustomRobustRule", "Robust drug rule:", 
+            shinyWidgets::pickerInput("compCustomRobustRule", "Robust drug rule:", 
                        choices = c("All cutoffs" = "all", "K of N cutoffs" = "k_of_n"),
                        selected = "all"),
             conditionalPanel(
               condition = "input.compCustomRobustRule == 'k_of_n'",
               numericInput("compCustomRobustK", "Minimum cutoffs (k):", value = 2, min = 1, step = 1)
             ),
-            selectInput("compCustomAggregate", "Score aggregation:", 
+            shinyWidgets::pickerInput("compCustomAggregate", "Score aggregation:", 
                        choices = c("Mean" = "mean", "Median" = "median"),
                        selected = "mean")
           ),
@@ -792,6 +1317,8 @@ server <- function(input, output, session) {
       if (!is.null(input$selectedExistingProfile) && input$selectedExistingProfile != "custom") {
         # Load the selected profile's parameters
         profile <- values$config_profiles[[input$selectedExistingProfile]]
+        # Store the profile name for later use in run_single_analysis
+        values$selected_profile_name <- input$selectedExistingProfile
         
         if (!is.null(profile) && !is.null(values$data)) {
           # IMPORTANT: Load the drug signature path from the profile
@@ -945,21 +1472,52 @@ server <- function(input, output, session) {
         
         pval_key_val <- if(input$customPvalKey == "") NULL else input$customPvalKey
         
-        # Determine drug metadata paths based on selected signature
-        drug_meta_mapping <- list(
-          "../scripts/data/cmap_signatures.RData" = "../scripts/data/cmap_drug_experiments_new.csv",
-          "../scripts/data/tahoe_signatures.RData" = "../scripts/data/tahoe_drug_experiments_new.csv",
-          "../scripts/data/drug_rep_cmap_ranks_shared_genes_drugs.RData" = "../scripts/data/cmap_drug_experiments_new.csv",
-          "../scripts/data/drug_rep_tahoe_ranks_shared_genes_drugs.RData" = "../scripts/data/tahoe_drug_experiments_new.csv"
-        )
-        drug_valid_mapping <- list(
-          "../scripts/data/cmap_signatures.RData" = "../scripts/data/cmap_valid_instances.csv",
-          "../scripts/data/tahoe_signatures.RData" = "../scripts/data/tahoe_valid_instances_OG_035.csv",
-          "../scripts/data/drug_rep_cmap_ranks_shared_genes_drugs.RData" = "../scripts/data/cmap_valid_instances.csv",
-          "../scripts/data/drug_rep_tahoe_ranks_shared_genes_drugs.RData" = "../scripts/data/tahoe_valid_instances_OG_035.csv"
-        )
-        selected_meta <- drug_meta_mapping[[values$selected_drug_signature]] %||% "../scripts/data/cmap_drug_experiments_new.csv"
-        selected_valid <- drug_valid_mapping[[values$selected_drug_signature]] %||% "../scripts/data/cmap_valid_instances.csv"
+        # Check if using a profile from config
+        profile_selected <- !is.null(values$selected_profile_name) && values$selected_profile_name != ""
+        
+        if (profile_selected) {
+          # Use paths from the profile config
+          profile_config <- values$config_profiles[[values$selected_profile_name]]
+          
+          # Get paths from profile, prepending "../scripts/" if relative paths
+          selected_meta <- if (!is.null(profile_config$paths$drug_meta)) {
+            meta_path <- profile_config$paths$drug_meta
+            if (!grepl("^/|^\\.\\./", meta_path)) {
+              file.path("../scripts", meta_path)
+            } else {
+              meta_path
+            }
+          } else {
+            "../scripts/data/drug_signatures/cmap_drug_experiments_new.csv"
+          }
+          
+          # IMPORTANT: If drug_valid is NULL in config, pass NULL to DRP
+          # Otherwise, use the specified path
+          selected_valid <- if (!is.null(profile_config$paths$drug_valid)) {
+            if (is.na(profile_config$paths$drug_valid) || profile_config$paths$drug_valid == "") {
+              NULL
+            } else {
+              valid_path <- profile_config$paths$drug_valid
+              if (!grepl("^/|^\\.\\./", valid_path)) {
+                file.path("../scripts", valid_path)
+              } else {
+                valid_path
+              }
+            }
+          } else {
+            NULL
+          }
+        } else {
+          # Fall back to signature-based mapping only if NOT using a profile
+          drug_meta_mapping <- list(
+            "../scripts/data/drug_signatures/cmap_signatures.RData" = "../scripts/data/drug_signatures/cmap_drug_experiments_new.csv",
+            "../scripts/data/drug_signatures/tahoe_signatures.RData" = "../scripts/data/drug_signatures/tahoe_drug_experiments_new.csv",
+            "../scripts/data/drug_rep_cmap_ranks_shared_genes_drugs.RData" = "../scripts/data/drug_signatures/cmap_drug_experiments_new.csv",
+            "../scripts/data/drug_rep_tahoe_ranks_shared_genes_drugs.RData" = "../scripts/data/drug_signatures/tahoe_drug_experiments_new.csv"
+          )
+          selected_meta <- drug_meta_mapping[[values$selected_drug_signature]] %||% "../scripts/data/drug_signatures/cmap_drug_experiments_new.csv"
+          selected_valid <- NULL
+        }
         
           drp_args <- c(
           list(
@@ -1042,7 +1600,7 @@ server <- function(input, output, session) {
           # IMPORTANT: Include exp_id for heatmap generation
           if (!is.null(drp$robust_hits) && nrow(drp$robust_hits) > 0) {
             values$drugs_valid <- data.frame(
-              exp_id = drp$robust_hits$exp_id,
+              exp_id = if ("exp_id" %in% names(drp$robust_hits)) drp$robust_hits$exp_id else NA,
               name = drp$robust_hits$name,
               cmap_score = drp$robust_hits$aggregated_score,
               q = drp$robust_hits$min_q,
@@ -1136,36 +1694,33 @@ server <- function(input, output, session) {
           }
           
           # Build DRP arguments including sweep parameters if present
-          # Use metadata paths from profile if available, otherwise map based on signature
-          profile_meta_path <- profile_config$paths$drug_meta %||% NULL
-          profile_valid_path <- profile_config$paths$drug_valid %||% NULL
-          
-          # If paths not in profile, map them based on signature file
-          if (is.null(profile_meta_path) || is.null(profile_valid_path)) {
-            drug_meta_mapping <- list(
-              "data/cmap_signatures.RData" = "data/cmap_drug_experiments_new.csv",
-              "data/tahoe_signatures.RData" = "data/tahoe_drug_experiments_new.csv",
-              "data/drug_rep_cmap_ranks_shared_genes_drugs.RData" = "data/cmap_drug_experiments_new.csv",
-              "data/drug_rep_tahoe_ranks_shared_genes_drugs.RData" = "data/tahoe_drug_experiments_new.csv"
-            )
-            drug_valid_mapping <- list(
-              "data/cmap_signatures.RData" = "data/cmap_valid_instances.csv",
-              "data/tahoe_signatures.RData" = "data/tahoe_valid_instances_OG_035.csv",
-              "data/drug_rep_cmap_ranks_shared_genes_drugs.RData" = "data/cmap_valid_instances.csv",
-              "data/drug_rep_tahoe_ranks_shared_genes_drugs.RData" = "data/tahoe_valid_instances_OG_035.csv"
-            )
-            # Get signature file basename from profile
-            sig_base <- profile_config$paths$signatures %||% "data/cmap_signatures.RData"
-            profile_meta_path <- profile_meta_path %||% drug_meta_mapping[[sig_base]] %||% "data/cmap_drug_experiments_new.csv"
-            profile_valid_path <- profile_valid_path %||% drug_valid_mapping[[sig_base]] %||% "data/cmap_valid_instances.csv"
+          # Use metadata paths from profile
+          profile_meta_path <- if (!is.null(profile_config$paths$drug_meta)) {
+            meta_path <- profile_config$paths$drug_meta
+            if (!grepl("^/|^\\.\\./", meta_path)) {
+              file.path("../scripts", meta_path)
+            } else {
+              meta_path
+            }
+          } else {
+            "../scripts/data/drug_signatures/cmap_drug_experiments_new.csv"
           }
           
-          # Prepend ../scripts/ if needed
-          if (!grepl("^/|^\\.\\./", profile_meta_path)) {
-            profile_meta_path <- file.path("../scripts", profile_meta_path)
-          }
-          if (!grepl("^/|^\\.\\./", profile_valid_path)) {
-            profile_valid_path <- file.path("../scripts", profile_valid_path)
+          # IMPORTANT: Respect drug_valid setting from profile
+          # If drug_valid is NULL or empty string in config, pass NULL to DRP
+          profile_valid_path <- if (!is.null(profile_config$paths$drug_valid)) {
+            if (is.na(profile_config$paths$drug_valid) || profile_config$paths$drug_valid == "") {
+              NULL
+            } else {
+              valid_path <- profile_config$paths$drug_valid
+              if (!grepl("^/|^\\.\\./", valid_path)) {
+                file.path("../scripts", valid_path)
+              } else {
+                valid_path
+              }
+            }
+          } else {
+            NULL
           }
           
           drp_args <- list(
@@ -1275,14 +1830,20 @@ server <- function(input, output, session) {
         valueBoxOutput("topDrugBox"),
         valueBoxOutput("medianQBox"),
         
-        box(
-          title = "Significant Drug Hits",
-          width = 12,
-          status = "success",
-          solidHeader = TRUE,
-          downloadButton("downloadResults", "Download Results CSV"),
-          hr(),
-          DTOutput("resultsTable")
+        fluidRow(
+          box(
+            title = "Significant Drug Hits",
+            width = 12,
+            status = "success",
+            solidHeader = TRUE,
+            downloadButton("downloadResults", "Download Results CSV"),
+            hr(),
+            shinycssloaders::withSpinner(
+              DTOutput("resultsTable"),
+              type = 4,
+              color = "#0F4C75"
+            )
+          )
         )
       )
     } else {
@@ -1329,17 +1890,11 @@ server <- function(input, output, session) {
             status = "primary",
             solidHeader = TRUE,
             sliderInput("topN", "Number of drugs:", min = 5, max = 30, value = 15),
-            plotlyOutput("topDrugsPlot", height = "500px")
-          ),
-          
-          box(
-            title = "Disease-Drug Reversal Heatmap",
-            width = 12,
-            status = "primary",
-            solidHeader = TRUE,
-            p("Heatmap showing how disease signature aligns or reverses with top drug signatures"),
-            sliderInput("heatmapTopN", "Number of top drugs to display:", min = 5, max = 20, value = 10),
-            plotlyOutput("reversalHeatmap", height = "600px")
+            shinycssloaders::withSpinner(
+              plotlyOutput("topDrugsPlot", height = "500px"),
+              type = 4,
+              color = "#0F4C75"
+            )
           ),
           
           box(
@@ -1347,7 +1902,11 @@ server <- function(input, output, session) {
             width = 6,
             status = "info",
             solidHeader = TRUE,
-            plotlyOutput("scoreDist", height = "400px")
+            shinycssloaders::withSpinner(
+              plotlyOutput("scoreDist", height = "400px"),
+              type = 4,
+              color = "#0F4C75"
+            )
           ),
           
           box(
@@ -1356,7 +1915,11 @@ server <- function(input, output, session) {
             status = "warning",
             solidHeader = TRUE,
             p("Interactive visualization of threshold performance"),
-            plotlyOutput("sweepCutoffPlot", height = "400px")
+            shinycssloaders::withSpinner(
+              plotlyOutput("sweepCutoffPlot", height = "400px"),
+              type = 4,
+              color = "#0F4C75"
+            )
           ),
           
           box(
@@ -1365,7 +1928,11 @@ server <- function(input, output, session) {
             status = "info",
             solidHeader = TRUE,
             p("Detailed performance metrics for each log2FC threshold tested"),
-            DTOutput("sweepCutoffTable")
+            shinycssloaders::withSpinner(
+              DTOutput("sweepCutoffTable"),
+              type = 4,
+              color = "#0F4C75"
+            )
           )
         )
       } else {
@@ -1377,7 +1944,11 @@ server <- function(input, output, session) {
             status = "primary",
             solidHeader = TRUE,
             sliderInput("topN", "Number of drugs:", min = 5, max = 30, value = 15),
-            plotlyOutput("topDrugsPlot", height = "500px")
+            shinycssloaders::withSpinner(
+              plotlyOutput("topDrugsPlot", height = "500px"),
+              type = 4,
+              color = "#0F4C75"
+            )
           ),
           
           box(
@@ -1387,7 +1958,11 @@ server <- function(input, output, session) {
             solidHeader = TRUE,
             p("Heatmap showing how disease signature aligns or reverses with top drug signatures"),
             sliderInput("heatmapTopN", "Number of top drugs to display:", min = 5, max = 20, value = 10),
-            plotlyOutput("reversalHeatmap", height = "600px")
+            shinycssloaders::withSpinner(
+              plotlyOutput("reversalHeatmap", height = "600px"),
+              type = 4,
+              color = "#0F4C75"
+            )
           ),
           
           box(
@@ -1395,7 +1970,11 @@ server <- function(input, output, session) {
             width = 6,
             status = "info",
             solidHeader = TRUE,
-            plotlyOutput("scoreDist", height = "400px")
+            shinycssloaders::withSpinner(
+              plotlyOutput("scoreDist", height = "400px"),
+              type = 4,
+              color = "#0F4C75"
+            )
           ),
           
           box(
@@ -1403,7 +1982,11 @@ server <- function(input, output, session) {
             width = 6,
             status = "info",
             solidHeader = TRUE,
-            plotlyOutput("volcanoPlot", height = "400px")
+            shinycssloaders::withSpinner(
+              plotlyOutput("volcanoPlot", height = "400px"),
+              type = 4,
+              color = "#0F4C75"
+            )
           )
         )
       }
@@ -1424,7 +2007,11 @@ server <- function(input, output, session) {
           status = "success",
           solidHeader = TRUE,
           p("Shows the number of shared drugs between each pair of profiles"),
-          plotlyOutput("comparisonOverlapHeatmap", height = "500px")
+          shinycssloaders::withSpinner(
+            plotlyOutput("comparisonOverlapHeatmap", height = "500px"),
+            type = 4,
+            color = "#0F4C75"
+          )
         ),
         
         box(
@@ -1441,7 +2028,11 @@ server <- function(input, output, session) {
           width = 6,
           status = "success",
           solidHeader = TRUE,
-          plotlyOutput("comparisonScoreDist", height = "500px")
+          shinycssloaders::withSpinner(
+            plotlyOutput("comparisonScoreDist", height = "500px"),
+            type = 4,
+            color = "#0F4C75"
+          )
         )
       )
     }
@@ -1728,6 +2319,9 @@ server <- function(input, output, session) {
                 layout(title = "No valid experiment IDs found for selected drugs"))
       }
       
+      # Convert exp_id to numeric to ensure proper indexing
+      top_drugs$exp_id <- as.numeric(top_drugs$exp_id)
+      
       # Create a subset with exp_id for prepare_heatmap
       top_drugs_subset <- data.frame(
         exp_id = top_drugs$exp_id,
@@ -1873,6 +2467,167 @@ server <- function(input, output, session) {
     
     fig
   })
+  
+  # ========== UPLOAD RESULTS FUNCTIONALITY ==========
+  
+  # Observer for loading uploaded results file
+  observeEvent(input$loadResultsBtn, {
+    req(input$uploadResultsFile)
+    
+    tryCatch({
+      # Read the CSV file
+      uploaded_data <- read.csv(input$uploadResultsFile$datapath, stringsAsFactors = FALSE, check.names = FALSE)
+      
+      # Validate required columns
+      required_cols <- c("exp_id", "name", "cmap_score", "q")
+      missing_cols <- setdiff(required_cols, names(uploaded_data))
+      
+      if (length(missing_cols) > 0) {
+        showNotification(
+          paste("Missing required columns:", paste(missing_cols, collapse = ", ")),
+          type = "error"
+        )
+        return(NULL)
+      }
+      
+      # Store the uploaded results
+      values$uploaded_results <- uploaded_data
+      
+      # Display statistics
+      n_drugs <- nrow(uploaded_data)
+      avg_score <- mean(uploaded_data$cmap_score, na.rm = TRUE)
+      median_q <- median(uploaded_data$q, na.rm = TRUE)
+      
+      output$uploadedResultsStats <- renderText({
+        paste0(
+          "Total drugs: ", n_drugs, "\n",
+          "Avg score: ", round(avg_score, 4), "\n",
+          "Median Q-value: ", format(median_q, scientific = TRUE)
+        )
+      })
+      
+      # Show results tables and visualizations
+      shinyjs::show("uploadedResultsPanel")
+      shinyjs::show("uploadedVisualizationsPanel")
+      
+      showNotification(paste0("Loaded ", n_drugs, " drug results!"), type = "message")
+      
+    }, error = function(e) {
+      showNotification(paste("Error loading file:", e$message), type = "error")
+    })
+  })
+  
+  # Render uploaded results table
+  output$uploadedResultsTable <- DT::renderDT({
+    req(values$uploaded_results)
+    
+    df <- values$uploaded_results %>%
+      select(name, cmap_score, q, cell_line, concentration, array_platform) %>%
+      arrange(cmap_score) %>%
+      head(50)
+    
+    DT::datatable(
+      df,
+      options = list(
+        pageLength = 10,
+        scrollX = TRUE,
+        dom = 'lfrtip'
+      ),
+      rownames = FALSE
+    )
+  })
+  
+  # Render score distribution plot
+  output$uploadedScorePlot <- plotly::renderPlotly({
+    req(values$uploaded_results)
+    
+    df <- values$uploaded_results
+    
+    fig <- plotly::plot_ly(
+      x = df$cmap_score,
+      type = "histogram",
+      nbinsx = 30,
+      marker = list(color = "steelblue"),
+      name = "Score Distribution"
+    ) %>%
+      plotly::layout(
+        title = "Distribution of CMap Scores",
+        xaxis = list(title = "CMap Score"),
+        yaxis = list(title = "Frequency"),
+        plot_bgcolor = "white",
+        paper_bgcolor = "white"
+      )
+    
+    fig
+  })
+  
+  # Render top drugs plot
+  output$uploadedTopDrugsPlot <- plotly::renderPlotly({
+    req(values$uploaded_results)
+    
+    df <- values$uploaded_results %>%
+      arrange(cmap_score) %>%
+      head(15)
+    
+    fig <- plotly::plot_ly(
+      y = reorder(df$name, df$cmap_score),
+      x = df$cmap_score,
+      type = "bar",
+      orientation = "h",
+      marker = list(
+        color = df$cmap_score,
+        colorscale = "RdBu",
+        showscale = TRUE,
+        colorbar = list(title = "CMap Score")
+      ),
+      hovertemplate = "%{y}: %{x:.4f}<extra></extra>"
+    ) %>%
+      plotly::layout(
+        title = "Top 15 Drug Candidates by CMap Score",
+        xaxis = list(title = "CMap Score"),
+        yaxis = list(title = "Drug Name"),
+        plot_bgcolor = "white",
+        paper_bgcolor = "white",
+        height = 500,
+        margin = list(l = 200)
+      )
+    
+    fig
+  })
+  
+  # Render drug details table
+  output$uploadedDrugDetailsTable <- DT::renderDT({
+    req(values$uploaded_results)
+    
+    df <- values$uploaded_results %>%
+      arrange(cmap_score) %>%
+      select(name, cmap_score, q, cell_line, concentration, duration, vehicle, DrugBank.ID) %>%
+      head(100)
+    
+    DT::datatable(
+      df,
+      options = list(
+        pageLength = 10,
+        scrollX = TRUE,
+        dom = 'lfrtip',
+        columnDefs = list(
+          list(targets = c(1, 2), render = JS("function(data, type, row) {return type === 'display' ? parseFloat(data).toFixed(6) : data;}"))
+        )
+      ),
+      rownames = FALSE
+    )
+  })
+  
+  # Download uploaded results
+  output$downloadUploadedResults <- downloadHandler(
+    filename = function() {
+      paste0("uploaded_results_", format(Sys.time(), "%Y%m%d_%H%M%S"), ".csv")
+    },
+    content = function(file) {
+      req(values$uploaded_results)
+      write.csv(values$uploaded_results, file, row.names = FALSE)
+    }
+  )
 }
 
 # Run app
