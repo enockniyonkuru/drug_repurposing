@@ -1,463 +1,398 @@
-# TAHOE-CMAP Analysis Directory
+# TAHOE-CMAP Analysis
 
-## IMPORTANT: UNDER DEVELOPMENT - NOT FOR PRODUCTION USE
+This directory contains a comprehensive comparative analysis exploring drug repurposing across two major drug signature databases: **CMAP** (Connectivity Map) and **TAHOE**.
 
-This directory contains experimental work that is still under active development and validation. TAHOE integration is NOT fully complete, analysis tools are being validated, and results should be considered preliminary. Workflows are subject to change.
+## Overview
 
-For production drug repurposing analysis, please use the main DRpipe package and Shiny app instead. See the main repository [README.md](../README.md) for instructions.
+This analysis evaluates therapeutic candidates by comparing drug signatures from both CMAP and TAHOE databases across **233 disease signatures from CREEDS** (ChemicalRepository for Expression Information from Disease Studies). The goal was to:
 
----
+- Identify robust drug-disease associations across both databases
+- Assess method consistency across a large, diverse disease collection
+- Discover high-confidence therapeutic candidates for drug repurposing
+- Explore shared drug candidates between the two databases
+- Demonstrate reproducibility and scalability of the pipeline
 
-## Quick Overview
+### Key Findings
 
-The tahoe_cmap_analysis directory contains a comprehensive computational drug repurposing analysis that compares drug signatures from two databases:
+- **6,161 total drug-disease associations** identified across both databases
+- **33 high-confidence drugs** validated by both CMAP and TAHOE methods
+- **61 drugs** present in both databases for direct method comparison
+- Comprehensive coverage of 233 diverse disease categories with therapeutic potential
 
-- CMAP (Connectivity Map) - established drug signature database
-- TAHOE - newly integrated drug signature database
+## Table of Contents
 
-This analysis evaluates therapeutic candidates for 58 disease signatures by comparing results from both databases to identify high-confidence drug-disease associations. The preliminary study identified **6,161 total drug-disease associations** with **33 high-confidence drugs** validated by both methods.
+- [Directory Structure](#directory-structure)
+- [Data Organization](#data-organization)
+- [Analysis Scripts](#analysis-scripts)
+- [Running the Analysis](#running-the-analysis)
+- [Advanced Usage](#advanced-usage)
+  - [Creating Valid Instances for Drug Signatures](#creating-valid-instances-for-drug-signatures)
+  - [Filtering Disease Signatures](#filtering-disease-signatures)
+  - [Filtering Drug Signatures](#filtering-drug-signatures)
+  - [Running Batch Analysis with Custom Thresholds](#running-batch-analysis-with-custom-thresholds)
+- [Methodology](#methodology)
+- [Integration with DRpipe](#integration-with-drpipe)
+- [Dependencies](#dependencies)
+- [Related Documentation](#related-documentation)
 
-**Note:** These findings are preliminary and subject to further validation.
-
-## Complete Directory Structure
+## Directory Structure
 
 ```
 tahoe_cmap_analysis/
-├── README.md                           # This file - complete documentation
-├── COMPREHENSIVE_STUDY_REPORT.md       # Detailed analysis report
-├── COMPREHENSIVE_STUDY_REPORT.html     # HTML version of report
-├── requirements.txt                    # Python dependencies
-├── data/                               # Input data and compiled results
-├── scripts/                            # Analysis and processing scripts
-├── results/                            # Filtered analysis outputs
-├── reports/                            # Batch execution reports
-├── logs/                               # Log files (currently empty)
-├── dump/                               # Archive of older versions and reports
-└── venv/                               # Python virtual environment
+├── README.md                    # This file
+├── requirements.txt             # Python dependencies
+├── data/
+│   ├── disease_signatures/      # CREEDS disease signatures (233 diseases)
+│   ├── drug_signatures/         # CMAP and TAHOE signatures
+│   │   ├── cmap/               # CMAP database files and metadata
+│   │   └── tahoe/              # TAHOE database files and metadata
+│   ├── analysis/               # Processed analysis-ready datasets
+│   ├── known_drugs/            # Drug validation and reference data
+│   ├── shared_drugs_cmap_tahoe.csv
+│   └── gene_id_conversion_table.tsv
+├── scripts/                     # Analysis and processing scripts
+│   ├── analysis/               # Comparative analysis scripts
+│   ├── preprocessing/          # Data preprocessing and filtering
+│   ├── execution/              # Batch processing and pipeline execution
+│   ├── visualization/          # Plotting and visualization scripts
+│   └── singularity/            # Container definitions
+├── results/                     # Filtered analysis outputs
+├── reports/                     # Batch execution reports and logs
+└── venv/                        # Python virtual environment
 ```
 
----
+## Data Organization
 
-## Main Files and Reports
+### Input Data (`data/`)
 
-### Report Files
-- **COMPREHENSIVE_STUDY_REPORT.md** - Complete study documentation including:
-  - Executive summary and key findings
-  - Methodology and pipeline details
-  - Full dataset and shared drug subset analyses
-  - Method comparison and recommendations
-  - Disease-specific insights
-  
-- **COMPREHENSIVE_STUDY_REPORT.html** - Same content as above in HTML format for easier viewing in browsers
+#### disease_signatures/
+Contains 233 disease signatures from CREEDS:
+- Individual disease CSV files with gene expression data
+- Standard format: gene identifiers + log2 fold-change values
+- Source: ChemicalRepository for Expression Information from Disease Studies
 
----
+#### drug_signatures/
+CMAP and TAHOE database files:
 
-## Subdirectories - Detailed Information
+**CMAP Data** (`drug_signatures/cmap/`)
+- `cmap_signatures.RData` - Drug-induced gene expression signatures
+- `cmap_drug_experiments_new.csv` - Experiment metadata (drug names, cell lines, doses)
 
-### data/ - Input Data and Compiled Results
+**TAHOE Data** (`drug_signatures/tahoe/`)
+- `tahoe_signatures.RData` - TAHOE drug-induced signatures
+- `tahoe_drug_experiments_new.csv` - TAHOE experiment metadata
+- `checkpoint_ranked_all_genes_all_drugs.parquet` - Ranked signatures (intermediate)
 
-Contains compiled summary files and drug-disease association data.
+#### known_drugs/
+External drug reference data for validation and annotation
 
-#### Full Dataset Analysis (All Drugs)
+#### gene_id_conversion_table.tsv
+Mapping between different gene identifier formats (SYMBOL, ENSEMBL, ENTREZ)
 
-Files analyzing all drugs from CMAP (1,309 drugs) and TAHOE (379 drugs):
+#### shared_drugs_cmap_tahoe.csv
+List of 61 drugs present in both CMAP and TAHOE databases
 
-- **all_drug_hits_compiled.csv** - Complete list of all drug hits across all diseases
-- **drug_hits_summary.csv** - Summary statistics per disease
-- **full_summary_with_total_row.csv** - Count summary with totals
-- **full_summary_drug_sets_by_disease.csv** - Detailed drug lists per disease per method
-- **full_annotated_hits_with_open_targets.csv** - All drug hits annotated with Open Targets evidence
-- **drug_disease_combined.json** - Dictionary-like structure of disease → drug → evidence mappings
+### Analysis Output Files
 
-#### Shared Drug Subset Analysis (61 Common Drugs)
+**Compiled Results** (`data/analysis/`)
+- `all_drug_hits_compiled.csv` - Complete drug-disease associations
+- `drug_hits_summary.csv` - Summary statistics per disease
+- `full_annotated_hits_with_open_targets.csv` - Results with external evidence
 
-Files analyzing only the 61 drugs present in BOTH databases:
+**JSON Format** (For programmatic access)
+- `drug_disease_combined.json` - Full analysis results as nested dictionary
+- `drug_disease_combined_shared.json` - Shared drug subset in dictionary format
 
-- **shared_drugs_cmap_tahoe.csv** - List of the 61 drugs common to both databases
-- **all_drug_hits_compiled_shared_only.csv** - Drug hits from shared drugs only
-- **drug_hits_summary_shared_only.csv** - Summary statistics for shared drug analysis
-- **shared_summary_with_total_row.csv** - Count summary for shared drugs
-- **shared_summary_drug_sets_by_disease.csv** - Drug lists per disease (shared drugs only)
-- **shared_annotated_hits_with_open_targets.csv** - Shared drug hits with evidence annotations
-- **drug_disease_combined_shared.json** - Dictionary structure for shared drug analysis
+## Analysis Scripts
 
-#### Key Differences Between Full and Shared Analyses
+### Preprocessing (`scripts/preprocessing/`)
 
-Full Dataset:
-- Uses complete drug libraries (CMAP: 1,309 drugs, TAHOE: 379 drugs)
-- Maximizes discovery potential
-- Shows method-specific strengths
-- Approximately 60% novel predictions without prior evidence
+**Data Preparation:**
+- `process_creeds_signatures.py` - Load and standardize CREEDS disease signatures
+- `standardize_creeds_signatures.py` - Convert various signature formats to standard
+- `processing_known_drugs_data.py` - Prepare external drug reference data
+- `process_sirota_lab_signatures.py` - Process Sirota Lab signature data
 
-Shared Subset:
-- Uses only 61 drugs present in both databases
-- Enables direct method-to-method comparison
-- 100% validation rate for consensus predictions (33 drugs)
-- Demonstrates method reliability
+**Drug Signature Filtering:**
+- `filter_cmap_data.py` - Filter CMAP signatures with configurable thresholds
+- `filter_tahoe_part_1_gene_filtering.py` - Stage 1: Gene-level quality control
+- `filter_tahoe_part_2_ranking.py` - Stage 2: Signature ranking
+- `filter_tahoe_part_3a_rdata_all.R` - Stage 3: Export all drugs to R format
+- `filter_tahoe_part_3b_rdata_shared_drugs.R` - Stage 3: Export shared drugs to R format
 
-#### Data Organization
+**Quality Control:**
+- `generate_valid_instances.py` - Generate valid signature instances based on replicate consistency
+- `filter_shared_drugs_cmap_tahoe.py` - Extract and validate shared drug subset
 
-- **analysis/** - Processed analysis-ready datasets
-- **disease_signatures/** - Disease signature data files (input)
-- **drug_signatures/** - Drug signature data from CMAP and TAHOE (input)
-- **known_drugs/** - Reference dataset of known therapeutic drugs
-- **gene_id_conversion_table.tsv** - Mapping for gene identifiers between databases
+**Utilities:**
+- `utils.py` - Common functions and helper methods
 
-### scripts/ - Analysis and Processing Scripts
+### Analysis (`scripts/analysis/`)
 
-All executable scripts organized by processing stage.
+**Comparative Analysis:**
+- `compare_cmap_tahoe.py` - Main pipeline comparing CMAP and TAHOE predictions
+- `compare_cmap_tahoe_random_scores.py` - Statistical validation against random backgrounds
+- `compile_drug_hits.py` - Aggregate results across all 233 diseases
+- `extract_filter_results_to_shared_drugs.py` - Focus analysis on 61 shared drugs
 
-#### scripts/execution/ - Batch Pipeline Execution
+**Result Extraction:**
+- `extract_pipeline_results_analysis.py` - Extract results from pipeline outputs
+- `extract_selected_disease_info.py` - Pull disease-specific analysis details
 
-Runs drug repurposing analysis on multiple diseases in parallel.
+### Batch Execution (`scripts/execution/`)
 
-Key Files:
-- **run_drpipe_batch.R** - Main batch execution script for DRpipe
-- **run_batch_from_config.R** - Flexible batch runner using configuration files
-- **batch_configs/** - Configuration files defining analysis parameters and disease sets
-- **README_BATCH_CONFIG.md** - Documentation for batch configuration format
+**Batch Processing:**
+- `run_batch_from_config.R` - Execute batch analysis from YAML configuration (recommended)
+- `run_drpipe_batch.R` - Generic batch runner with command-line parameters
+- `batch_configs/` - Pre-configured batch execution templates
 
-How to use:
-1. Create or edit a configuration file in batch_configs/
-2. Run run_batch_from_config.R with your config
-3. Monitor progress in the reports/ directory
+**Legacy Scripts** (Reference):
+- `run_creeds_manual_batch.R` - Original CREEDS MANUAL batch script
+- `run_sirota_lab_batch.R` - Original Sirota Lab batch script
 
-#### scripts/preprocessing/ - Data Preparation and Filtering
+## Running the Analysis
 
-Prepares raw CMAP and TAHOE data for analysis.
-
-TAHOE Processing:
-- **extract_OG_tahoe_part_1.py** - Extract TAHOE signature data (Part 1)
-- **extract_OG_tahoe_part_2_rank_and_save_parquet.py** - Rank TAHOE signatures (Part 2)
-- **extract_OG_tahoe_part_3_convert_to_rdata.R** - Convert to R format (Part 3)
-
-CMAP Processing:
-- **filter_cmap_data.py** - Filter and standardize CMAP signatures
-
-Data Standardization:
-- **filter_tahoe_part_1_gene_filtering.py** - Filter genes (Part 1)
-- **filter_tahoe_part_2_ranking.py** - Rank and score (Part 2)
-- **filter_tahoe_part_3a_rdata_all.R** - Convert all results to RData format
-- **filter_tahoe_part_3b_rdata_shared_drugs.R** - Convert shared drugs subset to RData
-
-Disease and Drug Signature Processing:
-- **process_creeds_signatures.py** - Process CREEDS disease signatures
-- **process_sirota_lab_signatures.py** - Process Sirota lab disease signatures
-- **standardize_creeds_signatures.py** - Standardize CREEDS format
-- **processing_known_drugs_data.py** - Prepare known drug reference data
-
-Utility:
-- **generate_valid_instances.py** - Create valid drug-disease instance lists
-- **filter_shared_drugs_cmap_tahoe.py** - Identify drugs in both databases
-- **utils.py** - Common utility functions
-
-Note: Preprocessing scripts are numbered (Part 1, 2, 3) - execute in order.
-
-#### scripts/analysis/ - Results Analysis and Comparison
-
-Analyzes and compares drug repurposing results from both databases.
-
-Key Scripts:
-- **extract_pipeline_results_analysis.py** - Extract results from pipeline outputs
-- **compile_drug_hits.py** - Aggregate drug predictions across diseases
-- **compare_tahoe_cmap.py** - Compare predictions between TAHOE and CMAP
-- **compare_cmap_tahoe_random_scores.py** - Statistical comparison with random controls
-- **extract_filter_results_to_shared_drugs.py** - Filter results to drugs present in both databases
-- **extract_selected_disease_info.py** - Extract disease-specific analysis summaries
-
-When to use: After running batch execution to analyze results, generate comparison statistics and validation metrics, or create summary tables for reporting.
-
-#### scripts/visualization/ and scripts/singularity/
-
-Additional directories for visualization scripts and containerization configurations for HPC cluster execution.
-
-### results/ - Filtered Analysis Outputs
-
-Contains filtered analysis outputs organized by q-value thresholds.
-
-Contents:
-- **creed_manual_standardised_results_OG_exp_8/** - CREEDS disease results (q-value filtered)
-- **test_results/** - Smaller test runs and validation results
-
-When to use: Access final filtered results after batch execution. Results are typically filtered by q-value significance thresholds and are suitable for publication-ready analyses.
-
-#### Understanding Q-value Filtering
-
-- Q-value: False Discovery Rate (FDR)-corrected p-value
-- Lower q-value = Higher confidence, fewer false positives
-- Higher q-value = More discoveries, potentially more false positives
-- Recommendation: Start with q < 0.1 for balanced sensitivity/specificity
-
-### reports/ - Batch Execution Summary Reports
-
-Contains batch execution summary reports for monitoring and verification.
-
-Report Types:
-- ***_batch_report_*.txt** - Detailed execution logs with run statistics
-  - File pattern: [dataset]_batch_report_[TIMESTAMP].txt
-  - Contents: Number of drugs found, execution time, success rates per disease
-  
-- ***_batch_summary_*.csv** - Tabular summary of results per disease
-  - File pattern: [dataset]_batch_summary_[TIMESTAMP].csv
-  - Columns: Disease name, drug count, execution status, timing
-
-When to use: Monitor batch job success/failure, verify all diseases processed correctly, or compare results across different runs.
-
-### logs/ - Log Files
-
-Currently empty. Intended for storing detailed execution logs, Python script outputs, R package diagnostics, and performance profiling data.
-
-### dump/ - Archive and Legacy Documentation
-
-Archive of older versions and supplementary documentation.
-
-Important Contents:
-- **COMPREHENSIVE_STUDY_REPORT.md** - Full analysis documentation
-- **COMPREHENSIVE_STUDY_REPORT.html** - HTML version of comprehensive report
-- **HPC_REVIEW_REPORT.md** - High-Performance Computing setup notes
-- **SCRIPTS_README.md** - Legacy scripts documentation
-- **data_old/, results_old/, etc.** - Previous versions and archived results
-
-When to use: Reference for historical analysis approaches, legacy script documentation, or older result versions for comparison.
-
-### venv/ - Python Virtual Environment
-
-Contains the Python virtual environment for the project.
-
-Setup:
+### Quick Setup
 ```bash
-cd tahoe_cmap_analysis
+# Create and activate virtual environment
 python3 -m venv venv
 source venv/bin/activate
+
+# Install dependencies
 pip install -r requirements.txt
 ```
 
----
+### Single Disease Analysis
+```bash
+cd scripts/analysis
+python compare_cmap_tahoe.py
+```
 
-## Getting Started - Quick Workflow
+### Batch Processing Multiple Diseases (Recommended)
 
-### For New Team Members
+The batch execution system supports processing all 233 CREEDS diseases or any custom subset:
 
-1. Understand the project:
-   - Read README.md (this file) for project overview
-   - Check dump/COMPREHENSIVE_STUDY_REPORT.md for full analysis details
+**Using Configuration File (Recommended):**
+```bash
+cd scripts/execution
+Rscript run_batch_from_config.R --config_file batch_configs/creeds_manual_config.yml
+```
 
-2. Set up the environment:
-   ```bash
-   cd tahoe_cmap_analysis
-   source venv/bin/activate  # or create if not exists
-   pip install -r requirements.txt
-   ```
+**Using Direct Parameters:**
+```bash
+Rscript run_drpipe_batch.R \
+  --config_path "../config.yml" \
+  --profile "Tahoe_Chronic_granulomatous_disease_0.00" \
+  --disease_dir "../../data/disease_signatures/creeds" \
+  --skip_existing TRUE
+```
 
-3. Explore the data:
-   - Look in data/ to understand input files
-   - Check scripts/preprocessing/ to see how data is prepared
+See `scripts/execution/README_BATCH_CONFIG.md` for detailed batch configuration options.
 
-4. Run an analysis:
-   - Create a batch config in scripts/execution/batch_configs/
-   - Execute with scripts/execution/run_batch_from_config.R
-   - Check reports/ for execution summaries
+## Advanced Usage
 
-5. Analyze results:
-   - Browse results/ for filtered outputs
-   - Use scripts/analysis/ scripts to generate comparisons
+### Creating Valid Instances for Drug Signatures
 
-### Common Tasks
+Valid instances are drug signatures that meet quality criteria based on replicate consistency. Creating them is essential for robust analysis:
 
-#### Task: Run batch analysis on new diseases
-1. Prepare disease signatures in data/disease_signatures/
-2. Create config in scripts/execution/batch_configs/
-3. Run scripts/execution/run_batch_from_config.R
-4. Review results in reports/ and results/
+#### For CMAP:
+```bash
+cd scripts/preprocessing
+python generate_valid_instances.py \
+  --dataset cmap \
+  --filter_mode percentile \
+  --threshold 15
+```
 
-#### Task: Add new drug signatures
-1. Process raw data using scripts in scripts/preprocessing/
-2. Update data/drug_signatures/
-3. Re-run preprocessing scripts in order
-4. Execute fresh batch analysis
+#### For TAHOE:
+```bash
+python generate_valid_instances.py \
+  --dataset tahoe \
+  --filter_mode percentile \
+  --threshold 4.5
+```
 
-#### Task: Compare CMAP vs TAHOE results
-1. Ensure batch results are in results/
-2. Run comparison scripts from scripts/analysis/
-3. Results saved to results/ with comparison metrics
+**Filter Modes:**
+- `percentile` - Keep top N% of instances by replicate correlation
+- `pvalue` - Filter by statistical significance (p-value based)
+- `rvalue` - Filter by minimum correlation coefficient
 
-#### Task: Generate publication figures
-1. Use analysis outputs from results/
-2. Check dump/COMPREHENSIVE_STUDY_REPORT.md for figure templates
-3. Consider batch summary reports in reports/ for data
+**Common Threshold Values:**
+- CMAP: r = 0.15 (default) - minimum correlation threshold for valid instances
+- TAHOE: r = 0.35 (default) - stricter threshold appropriate for TAHOE data
 
----
+Output files contain:
+- List of valid instance IDs
+- Quality metrics and statistics
+- Report summarizing validation results
+
+### Filtering Disease Signatures
+
+Adjust thresholds for disease signature filtering in `config.yml`:
+
+```yaml
+params:
+  # Absolute log2 fold-change threshold for gene selection
+  # Typical values: 0.0 (all genes), 0.5 (standard), 1.0 (strict), 1.5 (very strict)
+  logfc_cutoff: 0.5
+  
+  # P-value threshold for gene selection (set to null to skip)
+  # Typical values: 0.05 (standard), 0.01 (strict), 0.1 (lenient), null (disabled)
+  pval_key: null
+  pval_cutoff: 0.05
+  
+  # Keep only drug reversals (negative connectivity)
+  reversal_only: true
+```
+
+**Adjusting Strictness:**
+- **More lenient** (discover more drugs): 
+  - `logfc_cutoff: 0.0` (include all genes)
+  - `pval_cutoff: 0.1` (higher p-value threshold)
+  
+- **More strict** (discover fewer, higher-confidence drugs):
+  - `logfc_cutoff: 1.0` (only highly significant genes)
+  - `pval_cutoff: 0.01` (strict p-value threshold)
+
+### Filtering Drug Signatures
+
+Adjust thresholds when pre-processing CMAP or TAHOE data:
+
+#### CMAP Filtering:
+```bash
+cd scripts/preprocessing
+python filter_cmap_data.py \
+  --percentile_cutoff 25 \
+  --output_rdata "data/cmap_signatures_filtered.RData"
+```
+
+#### TAHOE Multi-Stage Filtering:
+
+**Stage 1 - Gene Filtering:**
+```bash
+python filter_tahoe_part_1_gene_filtering.py \
+  --min_gene_count 100 \
+  --max_gene_count 5000
+```
+
+**Stage 2 - Ranking:**
+```bash
+python filter_tahoe_part_2_ranking.py \
+  --top_n_genes 500
+```
+
+**Stage 3 - Export:**
+```bash
+Rscript filter_tahoe_part_3a_rdata_all.R    # Export all drugs
+Rscript filter_tahoe_part_3b_rdata_shared_drugs.R  # Export shared drugs
+```
+
+**Key Parameters:**
+- `percentile_cutoff`: Keep top N% of drugs by quality metrics
+- `min_gene_count`, `max_gene_count`: Filter signatures by number of genes
+- `top_n_genes`: Limit to top N genes per signature by absolute expression change
+
+### Running Batch Analysis with Custom Thresholds
+
+Create a custom batch configuration in `scripts/execution/batch_configs/custom_config.yml`:
+
+```yaml
+# Custom batch configuration
+execution:
+  disease_source: "creeds_manual"
+  disease_dir: "../../data/disease_signatures/creeds"
+  output_base: "../../results/custom_analysis"
+  
+analysis:
+  profile: "Tahoe_Custom_0.75"  # References profile in config.yml
+  logfc_cutoff: 0.75             # Custom fold-change threshold
+  pval_cutoff: 0.01              # Custom p-value threshold
+  q_thresh: 0.05                 # Custom FDR threshold
+  
+processing:
+  skip_existing: true
+  parallel_jobs: 4
+```
+
+Then execute:
+```bash
+Rscript run_batch_from_config.R --config_file batch_configs/custom_config.yml
+```
+
+## Methodology
+
+The analysis pipeline processes all 233 CREEDS diseases through the following workflow:
+
+1. **Disease Signature Processing** - Standardize and filter disease gene expression data
+2. **Drug Signature Preparation** - Filter CMAP and TAHOE signatures by quality metrics
+3. **Valid Instance Generation** - Identify high-quality drug signatures via replicate consistency
+4. **Drug-Disease Scoring** - Calculate association scores for each drug-disease pair
+5. **Method Comparison** - Compare predictions from CMAP and TAHOE methods
+6. **Statistical Validation** - Assess significance using random background models
+7. **Result Compilation** - Aggregate and annotate findings across all 233 diseases
+
+### Analysis Modes
+
+**Full Dataset**: Uses complete drug libraries
+- CMAP: 1,309 drugs after quality filtering
+- TAHOE: 379 drugs after quality filtering
+- Maximizes discovery potential
+- Identifies method-specific strengths
+
+**Shared Drug Subset**: Uses 61 drugs present in both databases
+- Enables direct method-to-method comparison
+- Higher confidence in consensus predictions
+- Demonstrates method reliability on common drugs
+
+## Integration with DRpipe
+
+This TAHOE-CMAP analysis demonstrates key capabilities that are integrated into the main [DRpipe package](../DRpipe/):
+
+### Core DRpipe Features Demonstrated Here
+
+1. **Disease Signature Processing**: Standardizing diverse disease expression data formats
+2. **Drug Signature Quality Control**: Creating and applying valid instances for drug signatures
+3. **Batch Processing at Scale**: Processing 233 diseases efficiently with configurable thresholds
+4. **Flexible Threshold Configuration**: Tuning parameters to balance discovery vs. precision
+5. **CMAP and TAHOE Integration**: Supporting multiple drug signature databases
+
+### Using DRpipe vs. This Analysis
+
+**For exploratory TAHOE-CMAP comparison**: Use this directory
+- Specialized scripts for method comparison
+- Pre-configured batch processing for CREEDS diseases
+- Analysis outputs comparing both databases
+
+**For production drug repurposing analysis**: Use [DRpipe package](../DRpipe/)
+- Integrated pipeline for single or comparative analysis
+- [Shiny app interface](../shiny_app/) for interactive analysis
+- `runall.R` script for batch processing any disease set
+- Standardized quality control and result reporting
+
+**Running batch analyses with DRpipe:**
+```bash
+cd ../scripts
+# Edit config.yml to configure your analysis
+Rscript runall.R
+```
+
+See the main [README.md](../README.md) and [batch configuration guide](../tahoe_cmap_analysis/scripts/execution/README_BATCH_CONFIG.md) for details.
 
 ## Dependencies
 
-### Python Requirements
-- pandas >= 2.0.0
-- pyreadr >= 0.4.7
-- pyarrow >= 12.0.0
-- tqdm >= 4.65.0
-- tables >= 3.8.0
-- joblib >= 1.3.0
-- psutil >= 5.9.0
-- numpy >= 1.24.0
+- Python ≥ 3.8
+- pandas ≥ 2.0.0
+- numpy ≥ 1.24.0
+- pyreadr (for R data file support)
+- pyarrow (for Parquet file support)
+- tqdm (for progress bars)
+- joblib (for parallel processing)
 
-### R Requirements
-- DRpipe package (see parent directory)
-- Standard R data manipulation packages
+See `requirements.txt` for complete dependency list.
 
-Install all Python dependencies:
-```bash
-pip install -r requirements.txt
-```
+## Related Documentation
 
----
+- **Main Project README**: [../README.md](../README.md)
+- **DRpipe Package**: [../DRpipe/README.md](../DRpipe/README.md)
+- **Shiny App**: [../shiny_app/README.md](../shiny_app/README.md)
 
-## Key Files Reference
-
-| File/Directory | Purpose | Key Use Case |
-|---|---|---|
-| data/shared_drugs_cmap_tahoe.csv | Drugs in both databases | Cross-validation |
-| data/gene_id_conversion_table.tsv | Gene ID mapping | Handling different ID systems |
-| scripts/execution/batch_configs/ | Analysis parameters | Customizing runs |
-| scripts/preprocessing/ | Data preparation | Updating source databases |
-| scripts/analysis/ | Results processing | Generating final outputs |
-| results/ | Filtered results | Publication-ready data |
-| dump/COMPREHENSIVE_STUDY_REPORT.md | Full documentation | Understanding methodology |
-
-## Quick Start Guide
-
-### 1. View the Analysis Report
-```bash
-# Open in browser
-open COMPREHENSIVE_STUDY_REPORT.html
-
-# Or read markdown version
-cat COMPREHENSIVE_STUDY_REPORT.md
-```
-
-### 2. Explore Summary Data
-```bash
-# Full dataset summary
-cat data/full_summary_with_total_row.csv
-
-# Shared drug subset summary
-cat data/shared_summary_with_total_row.csv
-```
-
-### 3. Find Drugs for a Specific Disease
-```bash
-# Search in the detailed drug sets file
-grep "Alzheimer" data/full_summary_drug_sets_by_disease.csv
-```
-
-### 4. Check Evidence for Drug-Disease Pairs
-```python
-import json
-
-# Load the evidence mapping
-with open('data/drug_disease_combined.json', 'r') as f:
-    evidence = json.load(f)
-
-# Check evidence for a specific disease
-disease = "Alzheimer's disease"
-if disease in evidence:
-    print(f"Drugs for {disease}:")
-    for drug, info in evidence[disease].items():
-        print(f"  {drug}: {info['evidence_count']} evidence entries")
-```
-
-### 5. Examine Individual Disease Results
-```bash
-# List all results for a disease
-ls results_1/Alzheimers_disease_CMAP_*/
-
-# View drug hits
-cat results_1/Alzheimers_disease_CMAP_*/file*_hits_q\<1.00.csv
-```
-
-## Key Findings Summary
-
-### Overall Statistics
-- **Total drug-disease associations**: 6,161
-- **CMAP hits**: 3,524 (38.7% with evidence)
-- **TAHOE hits**: 2,637 (42.9% with evidence)
-- **Consensus predictions**: 33 drugs (100% with evidence)
-- **Novel predictions**: ~60% without prior evidence
-
-### Method Comparison
-- **CMAP**: Broader coverage (1,309 drugs), higher sensitivity
-- **TAHOE**: Deeper profiling (56,827 experiments), higher specificity
-- **Complementary**: Different drugs identified by each method
-- **Consensus**: Highest confidence when both methods agree
-
-### Top Diseases by Hit Count
-1. Endometrial cancer (216 hits)
-2. Glioblastoma (214 hits)
-3. Chronic granulomatous disease (208 hits)
-4. Colorectal cancer (207 hits)
-5. Eczema (208 hits)
-
-## Understanding the Analysis
-
-### Two Analysis Strategies
-
-**1. Full Dataset Analysis**
-- Uses complete drug libraries (CMAP: 1,309, TAHOE: 379)
-- Maximizes discovery potential
-- Files: `full_*.csv`, `all_drug_hits_compiled.csv`
-
-**2. Shared Drug Subset Analysis**
-- Uses only 61 drugs in both databases
-- Enables direct method comparison
-- Files: `shared_*.csv`, `all_drug_hits_compiled_shared_only.csv`
-
-### Evidence Validation
-
-Drug hits are validated against:
-- **Open Targets Platform**: Clinical trial data, approval status
-- **Evidence types**: Phase 0-4 trials, approved indications
-- **Validation rate**: 40.5% overall, 100% for consensus predictions
-
-### Statistical Significance
-
-- **Connectivity Score**: Measures drug-disease relationship strength
-  - Negative = therapeutic potential (reverses disease signature)
-  - Positive = contraindicated (mimics disease signature)
-- **P-value**: Statistical significance from permutation testing
-- **Q-value**: FDR-corrected p-value (controls false discoveries)
-
-## Additional Resources
-
-### External Links
-- [Open Targets Platform](https://platform.opentargets.org)
-- [CREEDS Database](http://amp.pharm.mssm.edu/creeds/)
-- [CMAP/LINCS](https://clue.io/)
-
-### Related Files in Project
-- `../DRpipe/` - R package for drug repurposing pipeline
-- `../scripts/` - Main analysis scripts and configuration
-- `../shiny_app/` - Interactive visualization application
-
-## Tips for Navigation
-
-1. **Start with the report**: Read `COMPREHENSIVE_STUDY_REPORT.md` for context
-2. **Check summaries first**: Use `data/*_summary_*.csv` files for overview
-3. **Drill down as needed**: Explore individual disease results in `results_1/`
-4. **Use filtered results**: Start with `results/filtered_q0p1/` for high-confidence hits
-5. **Validate with evidence**: Check `*_annotated_hits_with_open_targets.csv` files
-
-## Common Questions
-
-**Q: What's the difference between CMAP and TAHOE?**
-A: CMAP has broader drug coverage (1,309 drugs) while TAHOE has deeper profiling per drug (56,827 experiments). CMAP is better for discovery, TAHOE for validation.
-
-**Q: Which q-value threshold should I use?**
-A: Start with q < 0.1 for balanced results. Use q < 0.05 for high confidence or q < 0.5 for exploratory analysis.
-
-**Q: What does "shared drugs" mean?**
-A: The 61 drugs present in both CMAP and TAHOE databases, allowing direct method comparison.
-
-**Q: How reliable are the predictions?**
-A: 40.5% have existing evidence. Consensus predictions (both methods agree) have 100% validation rate.
-
-**Q: Where can I find drugs for my disease of interest?**
-A: Check `data/full_summary_drug_sets_by_disease.csv` or search in `data/drug_disease_combined.json`.

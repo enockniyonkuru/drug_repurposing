@@ -1,8 +1,8 @@
 # Drug Repurposing Analysis Pipeline
 
-A comprehensive R package and Shiny application for drug repurposing analysis using disease gene expression signatures and the Connectivity Map (CMap) to identify potential therapeutic compounds.
+A comprehensive R package and Shiny application for drug repurposing analysis using disease gene expression signatures and drug signature databases (Connectivity Map/CMap and TAHOE) to identify potential therapeutic compounds.
 
-This pipeline identifies existing drugs that could be repurposed for new therapeutic applications by analyzing their ability to reverse disease-associated gene expression patterns using the Connectivity Map database.
+This pipeline identifies existing drugs that could be repurposed for new therapeutic applications by analyzing their ability to reverse disease-associated gene expression patterns using drug signature databases including the Connectivity Map and TAHOE.
 
 ---
 
@@ -18,8 +18,7 @@ This pipeline identifies existing drugs that could be repurposed for new therape
 9. [Configuration Reference](#9-configuration-reference)
 10. [Data Formats](#10-data-formats)
 11. [Troubleshooting](#11-troubleshooting)
-12. [Methodology](#12-methodology)
-13. [Citation & License](#13-citation--license)
+12. [Citation & License](#12-citation--license)
 
 ---
 
@@ -28,7 +27,7 @@ This pipeline identifies existing drugs that could be repurposed for new therape
 **DRpipe** is a drug repurposing analysis pipeline that helps researchers identify existing drugs that could be repurposed for new therapeutic applications. The pipeline:
 
 - **Analyzes disease gene expression signatures** to identify up-regulated and down-regulated genes
-- **Compares disease signatures against the Connectivity Map (CMap)** database of drug-induced gene expression profiles
+- **Compares disease signatures against drug signature databases** (Connectivity Map/CMap and TAHOE) of drug-induced gene expression profiles
 - **Identifies drugs that reverse disease signatures** (negative connectivity scores indicate therapeutic potential)
 - **Provides statistical significance testing** using permutation-based methods and FDR correction
 - **Generates comprehensive visualizations** including heatmaps, score distributions, and overlap analyses
@@ -157,7 +156,9 @@ You can interact with this repository in two ways, depending on your preferences
 
 2. **Download required data files** (see [Section 5.1](#51-required-data-files))
    - Download `cmap_signatures.RData` from Google Drive
-   - Place in `scripts/data/` directory
+   - Optionally download `tahoe_signatures.RData` for TAHOE analysis
+   - Place drug signature files in `scripts/data/drug_signatures/` directory
+   - Place your disease signature files in `scripts/data/disease_signatures/` directory
 
 3. **Install the R package**
    ```r
@@ -258,21 +259,42 @@ R -e "shiny::runApp(port=3838)"
 
 ### 5.1 Required Data Files
 
-#### Files Included in Repository
+#### Directory Structure for Data
 
-The following small data files are already included in `scripts/data/`:
+```
+scripts/
+├── data/
+│   ├── drug_signatures/
+│   │   ├── cmap_signatures.RData         # Required (232 MB)
+│   │   ├── cmap_drug_experiments_new.csv # Required for CMap
+│   │   ├── cmap_valid_instances.csv      # Optional (41 KB)
+│   │   ├── tahoe_signatures.RData        # Optional (2.9 GB)
+│   │   ├── tahoe_drug_experiments_new.csv # Required if using TAHOE (4.1 MB)
+│   │   └── tahoe_valid_instances.csv     # Optional
+│   ├── disease_signatures/
+│   │   ├── your_disease_1.csv            # Your disease data files
+│   │   └── your_disease_2.csv            # Place here
+│   └── (other existing files)
+```
 
-1. **cmap_drug_experiments_new.csv** (831 KB) - CMap experiment metadata
-2. **cmap_valid_instances.csv** (41 KB) - Curated list of valid CMap instances
-3. **CoreFibroidSignature_All_Datasets.csv** (270 KB) - Example disease signature
+#### Drug Signature Files
 
-#### Large Files (Download Required)
+**For CMap Analysis (2 required + 1 optional):**
+1. **cmap_signatures.RData** (232 MB) - REQUIRED - CMap reference signatures database
+2. **cmap_drug_experiments_new.csv** (831 KB) - REQUIRED - CMap experiment metadata
+3. **cmap_valid_instances.csv** (41 KB) - Optional - Curated list of valid CMap instances
 
-**Required:**
-- **cmap_signatures.RData** (232 MB) - CMap reference signatures database
+**For TAHOE Analysis (2 required + 1 optional):**
+1. **tahoe_signatures.RData** (2.9 GB) - REQUIRED - TAHOE reference signatures database
+2. **tahoe_drug_experiments_new.csv** (4.1 MB) - REQUIRED - TAHOE experiment metadata
+3. **tahoe_valid_instances.csv** (optional) - Optional - Curated list of valid TAHOE instances
 
-**Optional:**
-- **gene_id_conversion_table.tsv** (4.5 MB) - Gene identifier conversion table
+#### Disease Signature Files
+
+Place your disease gene expression data in `scripts/data/disease_signatures/`:
+- CSV format with columns: gene identifiers, log fold-change, p-values (optional)
+- Examples: `disease_name.csv`, `condition_1.csv`, etc.
+- See [Section 10: Data Formats](#10-data-formats) for detailed specifications
 
 #### Download Instructions
 
@@ -280,19 +302,27 @@ The following small data files are already included in `scripts/data/`:
 
 **Steps:**
 1. Visit the Google Drive link above
-2. Download `cmap_signatures.RData`
-3. Place in `scripts/data/` directory
+2. Download required drug signature files:
+   - For CMap: `cmap_signatures.RData` and `cmap_drug_experiments_new.csv`
+   - For TAHOE: `tahoe_signatures.RData` and `tahoe_drug_experiments_new.csv`
+3. Create directories if they don't exist:
+   ```bash
+   mkdir -p scripts/data/drug_signatures
+   mkdir -p scripts/data/disease_signatures
+   ```
+4. Place downloaded files in `scripts/data/drug_signatures/`
+5. Place your disease data in `scripts/data/disease_signatures/`
 
 **Verify your data directory:**
 ```bash
-ls -lh scripts/data/
+ls -lh scripts/data/drug_signatures/
+ls -lh scripts/data/disease_signatures/
 ```
 
-You should see:
-- cmap_drug_experiments_new.csv
-- cmap_valid_instances.csv
-- CoreFibroidSignature_All_Datasets.csv
-- cmap_signatures.RData (after download)
+For CMap, you should see:
+- cmap_signatures.RData (232 MB)
+- cmap_drug_experiments_new.csv (831 KB)
+- cmap_valid_instances.csv (41 KB, optional)
 
 ---
 
@@ -348,21 +378,26 @@ library(DRpipe)
 
 ```yaml
 execution:
-  runall_profile: "CoreFibroid_logFC_1"  # Profile to use
+  runall_profile: "MyAnalysis_SingleCutoff"
 
-CoreFibroid_logFC_1:
+MyAnalysis_SingleCutoff:
   paths:
-    disease_file: "data/CoreFibroidSignature_All_Datasets.csv"
-    signatures: "data/cmap_signatures.RData"
-    cmap_meta: "data/cmap_drug_experiments_new.csv"
-    cmap_valid: "data/cmap_valid_instances.csv"
+    signatures: "data/drug_signatures/cmap_signatures.RData"
+    disease_file: "data/disease_signatures/my_disease_data.csv"
+    drug_meta: "data/drug_signatures/cmap_drug_experiments_new.csv"
+    drug_valid: "data/drug_signatures/cmap_valid_instances.csv"
     out_dir: "results"
   params:
     gene_key: "SYMBOL"
     logfc_cols_pref: "log2FC"
     logfc_cutoff: 1.0
+    pval_key: null
+    pval_cutoff: 0.05
     q_thresh: 0.05
-    mode: "single"  # Single cutoff mode
+    reversal_only: true
+    seed: 123
+    mode: "single"
+    combine_log2fc: "average"
 ```
 
 #### Running the Analysis
@@ -381,13 +416,13 @@ Rscript runall.R
 
 #### Output Structure
 ```
-results/CoreFibroid_logFC_1_20250107-183045/
-├── CoreFibroid_results.RData           # Complete results
-├── CoreFibroid_hits_q0.05.csv          # Significant drug hits
+results/MyAnalysis_SingleCutoff_20250107-183045/
+├── MyAnalysis_SingleCutoff_results.RData           # Complete results
+├── MyAnalysis_SingleCutoff_hits_q0.05.csv          # Significant drug hits
 ├── img/
-│   ├── CoreFibroid_hist_revsc.jpg      # Score distribution
-│   └── CoreFibroid_cmap_score.jpg      # Top drugs
-└── sessionInfo.txt                      # Session details
+│   ├── MyAnalysis_SingleCutoff_hist_revsc.jpg      # Score distribution
+│   └── MyAnalysis_SingleCutoff_cmap_score.jpg      # Top drugs
+└── sessionInfo.txt                                  # Session details
 ```
 
 ---
@@ -400,12 +435,15 @@ results/CoreFibroid_logFC_1_20250107-183045/
 
 ```yaml
 execution:
-  runall_profile: "Sweep_CoreFibroid"
+  runall_profile: "MyAnalysis_SweepMode"
 
-Sweep_CoreFibroid:
+MyAnalysis_SweepMode:
   paths:
-    disease_file: "data/CoreFibroidSignature_All_Datasets.csv"
-    # ... other paths same as above
+    signatures: "data/drug_signatures/cmap_signatures.RData"
+    disease_file: "data/disease_signatures/my_disease_data.csv"
+    drug_meta: "data/drug_signatures/cmap_drug_experiments_new.csv"
+    drug_valid: "data/drug_signatures/cmap_valid_instances.csv"
+    out_dir: "results"
   params:
     gene_key: "SYMBOL"
     logfc_cols_pref: "log2FC"
@@ -413,12 +451,15 @@ Sweep_CoreFibroid:
     sweep_cutoffs: null                # Auto-derive cutoffs
     sweep_auto_grid: true
     sweep_step: 0.1                    # Step size between cutoffs
-    sweep_min_frac: 0.10               # Min 10% of genes
-    sweep_min_genes: 150               # Min 150 genes per cutoff
+    sweep_min_frac: 0.20               # Min 20% of genes
+    sweep_min_genes: 200               # Min 200 genes per cutoff
     robust_rule: "k_of_n"              # Filtering rule
     robust_k: 2                        # Must appear in ≥2 cutoffs
     aggregate: "median"                # Score aggregation method
     q_thresh: 0.05
+    reversal_only: true
+    seed: 123
+    combine_log2fc: "average"
 ```
 
 #### Running the Analysis
@@ -430,15 +471,15 @@ source("runall.R")  # Uses sweep profile from config
 
 #### Output Structure
 ```
-results/Sweep_CoreFibroid_20250107-183045/
+results/MyAnalysis_SweepMode_20250107-183045/
 ├── cutoff_0.5/                        # Individual cutoff results
-│   └── CoreFibroid_hits_cutoff_0.5.csv
+│   └── MyAnalysis_hits_cutoff_0.5.csv
 ├── cutoff_1.0/
 ├── cutoff_1.5/
 ├── aggregate/                         # Final robust results
 │   ├── robust_hits.csv               # Drugs passing robust filtering
 │   └── cutoff_summary.csv            # Summary per cutoff
-└── CoreFibroid_results.RData
+└── MyAnalysis_results.RData
 ```
 
 #### Key Parameters Explained
@@ -446,7 +487,7 @@ results/Sweep_CoreFibroid_20250107-183045/
 | Parameter | Description | Typical Value |
 |-----------|-------------|---------------|
 | `sweep_step` | Spacing between cutoffs | 0.1 |
-| `sweep_min_genes` | Minimum genes per cutoff | 150 |
+| `sweep_min_genes` | Minimum genes per cutoff | 200 |
 | `robust_rule` | "all" or "k_of_n" | "k_of_n" |
 | `robust_k` | Min cutoffs required | 2 |
 | `aggregate` | "mean", "median", or "weighted_mean" | "median" |
@@ -694,26 +735,30 @@ drug_repurposing/
 │   ├── app.R                          # Main app file
 │   ├── run.R                          # Helper launch script
 │   └── README.md                      # Shiny app documentation
-└── tahoe_cmap_analysis/               # UNDER DEVELOPMENT - DO NOT USE
+└── tahoe_cmap_analysis/               # TAHOE-CMAP integrated analysis
     └── README.md                      # See directory README for details
 ```
 
 ---
 
-## Important Note: Tahoe Integration Status
+## About the tahoe_cmap_analysis Directory
 
-**The `tahoe_cmap_analysis/` directory is currently under active development and is NOT fully integrated into the main pipeline.**
+The `tahoe_cmap_analysis/` subdirectory contains specialized analysis work comparing drug repurposing results from CMAP and TAHOE drug signature databases across 233 CREEDS diseases.
 
-- This directory contains experimental work comparing CMAP and TAHOE drug signature databases
-- The analysis tools and workflows in this directory are still being validated
-- **Please ignore this directory for now** if you're using the R package or Shiny app for standard drug repurposing analyses
+**Key Resources:**
+- Comprehensive [tahoe_cmap_analysis README](tahoe_cmap_analysis/README.md) with advanced usage examples
+- Detailed guidance on adjusting disease and drug signature thresholds
+- Instructions for batch processing and creating valid instances
+- Example configurations for CMAP, TAHOE, and comparative analyses
+- Best practices for parameter sensitivity testing
 
-**For standard drug repurposing analyses using CMAP only:**
-- Use the DRpipe R package (see Section 6)
-- Use the Shiny app (see Section 7)
-- Both are fully functional and validated
+**When to Reference This Directory:**
+- You want to understand how to **tune filtering thresholds** for disease or drug signatures
+- You need to **create custom valid instances** for CMAP or TAHOE signatures
+- You want to run **batch analyses** on multiple diseases with custom parameters
+- You're interested in **method comparison** between CMAP and TAHOE databases
 
-For more information about the TAHOE analysis work in progress, see [tahoe_cmap_analysis/README.md](tahoe_cmap_analysis/README.md).
+See [tahoe_cmap_analysis/README.md](tahoe_cmap_analysis/README.md#advanced-usage) for advanced usage guides and examples.
 
 ---
 
@@ -778,9 +823,88 @@ execution:
 # Default profile (technical requirement - leave as-is)
 default:
   paths:
-    signatures: "data/cmap_signatures.RData"
-    cmap_meta: "data/cmap_drug_experiments_new.csv"
-    cmap_valid: "data/cmap_valid_instances.csv"
+    signatures: "data/drug_signatures/cmap_signatures.RData"
+    disease_file: "data/disease_signatures/CoreFibroidSignature_All_Datasets.csv"
+    drug_meta: "data/drug_signatures/cmap_drug_experiments_new.csv"
+    drug_valid: "data/drug_signatures/cmap_valid_instances.csv"
+    out_dir: "results"
+  params:
+    gene_key: "SYMBOL"
+    logfc_cols_pref: "log2FC"
+    logfc_cutoff: 1.0
+    pval_key: null
+    pval_cutoff: 0.05
+    q_thresh: 0.05
+    reversal_only: true
+    seed: 123
+    mode: "single"
+    combine_log2fc: "average"
+
+# Your custom single analysis profile (CMap)
+MyAnalysis:
+  paths:
+    signatures: "data/drug_signatures/cmap_signatures.RData"
+    disease_file: "data/disease_signatures/my_disease_data.csv"
+    drug_meta: "data/drug_signatures/cmap_drug_experiments_new.csv"
+    drug_valid: "data/drug_signatures/cmap_valid_instances.csv"
+    out_dir: "results"
+  params:
+    gene_key: "SYMBOL"
+    logfc_cols_pref: "log2FC"
+    logfc_cutoff: 1.0
+    pval_key: null
+    pval_cutoff: 0.05
+    q_thresh: 0.05
+    reversal_only: true
+    seed: 123
+    mode: "single"
+    combine_log2fc: "average"
+
+# TAHOE analysis example
+MyAnalysis_TAHOE:
+  paths:
+    signatures: "data/drug_signatures/tahoe_signatures.RData"
+    disease_file: "data/disease_signatures/my_disease_data.csv"
+    drug_meta: "data/drug_signatures/tahoe_drug_experiments_new.csv"
+    drug_valid: "data/drug_signatures/tahoe_valid_instances.csv"
+    out_dir: "results"
+  params:
+    gene_key: "SYMBOL"
+    logfc_cols_pref: "log2FC"
+    logfc_cutoff: 1.0
+    pval_key: null
+    pval_cutoff: 0.05
+    q_thresh: 0.05
+    reversal_only: true
+    seed: 123
+    mode: "single"
+    combine_log2fc: "average"
+
+> **Note on TAHOE Valid Instances:** When using TAHOE, the recommended valid instance threshold is `r = 0.35` (correlation-based quality control), compared to CMAP's `r = 0.15`. For detailed guidance on creating and tuning valid instances, drug signature filtering, and advanced parameter optimization, see the [tahoe_cmap_analysis Advanced Usage guide](tahoe_cmap_analysis/README.md#advanced-usage).
+
+# Parameter sensitivity analysis profiles
+Lenient:
+  paths:
+    signatures: "data/drug_signatures/cmap_signatures.RData"
+    disease_file: "data/disease_signatures/my_disease_data.csv"
+    drug_meta: "data/drug_signatures/cmap_drug_experiments_new.csv"
+    drug_valid: "data/drug_signatures/cmap_valid_instances.csv"
+    out_dir: "results"
+  params:
+    gene_key: "SYMBOL"
+    logfc_cols_pref: "log2FC"
+    logfc_cutoff: 0.5
+    q_thresh: 0.05
+    reversal_only: true
+    seed: 123
+    mode: "single"
+
+Standard:
+  paths:
+    signatures: "data/drug_signatures/cmap_signatures.RData"
+    disease_file: "data/disease_signatures/my_disease_data.csv"
+    drug_meta: "data/drug_signatures/cmap_drug_experiments_new.csv"
+    drug_valid: "data/drug_signatures/cmap_valid_instances.csv"
     out_dir: "results"
   params:
     gene_key: "SYMBOL"
@@ -791,24 +915,40 @@ default:
     seed: 123
     mode: "single"
 
-# Your custom analysis profile
-MyAnalysis:
+Strict:
   paths:
-    disease_file: "data/my_disease_data.csv"
-    signatures: "data/cmap_signatures.RData"
-    cmap_meta: "data/cmap_drug_experiments_new.csv"
-    cmap_valid: "data/cmap_valid_instances.csv"
+    signatures: "data/drug_signatures/cmap_signatures.RData"
+    disease_file: "data/disease_signatures/my_disease_data.csv"
+    drug_meta: "data/drug_signatures/cmap_drug_experiments_new.csv"
+    drug_valid: "data/drug_signatures/cmap_valid_instances.csv"
     out_dir: "results"
   params:
     gene_key: "SYMBOL"
     logfc_cols_pref: "log2FC"
-    logfc_cutoff: 1.0
-    pval_key: null
+    logfc_cutoff: 1.5
     q_thresh: 0.05
     reversal_only: true
     seed: 123
     mode: "single"
 ```
+
+---
+
+## 9.5 Advanced Threshold Tuning
+
+For detailed guidance on adjusting disease and drug signature thresholds, filtering parameters, and running batch analyses with custom configurations, see the **[tahoe_cmap_analysis README](tahoe_cmap_analysis/README.md#advanced-usage)**.
+
+This advanced section includes:
+- **Creating valid instances** for drug signatures with correlation-based quality control
+- **Filtering disease signatures** with configurable fold-change and p-value thresholds
+- **Filtering drug signatures** with stage-by-stage quality metrics
+- **Batch processing** 233 CREEDS diseases with custom parameters
+
+**Quick Reference for Valid Instance Thresholds:**
+- **CMAP**: r = 0.15 (minimum correlation threshold)
+- **TAHOE**: r = 0.35 (stricter correlation threshold)
+
+These thresholds determine which drug signatures meet quality criteria based on replicate consistency. For more details on parameter sensitivity and best practices, refer to the [TAHOE-CMAP Analysis guide](tahoe_cmap_analysis/README.md).
 
 ---
 
@@ -835,19 +975,17 @@ MyAnalysis:
 
 ---
 
-### 10.2 CMap Reference Files
+### 10.2 Drug Signature Reference Files
 
-**cmap_signatures.RData:**
-- Matrix with genes as rows, experiments as columns
-- Required for all analyses
+**CMap Reference Files:**
+- **cmap_signatures.RData**: Matrix with genes as rows, experiments as columns. Required for CMap analyses.
+- **cmap_drug_experiments_new.csv**: Experiment metadata containing drug names, cell lines, and experimental conditions.
+- **cmap_valid_instances.csv**: Curated valid instances with DrugBank IDs and validation flags (optional but recommended).
 
-**cmap_drug_experiments_new.csv:**
-- Experiment metadata
-- Drug names, cell lines, conditions
-
-**cmap_valid_instances.csv:**
-- Curated valid instances
-- DrugBank IDs and validation flags
+**TAHOE Reference Files:**
+- **tahoe_signatures.RData**: Matrix with genes as rows, experiments as columns. Required for TAHOE analyses.
+- **tahoe_drug_experiments_new.csv**: Experiment metadata containing drug names, cell lines, and experimental conditions.
+- **tahoe_valid_instances.csv**: Curated valid instances with DrugBank IDs and validation flags (optional).
 
 ---
 
@@ -905,53 +1043,17 @@ file.exists("config.yml")  # Should return TRUE
 
 ---
 
-## 12. Methodology
+## 12. Citation & License
 
-### 12.1 Pipeline Steps
-
-1. **Disease Signature Preparation**
-   - Load differential expression results
-   - Combine multiple fold-change columns
-   - Filter by p-value (optional) and fold-change thresholds
-   - Map to reference gene universe
-
-2. **Connectivity Scoring**
-   - Compare disease up/down gene sets to CMap profiles
-   - Compute reversal scores for each drug-disease pair
-   - Negative scores indicate reversal (desired)
-
-3. **Statistical Analysis**
-   - Generate null distributions via random sampling
-   - Calculate empirical p-values
-   - Compute q-values (FDR correction)
-
-4. **Validation & Annotation**
-   - Join with CMap experiment metadata
-   - Filter to valid instances
-   - Summarize per-drug results
-   - Generate visualizations
-
-### 12.2 Scoring Method
-
-The pipeline uses connectivity scoring to measure how well a drug reverses the disease signature:
-- **Negative scores**: Drug reverses disease signature (therapeutic potential)
-- **Positive scores**: Drug mimics disease signature (avoid)
-- **Statistical significance**: Determined by permutation testing and FDR correction
-
----
-
-## 13. Citation & License
-
-### 13.1 Authors
+### 12.1 Authors
 
 - **Enock Niyonkuru** - *Author, Maintainer* - [enock.niyonkuru@ucsf.edu](mailto:enock.niyonkuru@ucsf.edu)
 - **Xinyu Tang** - *Author* - [Xinyu.Tang@ucsf.edu](mailto:Xinyu.Tang@ucsf.edu)
 - **Marina Sirota** - *Author* - [Marina.Sirota@ucsf.edu](mailto:Marina.Sirota@ucsf.edu)
 
+### 12.2 Citation
 
-### 13.3 Citation
-
-*Citation information will be added upon publication*
+*Citation information will be added upon publication of the manuscript*
 
 ---
 

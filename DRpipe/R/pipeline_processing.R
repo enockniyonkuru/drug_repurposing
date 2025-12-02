@@ -518,13 +518,7 @@ DRP <- R6::R6Class(
         stop("Column 'id' not found in cmap_experiments_valid")
       }
 
-      self$log("  [DEBUG] Before merge: drugs has %d rows, cmap_experiments_valid has %d rows", nrow(self$drugs), nrow(cmap_experiments_valid))
-      self$log("  [DEBUG] drugs exp_id range: %s to %s", min(self$drugs$exp_id, na.rm=TRUE), max(self$drugs$exp_id, na.rm=TRUE))
-      self$log("  [DEBUG] metadata id range: %s to %s", min(cmap_experiments_valid$id, na.rm=TRUE), max(cmap_experiments_valid$id, na.rm=TRUE))
-      
       dv <- merge(self$drugs, cmap_experiments_valid, by.x = "exp_id", by.y = "id", all.x = FALSE, all.y = FALSE)
-      
-      self$log("  [DEBUG] After merge: dv has %d rows", nrow(dv))
       # Remove any rows with NA in the name column immediately after merge
       if ("name" %in% names(dv)) {
         dv <- dv[!is.na(dv$name) & dv$name != "", ]

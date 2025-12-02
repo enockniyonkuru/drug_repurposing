@@ -33,8 +33,7 @@ tahoe_cmap_analysis/dump/
 .Rhistory
 .quarto/
 _book/
-docs/        # remove if you publish a pkgdown site here
-
+docs/       
 ############################
 # R workflow packages
 ############################
@@ -155,8 +154,7 @@ tahoe_cmap_analysis/reports/corefibroid_diagnostics/
 tahoe_cmap_analysis/scripts/__pycache__/
 tahoe_cmap_analysis/venv/
 
-# Temporary documentation files
-README_UPDATES.md
+
 
 # R package build artifacts
 DRpipe_*.tar.gz

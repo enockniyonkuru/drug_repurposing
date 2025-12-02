@@ -20,10 +20,11 @@ Interactive web application for the DRpipe drug repurposing analysis pipeline. T
 
 ## Overview
 
-The Shiny app offers an interactive way to run the DRpipe pipeline through a web interface. Instead of editing configuration files and running R scripts, you can:
+The Shiny app offers an interactive way to run the DRpipe pipeline through a web interface using disease gene expression signatures and drug signature databases (CMap and TAHOE). Instead of editing configuration files and running R scripts, you can:
 
 - Upload disease gene expression data through a web form
 - Configure analysis parameters using interactive controls
+- Select drug signature databases (CMap, TAHOE, or both)
 - Run analyses with a single button click
 - View and download results directly in your browser
 - Generate visualizations interactively
@@ -45,7 +46,7 @@ The Shiny app offers an interactive way to run the DRpipe pipeline through a web
 
 ## Three Usage Options
 
-### Option 1: Browser-Based Analysis (Original Method)
+### Option 1: Browser-Based Analysis
 
 **When to use**: For quick exploration with single profiles
 
@@ -108,7 +109,7 @@ The Shiny app offers an interactive way to run the DRpipe pipeline through a web
 
 ---
 
-### Option 3: Upload Pre-computed Results (NEW)
+### Option 3: Upload Pre-computed Results
 
 **When to use**: When you already have results from terminal pipeline or a colleague shared results
 
