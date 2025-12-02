@@ -1,24 +1,8 @@
-#' Command-line interface entrypoint
+#' Command-Line Interface
 #'
-#' Examples:
-#' \preformatted{
-#'   # Run a single pipeline execution from config
-#'   Rscript -e "DRpipe::dr_cli()" run --config scripts/config.yml --profile default --make-plots --verbose
-#'
-#'   # Analyze all *_results.RData in scripts/results and write reports
-#'   Rscript -e "DRpipe::dr_cli()" analyze --config scripts/config.yml --profile default --verbose
-#'
-#'   # Print the merged config the CLI is using (for debugging)
-#'   Rscript -e "DRpipe::dr_cli()" run --config scripts/config.yml --profile default --print-config
-#' }
-#'
-#' If you ship an executable under inst/scripts (see README), you can also do:
-#' \preformatted{
-#'   drugrep run --config scripts/config.yml --profile default
-#'   drugrep analyze --config scripts/config.yml --profile default
-#' }
-#'
-#' @export
+#' Provides CLI entry point for running drug repurposing pipeline and analysis
+#' from the command line. Supports configuration via YAML files and enables
+#' batch processing with various output options.
 dr_cli <- function() {
   if (!requireNamespace("docopt", quietly = TRUE)) {
     stop("Please install 'docopt' to use the CLI: install.packages('docopt')")

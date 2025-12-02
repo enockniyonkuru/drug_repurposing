@@ -1,12 +1,8 @@
-#' Load a YAML config for the pipeline (processing + analysis)
+#' Configuration Loading and Path Resolution
 #'
-#' Resolution order:
-#' 1) Explicit `config_file` if provided
-#' 2) $DRPIPE_CONFIG if set
-#' 3) Package-shipped inst/config.yml (installed path)
-#' 4) Repository fallback: scripts/config.yml
-#'
-#' The profile can be overridden via $DRPIPE_PROFILE.
+#' Functions for loading YAML configuration files and resolving file paths.
+#' Supports multiple resolution strategies including environment variables
+#' and package-shipped defaults.
 #'
 #' @param profile     A config profile (e.g., "default", "production"). If NULL, uses env var DRPIPE_PROFILE or "default".
 #' @param config_file Optional path to a YAML config file

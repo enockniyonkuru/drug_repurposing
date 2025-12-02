@@ -1,0 +1,8 @@
+
+=== TAHOE VALIDATION STATISTICS ===
+Filter Mode: rvalue | Threshold: 0.35
+------------------------------
+Total experiments: 56827
+Valid (1):         56539
+Invalid (0):       288
+Percentage valid:  99.49%

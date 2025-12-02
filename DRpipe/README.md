@@ -1,6 +1,6 @@
 # DRpipe: Drug Repurposing Analysis R Package
 
-**DRpipe** is a comprehensive R package for drug repurposing analysis using disease gene expression signatures and the Connectivity Map (CMap). The package provides tools for preprocessing, scoring, filtering, and visualization to identify candidate compounds that may reverse disease-associated transcriptional changes.
+**DRpipe** is a comprehensive R package for drug repurposing analysis using disease gene expression signatures and drug signature databases (Connectivity Map/CMap and TAHOE). The package provides tools for preprocessing, scoring, filtering, and visualization to identify candidate compounds that may reverse disease-associated transcriptional changes.
 
 ## Table of Contents
 
@@ -25,7 +25,7 @@
 - Clean and filter differential expression (DEG) tables
 - Map gene symbols to Entrez IDs using g:Profiler
 - Generate null score distributions using random gene sets
-- Compute connectivity (reversal) scores against CMap profiles
+- Compute connectivity (reversal) scores against drug signature databases (CMap and TAHOE)
 - Calculate statistical significance (p-values and q-values)
 
 **Analysis and Visualization:**
@@ -327,23 +327,46 @@ pl_upset(upset_data)
 
 ### 7.1 Configuration File Format
 
-Create a YAML configuration file:
+Create a YAML configuration file with CMap or TAHOE:
 
+**CMap Analysis:**
 ```yaml
 default:
   paths:
-    signatures: "data/cmap_signatures.RData"
-    disease_file: "data/disease_signature.csv"
-    cmap_meta: "data/cmap_drug_experiments_new.csv"
-    cmap_valid: "data/cmap_valid_instances.csv"
+    signatures: "data/drug_signatures/cmap_signatures.RData"
+    disease_file: "data/disease_signatures/my_disease.csv"
+    drug_meta: "data/drug_signatures/cmap_drug_experiments_new.csv"
+    drug_valid: "data/drug_signatures/cmap_valid_instances.csv"
     out_dir: "results"
   params:
     gene_key: "SYMBOL"
     logfc_cols_pref: "log2FC"
     logfc_cutoff: 1
+    pval_key: null
     q_thresh: 0.05
     reversal_only: true
     seed: 123
+    mode: "single"
+```
+
+**TAHOE Analysis:**
+```yaml
+my_tahoe_profile:
+  paths:
+    signatures: "data/drug_signatures/tahoe_signatures.RData"
+    disease_file: "data/disease_signatures/my_disease.csv"
+    drug_meta: "data/drug_signatures/tahoe_drug_experiments_new.csv"
+    drug_valid: "data/drug_signatures/tahoe_valid_instances.csv"
+    out_dir: "results"
+  params:
+    gene_key: "SYMBOL"
+    logfc_cols_pref: "log2FC"
+    logfc_cutoff: 1
+    pval_key: null
+    q_thresh: 0.05
+    reversal_only: true
+    seed: 123
+    mode: "single"
 ```
 
 ### 7.2 Pipeline Functions
@@ -373,15 +396,21 @@ BRCA1,-1.8,0.01
 MYC,3.2,0.0001
 ```
 
-**CMap Signatures (RData):**
+**Drug Signatures (RData):**
+- CMap: `data/drug_signatures/cmap_signatures.RData` (232 MB)
+- TAHOE: `data/drug_signatures/tahoe_signatures.RData` (2.9 GB)
 - Matrix with genes as rows, experiments as columns
-- First column: Entrez gene IDs
-- Subsequent columns: Ranked expression values
+- Entrez gene IDs as row identifiers
 
-**CMap Metadata (CSV):**
-- Experiment annotations
-- Drug information
-- Cell line details
+**Drug Metadata (CSV):**
+- CMap: `data/drug_signatures/cmap_drug_experiments_new.csv` (831 KB)
+- TAHOE: `data/drug_signatures/tahoe_drug_experiments_new.csv` (4.1 MB)
+- Contains experiment annotations, drug names, cell lines, and experimental conditions
+
+**Drug Valid Instances (CSV, optional):**
+- CMap: `data/drug_signatures/cmap_valid_instances.csv` (41 KB)
+- TAHOE: `data/drug_signatures/tahoe_valid_instances.csv`
+- Curated valid instances with DrugBank IDs and validation flags
 
 ### 8.2 Output Formats
 
@@ -465,13 +494,13 @@ pl_overlap(do.call(rbind, results_list))
 If you use DRpipe in your research, please cite:
 
 ```
-[Citation information to be added]
+Citation information will be added upon publication of the manuscript
 ```
 
 ### 10.4 Authors
 
-- **Xinyu Tang** - *Author* - Xinyu.Tang@ucsf.edu
 - **Enock Niyonkuru** - *Author, Maintainer* - enock.niyonkuru@ucsf.edu
+- **Xinyu Tang** - *Author* - Xinyu.Tang@ucsf.edu
 - **Marina Sirota** - *Author* - Marina.Sirota@ucsf.edu
 
 ### 10.5 License

@@ -1,12 +1,9 @@
 #!/usr/bin/env Rscript
-# ------------------------------------------------------------------------------
-# Script: compare_profiles.R
-#
-# This script performs automated comparison across multiple configuration
-# profiles (e.g., different logfc_cutoff values). It runs the pipeline with
-# each profile, then performs cross-profile analysis similar to DR_analysis.R
-# but focused on parameter comparison rather than dataset comparison.
-# ------------------------------------------------------------------------------
+#' Compare Pipeline Profiles
+#'
+#' Performs automated comparison across multiple configuration profiles.
+#' Runs the pipeline with different parameters and performs cross-profile
+#' analysis to evaluate impact of parameter variations on results.
 
 suppressPackageStartupMessages(library(DRpipe))
 suppressPackageStartupMessages(library(dplyr))

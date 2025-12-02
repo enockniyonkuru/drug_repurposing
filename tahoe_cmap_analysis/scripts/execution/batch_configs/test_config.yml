@@ -1,0 +1,50 @@
+# Test Disease Signatures Batch Configuration
+# This config file is for testing the batch pipeline with a small test dataset
+# Uses the same CMAP and TAHOE parameters as creeds_manual, but with test disease signatures
+
+# ============================================================================
+# DISEASE CONFIGURATION
+# ============================================================================
+disease:
+  source: "TEST"
+  directory: "tahoe_cmap_analysis/data/disease_signatures/test_disease_signature"
+
+# ============================================================================
+# CMAP DRUG SIGNATURES CONFIGURATION
+# ============================================================================
+cmap:
+  signatures: "tahoe_cmap_analysis/data/drug_signatures/cmap/cmap_signatures.RData"
+  metadata: "tahoe_cmap_analysis/data/drug_signatures/cmap/cmap_drug_experiments_new.csv"
+  valid_instances: "tahoe_cmap_analysis/data/drug_signatures/cmap/cmap_valid_instances_OG_015.csv"
+
+# ============================================================================
+# TAHOE DRUG SIGNATURES CONFIGURATION
+# ============================================================================
+tahoe:
+  signatures: "tahoe_cmap_analysis/data/drug_signatures/tahoe/tahoe_signatures.RData"
+  metadata: "tahoe_cmap_analysis/data/drug_signatures/tahoe/tahoe_drug_experiments_new.csv"
+
+# ============================================================================
+# GENE CONVERSION AND ANALYSIS
+# ============================================================================
+analysis:
+  gene_table: "tahoe_cmap_analysis/data/gene_id_conversion_table.tsv"
+  gene_key: "gene_symbol"
+  logfc_cols_pref: "logfc_dz"
+  logfc_cutoff: 0.0
+  qval_threshold: 0.5
+
+# ============================================================================
+# OUTPUT CONFIGURATION
+# ============================================================================
+output:
+  root_directory: "tahoe_cmap_analysis/results/test_results"
+  report_directory: "tahoe_cmap_analysis/reports"
+  report_prefix: "test_batch"
+
+# ============================================================================
+# RUNTIME OPTIONS
+# ============================================================================
+runtime:
+  skip_existing_results: true
+  verbose: true

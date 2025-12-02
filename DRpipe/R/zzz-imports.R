@@ -1,17 +1,8 @@
-#' @keywords internal
-#' @importFrom R6 R6Class
-#' @importFrom dplyr %>% group_by slice ungroup filter pull select all_of
-#' @importFrom tidyr pivot_wider
-#' @importFrom tibble column_to_rownames
-#' @importFrom gprofiler2 gconvert
-#' @importFrom pheatmap pheatmap
-#' @importFrom UpSetR upset fromList
-#' @importFrom gplots redblue
-#' @importFrom reshape2 dcast
-#' @importFrom grDevices colorRampPalette dev.off jpeg
-#' @importFrom graphics axis hist image layout par text
-#' @importFrom grid grid.text gpar grid.newpage grid.draw
-NULL
+#' Package Dependencies and Global Variables
+#'
+#' Declares package dependencies via roxygen imports. The 'zzz-' naming prefix
+#' ensures this file is processed last. Defines global variables used across
+#' the DRpipe package to avoid R CMD check warnings.
 
 utils::globalVariables(c(
   "name","value","exp_id","subset_comparison_id","q","cmap_score","Cell",

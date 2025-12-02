@@ -1,10 +1,16 @@
-# Helper function to load execution configuration from YAML
+#!/usr/bin/env Rscript
+#' Load Execution Configuration
+#'
+#' Helper functions to load and parse execution configuration from YAML files.
+#' Provides utilities for loading profile-specific configurations and resolving
+#' file paths for pipeline execution.
+
 load_execution_config <- function(config_file = "config.yml") {
   if (!requireNamespace("yaml", quietly = TRUE)) {
     stop("Package 'yaml' is required but not available")
   }
   
-  # Read the entire YAML file
+  # Load the full configuration using yaml for raw parsing
   full_config <- yaml::read_yaml(config_file)
   
   # Return the execution section, or empty list if not found
@@ -14,14 +20,21 @@ load_execution_config <- function(config_file = "config.yml") {
 }
 
 # Helper function to load a specific profile configuration
-# This bypasses the buggy load_dr_config function and uses config::get directly
+# Uses yaml for raw parsing which is more reliable than config package
 load_profile_config <- function(profile = "default", config_file = "config.yml") {
-  if (!requireNamespace("config", quietly = TRUE)) {
-    stop("Package 'config' is required but not available")
+  if (!requireNamespace("yaml", quietly = TRUE)) {
+    stop("Package 'yaml' is required but not available")
   }
   
-  # Use config::get directly which works correctly
-  cfg <- config::get(config = profile, file = config_file)
+  # Load raw config
+  full_config <- yaml::read_yaml(config_file)
+  
+  # Get the profile
+  if (!profile %in% names(full_config)) {
+    stop("Profile '", profile, "' not found in ", config_file)
+  }
+  
+  cfg <- full_config[[profile]]
   
   # Apply path resolution like the original function
   if (!is.null(cfg$paths)) {

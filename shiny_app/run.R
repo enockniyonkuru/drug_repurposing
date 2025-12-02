@@ -1,7 +1,9 @@
 #!/usr/bin/env Rscript
-
-# Drug Repurposing Shiny App Launcher
-# This script ensures all dependencies are installed and launches the Shiny app
+#' Launch Drug Repurposing Shiny App
+#'
+#' Dependency checker and launcher for the interactive drug repurposing interface.
+#' Verifies all required packages are installed and starts the Shiny application
+#' for user-friendly pipeline access.
 
 cat("=================================================\n")
 cat("Drug Repurposing Pipeline - Shiny App Launcher\n")

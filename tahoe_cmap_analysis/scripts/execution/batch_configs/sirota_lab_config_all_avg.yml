@@ -1,0 +1,59 @@
+# CREEDS MANUAL Disease Signatures Batch Configuration
+# This config file contains all parameters needed to run the DRpipe batch analysis
+# for CREEDS MANUAL disease signatures
+
+# ============================================================================
+# DISEASE CONFIGURATION
+# ============================================================================
+disease:
+  source: "CREEDS MANUAL"
+  directory: "/Users/enockniyonkuru/Desktop/drug_repurposing/tahoe_cmap_analysis/data/disease_signatures/sirota_lab_disease_signatures_standardised"
+
+# ============================================================================
+# CMAP DRUG SIGNATURES CONFIGURATION
+# ============================================================================
+cmap:
+  signatures: "/Users/enockniyonkuru/Desktop/drug_repurposing/tahoe_cmap_analysis/data/drug_signatures/cmap/cmap_signatures.RData"
+  metadata: "/Users/enockniyonkuru/Desktop/drug_repurposing/tahoe_cmap_analysis/data/drug_signatures/cmap/cmap_drug_experiments_new.csv"
+  valid_instances: "/Users/enockniyonkuru/Desktop/drug_repurposing/tahoe_cmap_analysis/data/drug_signatures/cmap/cmap_valid_instances_OG_015.csv"
+
+# ============================================================================
+# TAHOE DRUG SIGNATURES CONFIGURATION
+# ============================================================================
+tahoe:
+  signatures: "/Users/enockniyonkuru/Desktop/drug_repurposing/tahoe_cmap_analysis/data/drug_signatures/tahoe/tahoe_signatures.RData"
+  metadata: "/Users/enockniyonkuru/Desktop/drug_repurposing/tahoe_cmap_analysis/data/drug_signatures/tahoe/tahoe_drug_experiments_new.csv"
+
+# ============================================================================
+# GENE CONVERSION AND ANALYSIS
+# ============================================================================
+analysis:
+  gene_table: "/Users/enockniyonkuru/Desktop/drug_repurposing/tahoe_cmap_analysis/data/gene_id_conversion_table.tsv"
+  logfc_cutoff: 0.0
+  qval_threshold: 0.5
+  # Column selection options:
+  # - Use "all" to use all logfc columns with the specified prefix
+  # - Use specific column names like "logfc_dz:459" to use only that column
+  # - Use multiple columns like ["logfc_dz:459", "logfc_dz:297"] to use specific columns
+  logfc_column_selection: "mean_logfc"  # or specific columns like "logfc_dz:459"
+  use_averaging: true  # Set to true to average columns and create logfc_dz column
+
+# ============================================================================
+# OUTPUT CONFIGURATION
+# ============================================================================
+output:
+  root_directory: "/Users/enockniyonkuru/Desktop/drug_repurposing/tahoe_cmap_analysis/results/sirota_lab_standardised_results_OG_exp_10"
+  report_directory: "/Users/enockniyonkuru/Desktop/drug_repurposing/tahoe_cmap_analysis/reports"
+  report_prefix: "sirota_lab"
+
+# ============================================================================
+# RUNTIME OPTIONS
+# ============================================================================
+runtime:
+  skip_existing_results: true
+  verbose: true
+  # Disease range options (1-indexed):
+  # - Leave empty or set to 1 to start from first disease
+  # - Set to specific number (e.g., 100) to start from disease 100
+  start_from_disease: 1  # Start processing from this disease number
+  end_at_disease: null   # End at this disease number (null = process all remaining)

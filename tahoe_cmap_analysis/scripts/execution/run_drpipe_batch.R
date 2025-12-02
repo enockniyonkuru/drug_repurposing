@@ -1,0 +1,497 @@
+#!/usr/bin/env Rscript
+#' Generic DRpipe Batch Runner
+#'
+#' Flexible, parameterized batch script for running drug repurposing analysis.
+#' Accepts command-line arguments for data paths and configuration, enabling
+#' reuse across different disease signature and drug database combinations.
+#'
+
+suppressPackageStartupMessages(library(DRpipe))
+suppressPackageStartupMessages(library(argparse))
+
+# Define command-line arguments
+parser <- ArgumentParser(description = "Run batch DRpipe analysis")
+parser$add_argument("--disease_dir", type = "character", required = TRUE, 
+                    help = "Directory containing disease signature files")
+parser$add_argument("--disease_source", type = "character", required = TRUE, 
+                    help = "Label for the disease source (e.g., 'CREEDS AUTOMATIC')")
+parser$add_argument("--cmap_sig", type = "character", required = TRUE, 
+                    help = "Path to CMAP signatures RData file")
+parser$add_argument("--cmap_meta", type = "character", required = TRUE, 
+                    help = "Path to CMAP drug experiments metadata")
+parser$add_argument("--tahoe_sig", type = "character", required = TRUE, 
+                    help = "Path to TAHOE signatures RData file")
+parser$add_argument("--tahoe_meta", type = "character", required = TRUE, 
+                    help = "Path to TAHOE drug experiments metadata")
+parser$add_argument("--gene_table", type = "character", required = TRUE, 
+                    help = "Path to gene ID conversion table")
+parser$add_argument("--gene_key", type = "character", default = "gene_symbol",
+                    help = "Column name for gene identifiers (default: 'gene_symbol')")
+parser$add_argument("--logfc_cols_pref", type = "character", default = "logfc_dz",
+                    help = "Column name prefix for logFC values (default: 'logfc_dz')")
+parser$add_argument("--out_root", type = "character", required = TRUE, 
+                    help = "Root output directory for results")
+parser$add_argument("--report_dir", type = "character", required = TRUE, 
+                    help = "Directory for summary reports")
+parser$add_argument("--report_prefix", type = "character", required = TRUE, 
+                    help = "File prefix for report and summary files (e.g., 'creeds_automatic')")
+parser$add_argument("--skip_existing", type = "logical", default = FALSE,
+                    help = "Skip diseases that have existing result folders (default: FALSE)")
+parser$add_argument("--start_from", type = "integer", default = 1,
+                    help = "Start processing from this disease number (1-indexed, default: 1)")
+parser$add_argument("--end_at", type = "integer", default = NULL,
+                    help = "End processing at this disease number (1-indexed, default: NULL = all)")
+parser$add_argument("--logfc_col_select", type = "character", default = "all",
+                    help = "LogFC column selection: 'all' or specific columns (comma-separated)")
+parser$add_argument("--use_averaging", type = "logical", default = TRUE,
+                    help = "Use averaging across selected columns (default: TRUE)")
+
+# Parse arguments
+args <- parser$parse_args()
+
+# Assign arguments to variables for clarity
+disease_dir      <- args$disease_dir
+disease_source   <- args$disease_source
+cmap_signatures  <- args$cmap_sig
+cmap_meta        <- args$cmap_meta
+tahoe_signatures <- args$tahoe_sig
+tahoe_meta       <- args$tahoe_meta
+gene_conv_table  <- args$gene_table
+gene_key         <- args$gene_key
+logfc_cols_pref  <- args$logfc_cols_pref
+out_root         <- args$out_root
+report_dir       <- args$report_dir
+report_prefix    <- args$report_prefix
+skip_existing    <- args$skip_existing
+start_from       <- args$start_from
+end_at           <- args$end_at
+logfc_col_select <- args$logfc_col_select
+use_averaging    <- args$use_averaging
+
+# Common parameters (from original script)
+cmap_valid <- NULL
+
+# Verify directories and files exist
+if (!dir.exists(disease_dir)) {
+  cat("Error: Disease directory not found:", disease_dir, "\n")
+  quit(status = 1)
+}
+if (!file.exists(cmap_signatures)) {
+  cat("Error: CMAP signatures file not found:", cmap_signatures, "\n")
+  quit(status = 1)
+}
+if (!file.exists(tahoe_signatures)) {
+  cat("Error: TAHOE signatures file not found:", tahoe_signatures, "\n")
+  quit(status = 1)
+}
+if (!file.exists(gene_conv_table)) {
+  cat("Error: Gene conversion table not found:", gene_conv_table, "\n")
+  quit(status = 1)
+}
+
+# Get all disease signature files
+all_disease_files <- list.files(disease_dir, pattern = "_signature\\.csv$", full.names = TRUE)
+cat("Found", length(all_disease_files), "disease signature files from source:", disease_source, "\n")
+
+# Apply disease range filtering
+if (is.null(end_at)) {
+  end_at <- length(all_disease_files)
+}
+
+if (start_from < 1 || start_from > length(all_disease_files)) {
+  cat("Error: start_from (", start_from, ") is out of range. Must be between 1 and", length(all_disease_files), "\n")
+  quit(status = 1)
+}
+
+if (end_at < start_from || end_at > length(all_disease_files)) {
+  cat("Error: end_at (", end_at, ") is invalid. Must be between", start_from, "and", length(all_disease_files), "\n")
+  quit(status = 1)
+}
+
+disease_files <- all_disease_files[start_from:end_at]
+
+cat("Processing diseases", start_from, "to", end_at, "(", length(disease_files), "diseases)\n\n")
+cat("Diseases to process:\n")
+for (i in seq_along(disease_files)) {
+  actual_index <- start_from + i - 1
+  cat("  [", actual_index, "]", gsub("_signature\\.csv$", "", basename(disease_files[i])), "\n", sep="")
+}
+cat("\n")
+
+# Create timestamp for this batch run
+batch_ts <- format(Sys.time(), "%Y%m%d-%H%M%S")
+batch_log_file <- file.path(out_root, paste0("batch_run_log_", batch_ts, ".txt"))
+batch_report_file <- file.path(report_dir, paste0(report_prefix, "_batch_report_", batch_ts, ".txt"))
+
+# Create results and reports directories if they don't exist
+dir.create(out_root, recursive = TRUE, showWarnings = FALSE)
+dir.create(report_dir, recursive = TRUE, showWarnings = FALSE)
+
+# Initialize log
+log_conn <- file(batch_log_file, open = "wt")
+writeLines(paste("Batch run started at:", Sys.time()), log_conn)
+writeLines(paste("Disease source:", disease_source), log_conn)
+writeLines(paste("Total diseases to process:", length(disease_files)), log_conn)
+writeLines(paste("Drug signatures: CMAP and TAHOE"), log_conn)
+writeLines(paste("LogFC cutoff: 0.0"), log_conn)
+writeLines(paste("P-value filtering: None"), log_conn)
+writeLines("", log_conn)
+close(log_conn)
+
+# Initialize report
+report_conn <- file(batch_report_file, open = "wt")
+writeLines("================================================================================", report_conn)
+writeLines(paste(toupper(disease_source), "DISEASE SIGNATURES - BATCH ANALYSIS REPORT"), report_conn)
+writeLines("================================================================================", report_conn)
+writeLines(paste("Report generated:", Sys.time()), report_conn)
+writeLines(paste("Batch timestamp:", batch_ts), report_conn)
+writeLines("", report_conn)
+writeLines("CONFIGURATION:", report_conn)
+writeLines(paste("  Disease source:", disease_source), report_conn)
+writeLines(paste("  Disease directory:", disease_dir), report_conn)
+writeLines(paste("  CMAP signatures:", cmap_signatures), report_conn)
+writeLines(paste("  TAHOE signatures:", tahoe_signatures), report_conn)
+writeLines(paste("  Output directory:", out_root), report_conn)
+writeLines(paste("  Q-value threshold:", "0.5"), report_conn)
+writeLines(paste("  LogFC cutoff:", "0.0"), report_conn)
+writeLines(paste("  P-value filtering:", "None"), report_conn)
+writeLines("", report_conn)
+writeLines(paste("DISEASES TO PROCESS (", length(disease_files), " total):", sep=""), report_conn)
+for (f in disease_files) {
+  writeLines(paste("  -", gsub("_signature\\.csv$", "", basename(f))), report_conn)
+}
+writeLines("", report_conn)
+writeLines("================================================================================", report_conn)
+writeLines("PROCESSING LOG:", report_conn)
+writeLines("================================================================================", report_conn)
+close(report_conn)
+
+# Helper function to run pipeline
+run_pipeline <- function(sig_path, sig_name, disease_file, disease_name, batch_ts, meta_path) {
+  cat("\n========================================\n")
+  cat("Running", sig_name, "for", disease_name, "\n")
+  cat("========================================\n")
+  
+  # Preprocess the disease file - rename gene_key column and handle column selection
+  preprocessed_file <- tempfile(fileext = ".csv")
+  df <- read.csv(disease_file, stringsAsFactors = FALSE, check.names = FALSE)
+  
+  # Rename gene_key column to standard name
+  if (gene_key %in% colnames(df)) {
+    colnames(df)[colnames(df) == gene_key] <- "SYMBOL"
+  }
+  
+  # Determine which logFC columns to use
+  if (logfc_col_select == "all") {
+    # Use all columns matching the prefix
+    logfc_cols <- grep(paste0("^", logfc_cols_pref), colnames(df), value = TRUE)
+  } else {
+    # Parse column selection (may be comma-separated)
+    if (grepl(",", logfc_col_select)) {
+      selected_cols <- strsplit(logfc_col_select, ",")[[1]]
+      selected_cols <- trimws(selected_cols)
+    } else {
+      selected_cols <- logfc_col_select
+    }
+    
+    # Validate that selected columns exist
+    logfc_cols <- selected_cols[selected_cols %in% colnames(df)]
+    
+    if (length(logfc_cols) == 0) {
+      cat("Warning: None of the selected columns found in", basename(disease_file), "\n")
+      cat("  Selected:", paste(selected_cols, collapse=", "), "\n")
+      cat("  Available:", paste(grep(paste0("^", logfc_cols_pref), colnames(df), value = TRUE), collapse=", "), "\n")
+      return(list(success = FALSE, out_dir = NA, error_msg = "Selected columns not found"))
+    }
+  }
+  
+  # Handle averaging if requested
+  if (use_averaging && length(logfc_cols) >= 1) {
+    # Calculate mean of selected columns and rename to logfc_dz
+    df$logfc_dz <- rowMeans(df[, logfc_cols, drop = FALSE], na.rm = TRUE)
+    cols_to_keep <- c("SYMBOL", "logfc_dz")
+  } else if (!use_averaging && length(logfc_cols) >= 1) {
+    # When not averaging, rename the first/only selected column to logfc_dz 
+    # to ensure DRP can find it, regardless of original column name
+    if (length(logfc_cols) == 1) {
+      df$logfc_dz <- df[[logfc_cols[1]]]
+      cols_to_keep <- c("SYMBOL", "logfc_dz")
+    } else {
+      # Multiple columns without averaging - use as-is
+      cols_to_keep <- c("SYMBOL", logfc_cols)
+    }
+  } else {
+    # Fallback: use columns as-is
+    cols_to_keep <- c("SYMBOL", logfc_cols)
+  }
+  
+  cols_to_keep <- cols_to_keep[cols_to_keep %in% colnames(df)]
+  df_out <- df[, cols_to_keep, drop = FALSE]
+  write.csv(df_out, preprocessed_file, row.names = FALSE, quote = FALSE)
+  disease_file <- preprocessed_file
+  
+  # Create output directory
+  folder_name <- paste0(disease_name, "_", sig_name, "_", batch_ts)
+  out_dir <- file.path(out_root, folder_name)
+  dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
+  
+  # Initialize DRP object
+  drp <- DRP$new(
+    signatures_rdata = sig_path,
+    disease_path     = disease_file,
+    disease_pattern  = NULL,
+    cmap_meta_path   = meta_path,
+    cmap_valid_path  = NULL,
+    out_dir          = out_dir,
+    gene_key         = "SYMBOL",
+    logfc_cols_pref  = logfc_cols_pref,
+    logfc_cutoff     = 0.0,
+    pval_key         = NULL,
+    pval_cutoff      = 0.05,
+    q_thresh         = 0.5,
+    reversal_only    = TRUE,
+    seed             = 123,
+    verbose          = TRUE,
+    analysis_id      = sig_name,
+    mode             = "single",
+    n_permutations   = 10000,  # Use 10k for faster testing
+    gene_conversion_table = gene_conv_table # Use parameterized path
+  )
+  
+  # Run the pipeline with plots
+  success <- FALSE
+  error_msg <- NULL
+  
+  tryCatch({
+    drp$run_all(make_plots = TRUE)
+    success <- TRUE
+    cat("\n[SUCCESS]", sig_name, "analysis completed for", disease_name, "\n")
+    cat("Results saved to:", out_dir, "\n")
+  }, error = function(e) {
+    error_msg <<- conditionMessage(e)
+    cat("\n[ERROR]", sig_name, "analysis failed for", disease_name, "\n")
+    cat("Error message:", error_msg, "\n")
+  })
+  
+  return(list(
+    success = success,
+    out_dir = out_dir,
+    error_msg = error_msg
+  ))
+}
+
+# Initialize tracking
+results_summary <- data.frame(
+  disease = character(),
+  signature_type = character(),
+  status = character(),
+  output_dir = character(),
+  error_message = character(),
+  stringsAsFactors = FALSE
+)
+
+# Check for existing directories if skip_existing is enabled
+existing_dirs <- NULL
+if (skip_existing) {
+  cat("Checking for existing results in:", out_root, "\n")
+  existing_dirs <- list.dirs(out_root, full.names = FALSE, recursive = FALSE)
+  cat("Found", length(existing_dirs), "existing result folders.\n\n")
+}
+
+# Process each disease
+for (i in seq_along(disease_files)) {
+  disease_file <- disease_files[i]
+  
+  # Extract disease name from filename
+  disease_name <- basename(disease_file)
+  disease_name <- gsub("_signature\\.csv$", "", disease_name)
+  
+  # Check if we should skip this disease (if skip_existing is enabled)
+  if (skip_existing) {
+    disease_pattern <- paste0(disease_name, "_")
+    already_processed <- any(startsWith(existing_dirs, disease_pattern))
+    
+    if (already_processed) {
+      cat("\n================================================================================\n")
+      cat("SKIPPING disease", i, "of", length(disease_files), ":", disease_name, "(Results folder already exists)\n")
+      cat("================================================================================\n")
+      
+      # Log and report the skip
+      log_conn <- file(batch_log_file, open = "at")
+      writeLines(paste("\n[", Sys.time(), "] SKIPPING:", disease_name, "(Results found)"), log_conn)
+      close(log_conn)
+      
+      report_conn <- file(batch_report_file, open = "at")
+      writeLines(paste("\n[", Sys.time(), "] SKIPPING disease:", disease_name, "(Results folder already exists)"), report_conn)
+      close(report_conn)
+      
+      # Add 'SKIPPED' status to summary
+      results_summary <- rbind(results_summary, data.frame(
+        disease = disease_name,
+        signature_type = "CMAP",
+        status = "SKIPPED",
+        output_dir = "N/A",
+        error_message = "Existing results found.",
+        stringsAsFactors = FALSE
+      ))
+      results_summary <- rbind(results_summary, data.frame(
+        disease = disease_name,
+        signature_type = "TAHOE",
+        status = "SKIPPED",
+        output_dir = "N/A",
+        error_message = "Existing results found.",
+        stringsAsFactors = FALSE
+      ))
+      
+      next
+    }
+  }
+  
+  cat("\n\n")
+  cat("================================================================================\n")
+  cat("Processing disease", i, "of", length(disease_files), ":", disease_name, "\n")
+  cat("================================================================================\n")
+  
+  # Log to file and report
+  log_conn <- file(batch_log_file, open = "at")
+  writeLines(paste("\n[", Sys.time(), "] Processing:", disease_name, "(", i, "of", length(disease_files), ")"), log_conn)
+  close(log_conn)
+  
+  report_conn <- file(batch_report_file, open = "at")
+  writeLines(paste("\n[", Sys.time(), "] Processing disease", i, "of", length(disease_files), ":", disease_name), report_conn)
+  close(report_conn)
+  
+  # Run with CMAP
+  cmap_result <- run_pipeline(
+    sig_path = cmap_signatures,
+    sig_name = "CMAP",
+    disease_file = disease_file,
+    disease_name = disease_name,
+    batch_ts = batch_ts,
+    meta_path = cmap_meta
+  )
+  
+  results_summary <- rbind(results_summary, data.frame(
+    disease = disease_name,
+    signature_type = "CMAP",
+    status = ifelse(cmap_result$success, "SUCCESS", "FAILED"),
+    output_dir = cmap_result$out_dir,
+    error_message = ifelse(is.null(cmap_result$error_msg), "", cmap_result$error_msg),
+    stringsAsFactors = FALSE
+  ))
+  
+  # Run with TAHOE
+  tahoe_result <- run_pipeline(
+    sig_path = tahoe_signatures,
+    sig_name = "TAHOE",
+    disease_file = disease_file,
+    disease_name = disease_name,
+    batch_ts = batch_ts,
+    meta_path = tahoe_meta
+  )
+  
+  results_summary <- rbind(results_summary, data.frame(
+    disease = disease_name,
+    signature_type = "TAHOE",
+    status = ifelse(tahoe_result$success, "SUCCESS", "FAILED"),
+    output_dir = tahoe_result$out_dir,
+    error_message = ifelse(is.null(tahoe_result$error_msg), "", tahoe_result$error_msg),
+    stringsAsFactors = FALSE
+  ))
+  
+  # Log results
+  log_conn <- file(batch_log_file, open = "at")
+  writeLines(paste("  CMAP:", ifelse(cmap_result$success, "SUCCESS", "FAILED")), log_conn)
+  writeLines(paste("  TAHOE:", ifelse(tahoe_result$success, "SUCCESS", "FAILED")), log_conn)
+  close(log_conn)
+  
+  # Report results
+  report_conn <- file(batch_report_file, open = "at")
+  writeLines(paste("  CMAP:", ifelse(cmap_result$success, "SUCCESS", "FAILED")), report_conn)
+  if (!cmap_result$success && !is.null(cmap_result$error_msg)) {
+    writeLines(paste("    Error:", cmap_result$error_msg), report_conn)
+  }
+  writeLines(paste("  TAHOE:", ifelse(tahoe_result$success, "SUCCESS", "FAILED")), report_conn)
+  if (!tahoe_result$success && !is.null(tahoe_result$error_msg)) {
+    writeLines(paste("    Error:", tahoe_result$error_msg), report_conn)
+  }
+  close(report_conn)
+}
+
+# Save summary
+summary_file <- file.path(out_root, paste0("batch_run_summary_", batch_ts, ".csv"))
+write.csv(results_summary, summary_file, row.names = FALSE)
+
+summary_report_file <- file.path(report_dir, paste0(report_prefix, "_batch_summary_", batch_ts, ".csv"))
+write.csv(results_summary, summary_report_file, row.names = FALSE)
+
+# Print final summary
+cat("\n\n")
+cat("================================================================================\n")
+cat("BATCH RUN COMPLETED -", toupper(disease_source), "\n")
+cat("================================================================================\n")
+cat("Total diseases processed:", length(disease_files), "\n")
+cat("Total runs (CMAP + TAHOE):", nrow(results_summary), "\n")
+cat("Successful runs:", sum(results_summary$status == "SUCCESS"), "\n")
+cat("Failed runs:", sum(results_summary$status == "FAILED"), "\n")
+if (skip_existing) {
+  cat("Skipped runs:", sum(results_summary$status == "SKIPPED"), "\n")
+}
+cat("\nSummary saved to:", summary_file, "\n")
+cat("Log saved to:", batch_log_file, "\n")
+
+# Log final summary
+log_conn <- file(batch_log_file, open = "at")
+writeLines("\n================================================================================", log_conn)
+writeLines(paste("BATCH RUN COMPLETED -", toupper(disease_source)), log_conn)
+writeLines("================================================================================", log_conn)
+writeLines(paste("Batch run ended at:", Sys.time()), log_conn)
+writeLines(paste("Total diseases processed:", length(disease_files)), log_conn)
+writeLines(paste("Total runs (CMAP + TAHOE):", nrow(results_summary)), log_conn)
+writeLines(paste("Successful runs:", sum(results_summary$status == "SUCCESS")), log_conn)
+writeLines(paste("Failed runs:", sum(results_summary$status == "FAILED")), log_conn)
+if (skip_existing) {
+  writeLines(paste("Skipped runs:", sum(results_summary$status == "SKIPPED")), log_conn)
+}
+close(log_conn)
+
+# Write final summary to report
+report_conn <- file(batch_report_file, open = "at")
+writeLines("\n================================================================================", report_conn)
+writeLines("FINAL SUMMARY", report_conn)
+writeLines("================================================================================", report_conn)
+writeLines(paste("Batch run ended at:", Sys.time()), report_conn)
+writeLines(paste("Total diseases processed:", length(disease_files)), report_conn)
+writeLines(paste("Total runs (CMAP + TAHOE):", nrow(results_summary)), report_conn)
+writeLines(paste("Successful runs:", sum(results_summary$status == "SUCCESS")), report_conn)
+writeLines(paste("Failed runs:", sum(results_summary$status == "FAILED")), report_conn)
+if (skip_existing) {
+  writeLines(paste("Skipped runs:", sum(results_summary$status == "SKIPPED")), report_conn)
+}
+writeLines("", report_conn)
+writeLines("Summary CSV saved to:", report_conn)
+writeLines(paste("  -", summary_file), report_conn)
+writeLines(paste("  -", summary_report_file), report_conn)
+writeLines("", report_conn)
+writeLines("Results directory:", report_conn)
+writeLines(paste("  -", out_root), report_conn)
+close(report_conn)
+
+# Print failures if any
+if (sum(results_summary$status == "FAILED") > 0) {
+  cat("\nFailed runs:\n")
+  failed <- results_summary[results_summary$status == "FAILED", ]
+  for (i in 1:nrow(failed)) {
+    cat("  -", failed$disease[i], "(", failed$signature_type[i], "):", failed$error_message[i], "\n")
+  }
+  
+  report_conn <- file(batch_report_file, open = "at")
+  writeLines("FAILED RUNS:", report_conn)
+  for (i in 1:nrow(failed)) {
+    writeLines(paste("  -", failed$disease[i], "(", failed$signature_type[i], "):", failed$error_message[i]), report_conn)
+  }
+  close(report_conn)
+}
+
+cat("\nAll results saved in:", out_root, "\n")
+cat("Report saved to:", batch_report_file, "\n")

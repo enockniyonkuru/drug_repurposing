@@ -1,14 +1,8 @@
-#' Plot sweep outputs in legacy format
-#' 
-#' Creates the four specific files: cmap_score.jpg, comprehensive_sweep_analysis.jpg, 
-#' dist_rev_score.jpeg, sweep_cutoff_summary.jpg
-#' 
-#' @param run_dir The run directory where img/ should be created
-#' @param per_cutoff_df Data frame with per-cutoff summary (can be NULL)
-#' @param aggregated_df Data frame with aggregated robust hits
-#' @param cutoff_summary Data frame with cutoff summary statistics (can be NULL)
-#' @return TRUE if successful, FALSE otherwise
-#' @export
+#' Legacy Sweep Output Plotting
+#'
+#' Functions to generate standard plots from parameter sweep analysis results.
+#' Creates histograms, comprehensive plots, and cutoff summaries for drug
+#' repurposing findings across threshold variations.
 plot_sweep_outputs_legacy <- function(run_dir, per_cutoff_df = NULL, aggregated_df = NULL, cutoff_summary = NULL) {
   
   # Create img directory
