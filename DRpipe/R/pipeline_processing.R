@@ -18,6 +18,7 @@ DRP <- R6::R6Class(
     gene_key         = "SYMBOL",
     logfc_cols_pref  = "log2FC",
     logfc_cutoff     = 1,
+    percentile_filtering = list(enabled = FALSE, threshold = NULL),  # NEW: percentile-based filtering
     pval_key         = NULL,
     pval_cutoff      = 0.05,
     q_thresh         = 0.05,
@@ -92,6 +93,7 @@ DRP <- R6::R6Class(
       gene_key        = "SYMBOL",
       logfc_cols_pref = "log2FC",
       logfc_cutoff    = 1,
+      percentile_filtering = NULL,  # NEW: list(enabled = TRUE/FALSE, threshold = numeric)
       pval_key        = NULL,
       pval_cutoff     = 0.05,
       q_thresh        = 0.05,
@@ -154,6 +156,12 @@ DRP <- R6::R6Class(
       self$gene_key         <- gene_key
       self$logfc_cols_pref  <- logfc_cols_pref
       self$logfc_cutoff     <- logfc_cutoff
+      # Handle percentile filtering - default to disabled if not provided
+      if (is.null(percentile_filtering)) {
+        self$percentile_filtering <- list(enabled = FALSE, threshold = NULL)
+      } else {
+        self$percentile_filtering <- percentile_filtering
+      }
       self$pval_key         <- pval_key
       self$pval_cutoff      <- pval_cutoff
       self$q_thresh         <- q_thresh
@@ -207,16 +215,103 @@ DRP <- R6::R6Class(
     load_cmap = function() {
       self$log("Loading drug signatures (%s): %s", self$analysis_id, self$signatures_rdata)
       stopifnot(file.exists(self$signatures_rdata))
-      env <- new.env(parent = emptyenv())
-      load(self$signatures_rdata, envir = env)
-      if (exists("cmap_signatures", envir = env, inherits = FALSE)) {
-        self$cmap_signatures <- get("cmap_signatures", envir = env)
-      } else {
-        # Fallback: grab first object
-        nm <- ls(env)
-        if (!length(nm)) stop("No objects found in ", self$signatures_rdata)
-        self$cmap_signatures <- get(nm[[1]], envir = env)
+      
+      # Initialize global cache if needed
+      if (!exists(".drp_signature_cache", envir = .GlobalEnv)) {
+        assign(".drp_signature_cache", list(), envir = .GlobalEnv)
       }
+      
+      # Use full file path as cache key (simpler and more reliable than md5sum)
+      cache_key <- normalizePath(self$signatures_rdata)
+      cached_sig <- get(".drp_signature_cache", envir = .GlobalEnv)
+      
+      # Check if already cached
+      if (!is.null(cached_sig[[cache_key]])) {
+        self$log("Using cached signatures")
+        self$cmap_signatures <- cached_sig[[cache_key]]
+      } else {
+        # Load from file with progress indication
+        self$log("(This may take a while for large files...)")
+        
+        # Check file size and estimate load time
+        file_size_gb <- file.size(self$signatures_rdata) / (1024^3)
+        estimated_time_sec <- max(5, round(file_size_gb * 10))  # rough estimate
+        self$log("File size: %.2f GB (estimated load time: %d seconds)", file_size_gb, estimated_time_sec)
+        
+        # Flush output so messages appear immediately
+        flush(stdout())
+        
+        start_time <- Sys.time()
+        
+        # CRITICAL FIX: Use readRDS() if available, otherwise use load()
+        # readRDS() is much faster and more reliable for large files (>1GB)
+        file_ext <- tolower(tools::file_ext(self$signatures_rdata))
+        
+        tryCatch({
+          if (file_ext == "rds") {
+            # Use readRDS for .rds files (fast binary format)
+            self$log("Loading RDS format...")
+            flush(stdout())
+            self$cmap_signatures <- readRDS(self$signatures_rdata)
+          } else if (file_ext == "rdata" && file_size_gb > 1.0) {
+            # For large RData files, try to load in a subprocess to prevent hanging
+            self$log("Large RData file detected (>1GB), using subprocess loader...")
+            flush(stdout())
+            
+            # Create temporary RDS file from RData using subprocess
+            rds_path <- paste0(tools::file_path_sans_ext(self$signatures_rdata), ".rds")
+            
+            if (!file.exists(rds_path)) {
+              self$log("Converting RData to RDS (one-time operation)...")
+              flush(stdout())
+              
+              # Use system() to run load/save in separate R process
+              cmd <- sprintf(
+                "Rscript -e 'env <- new.env(parent = emptyenv()); load(\"%s\", envir = env); obj <- get(ls(env)[1], envir = env); saveRDS(obj, \"%s\", compress = \"xz\")'",
+                self$signatures_rdata, rds_path
+              )
+              
+              ret <- system(cmd)
+              if (ret != 0) {
+                stop("Failed to convert RData to RDS")
+              }
+            }
+            
+            self$log("Loading from RDS...")
+            flush(stdout())
+            self$cmap_signatures <- readRDS(rds_path)
+          } else {
+            # Standard load for smaller RData files
+            self$log("Loading RData format...")
+            flush(stdout())
+            env <- new.env(parent = emptyenv())
+            load(self$signatures_rdata, envir = env)
+            
+            if (exists("cmap_signatures", envir = env, inherits = FALSE)) {
+              self$cmap_signatures <- get("cmap_signatures", envir = env)
+            } else {
+              # Fallback: grab first object
+              nm <- ls(env, all.names = TRUE)
+              if (!length(nm)) stop("No objects found in ", self$signatures_rdata)
+              self$cmap_signatures <- get(nm[[1]], envir = env)
+            }
+          }
+          
+          elapsed <- difftime(Sys.time(), start_time, units = "secs")
+          self$log("Loaded in %.1f seconds", as.numeric(elapsed))
+          flush(stdout())
+          
+        }, error = function(e) {
+          self$log("ERROR during load: %s", e$message)
+          stop("Failed to load signatures: ", e$message)
+        })
+        
+        # Cache it for future use
+        cached_sig[[cache_key]] <- self$cmap_signatures
+        assign(".drp_signature_cache", cached_sig, envir = .GlobalEnv)
+        self$log("Cached signatures for future use")
+      }
+      
       # Backward-compatible alias expected by some callers
       self$cmap_sig <- self$cmap_signatures
       invisible(self)
@@ -231,13 +326,18 @@ DRP <- R6::R6Class(
         cand[[1]]
       }
       self$log("Reading disease signature CSV: %s", file)
+      flush(stdout())  # Force flush to see immediate output
       self$dz_signature_raw <- utils::read.csv(file, stringsAsFactors = FALSE, check.names = FALSE)
+      self$log("CSV loaded successfully: %d genes", nrow(self$dz_signature_raw))
+      flush(stdout())
+      
       base <- basename(file)
       self$dataset_label <- sub("\\.csv$", "", base)
       
       # Apply meta-analysis filters if enabled
       if (self$apply_meta_filters) {
         self$log("Applying meta-analysis filters...")
+        flush(stdout())
         n_before <- nrow(self$dz_signature_raw)
         
         # Check for required columns
@@ -307,23 +407,66 @@ DRP <- R6::R6Class(
     },
 
     clean_signature = function(cutoff = NULL) {
+      self$log("Starting signature cleaning...")
+      
       # Use provided cutoff or default to instance cutoff
       use_cutoff <- if (!is.null(cutoff)) cutoff else self$logfc_cutoff
       
+      # Handle percentile filtering
+      if (!is.null(self$percentile_filtering) && isTRUE(self$percentile_filtering$enabled)) {
+        self$log("Using percentile-based filtering (threshold: %d%%)", self$percentile_filtering$threshold)
+        # We'll calculate the effective cutoff after we compute logFC values
+        use_cutoff <- NULL  # Mark for later calculation
+        use_percentile <- TRUE
+        percentile_threshold <- self$percentile_filtering$threshold
+      } else {
+        use_percentile <- FALSE
+        percentile_threshold <- NULL
+      }
+      
       # Start with pre-filtered raw data
       working_data <- self$dz_signature_raw
+      self$log("Raw signature size: %d genes", nrow(working_data))
       
       # Detect all log2FC columns
       lc_cols <- grep(paste0("^", self$logfc_cols_pref), names(working_data), value = TRUE)
       if (!length(lc_cols)) stop("No columns starting with '", self$logfc_cols_pref, "' found.")
+      self$log("Found %d logFC columns: %s", length(lc_cols), paste(lc_cols, collapse = ", "))
       
       # Get gene universe from cmap (needs to be character for comparison)
+      self$log("Building gene universe from drug signatures...")
+      flush(stdout())
       db_genes <- NULL
+      
       if (is.data.frame(self$cmap_signatures)) {
-        if ("V1" %in% names(self$cmap_signatures)) db_genes <- as.character(self$cmap_signatures$V1)
-        if (is.null(db_genes) && "gene" %in% names(self$cmap_signatures)) db_genes <- as.character(self$cmap_signatures$gene)
+        # Try different column names for gene identifiers
+        if ("V1" %in% names(self$cmap_signatures)) {
+          db_genes <- as.character(self$cmap_signatures$V1)
+          self$log("  Found V1 column with gene IDs")
+        } else if ("entrezID" %in% names(self$cmap_signatures)) {
+          db_genes <- as.character(self$cmap_signatures$entrezID)
+          self$log("  Found entrezID column with gene IDs")
+        } else if ("gene" %in% names(self$cmap_signatures)) {
+          db_genes <- as.character(self$cmap_signatures$gene)
+          self$log("  Found gene column with gene IDs")
+        } else {
+          # Fallback: use row names if available
+          if (!is.null(rownames(self$cmap_signatures))) {
+            db_genes <- as.character(rownames(self$cmap_signatures))
+            self$log("  Using row names as gene IDs")
+          }
+        }
       }
-      if (is.null(db_genes)) db_genes <- as.character(unique(unlist(self$cmap_signatures)))
+      
+      if (is.null(db_genes)) {
+        self$log("  Extracting gene universe from matrix (this may take a moment)...")
+        flush(stdout())
+        db_genes <- as.character(unique(unlist(self$cmap_signatures)))
+        self$log("  Extracted %d genes from matrix", length(db_genes))
+      }
+      
+      self$log("Gene universe size: %d genes", length(db_genes))
+      flush(stdout())
       
       # Initialize signature list
       self$dz_signature_list <- list()
@@ -332,21 +475,51 @@ DRP <- R6::R6Class(
         # Average approach: compute mean logFC across all columns
         working_data$logFC <- rowMeans(working_data[, lc_cols, drop = FALSE], na.rm = TRUE)
         
+        # Calculate percentile-based cutoff if enabled
+        if (use_percentile) {
+          # Calculate the Nth percentile of absolute logFC values
+          abs_logfc <- abs(working_data$logFC)
+          use_cutoff <- quantile(abs_logfc, (100 - percentile_threshold) / 100, na.rm = TRUE)
+          self$log("Calculated percentile cutoff (%.0f%%): |logFC| > %.4f", 
+                   percentile_threshold, use_cutoff)
+        }
+        
         # Custom gene mapping and filtering (bypass clean_table's gprofiler2 mapping)
         if (!is.null(self$gene_conversion_table) && file.exists(self$gene_conversion_table)) {
           self$log("Applying Symbol→Entrez mapping from: %s", self$gene_conversion_table)
+          flush(stdout())
           
           # Load gene conversion table
+          self$log("  Loading gene conversion table...")
+          flush(stdout())
           mapping_tbl <- utils::read.csv(self$gene_conversion_table, sep = '\t', stringsAsFactors = FALSE)
+          self$log("  Gene conversion table loaded: %d entries", nrow(mapping_tbl))
+          flush(stdout())
+          
           mapping_tbl <- mapping_tbl[!is.na(mapping_tbl$entrezID), c("Gene_name", "entrezID")]
           mapping_tbl <- mapping_tbl[!duplicated(mapping_tbl), ]
+          self$log("  After deduplication: %d unique mappings", nrow(mapping_tbl))
+          flush(stdout())
           
-          # Merge with disease signature
+          # Merge with disease signature - use faster lookup instead of merge
+          self$log("  Starting gene mapping (this may take a moment)...")
+          flush(stdout())
           original_count <- nrow(working_data)
-          working_data <- merge(working_data, mapping_tbl, by.x = self$gene_key, by.y = "Gene_name")
-          mapped_count <- nrow(working_data)
           
-          self$log("Gene mapping: %d -> %d genes (mapped %d)", original_count, mapped_count, mapped_count)
+          # Create lookup vector for faster mapping
+          mapping_vec <- setNames(mapping_tbl$entrezID, mapping_tbl$Gene_name)
+          
+          # Map genes
+          mapped_genes <- mapping_vec[as.character(working_data[[self$gene_key]])]
+          
+          # Keep only genes that have a mapping
+          keep_idx <- !is.na(mapped_genes)
+          working_data <- working_data[keep_idx, ]
+          working_data$entrezID <- mapped_genes[keep_idx]
+          
+          mapped_count <- nrow(working_data)
+          self$log("  Mapping complete: %d -> %d genes (mapped %d)", original_count, mapped_count, mapped_count)
+          flush(stdout())
           
           # Manual filtering steps (like clean_table but with our mapped data)
           # 1. Filter by p-value if pval_key is provided
@@ -402,6 +575,13 @@ DRP <- R6::R6Class(
           # Set logFC to current column
           working_data$logFC <- working_data[[col]]
           
+          # Calculate percentile-based cutoff for this column if enabled
+          col_cutoff <- use_cutoff
+          if (use_percentile) {
+            abs_logfc <- abs(working_data$logFC)
+            col_cutoff <- quantile(abs_logfc, (100 - percentile_threshold) / 100, na.rm = TRUE)
+          }
+          
           # Custom gene mapping and filtering if conversion table provided
           if (!is.null(self$gene_conversion_table) && file.exists(self$gene_conversion_table)) {
             # Load gene conversion table
@@ -419,7 +599,7 @@ DRP <- R6::R6Class(
             }
             
             # 2. Filter by logFC cutoff
-            temp_data <- temp_data[abs(temp_data$logFC) > use_cutoff, ]
+            temp_data <- temp_data[abs(temp_data$logFC) > col_cutoff, ]
             
             # 3. Filter to CMap universe
             temp_data <- temp_data[as.character(temp_data$entrezID) %in% db_genes, ]
@@ -436,7 +616,7 @@ DRP <- R6::R6Class(
               working_data,
               gene_key     = self$gene_key,
               logFC_key    = "logFC",
-              logFC_cutoff = use_cutoff,
+              logFC_cutoff = col_cutoff,
               pval_key     = self$pval_key,
               pval_cutoff  = self$pval_cutoff,
               db_gene_list = db_genes
@@ -472,10 +652,12 @@ DRP <- R6::R6Class(
       self$log("Scoring (random null + observed)")
       self$rand_scores <- random_score(self$cmap_signatures, length(self$dz_genes_up), length(self$dz_genes_down))
       self$obs_scores  <- query_score(self$cmap_signatures, self$dz_genes_up, self$dz_genes_down)
+      # Handle NULL logfc_cutoff (when using percentile filtering)
+      cutoff_label <- if (is.null(self$logfc_cutoff)) "percentile" else as.character(self$logfc_cutoff)
       self$drugs <- query(
         self$rand_scores,
         self$obs_scores,
-        subset_comparison_id = sprintf("%s_logFC_%s", self$dataset_label, self$logfc_cutoff)
+        subset_comparison_id = sprintf("%s_logFC_%s", self$dataset_label, cutoff_label)
       )
       invisible(self)
     },
@@ -605,17 +787,21 @@ DRP <- R6::R6Class(
       results <- list(drugs = self$drugs, signature_clean = self$dz_signature)
       save(results, file = file.path(self$out_dir, sprintf("%s_results.RData", self$dataset_label)))
 
+      # Handle NULL logfc_cutoff (when using percentile filtering)
+      cutoff_label <- if (is.null(self$logfc_cutoff)) "percentile" else as.character(self$logfc_cutoff)
+      cutoff_num <- if (is.null(self$logfc_cutoff)) 0 else self$logfc_cutoff
+      
       # Save random scores if available
       if (!is.null(self$rand_scores)) {
         rand_scores <- self$rand_scores  # Create local copy to avoid scoping issues
         save(rand_scores, file = file.path(self$out_dir, sprintf("%s_random_scores_logFC_%s.RData",
-                                                                  self$dataset_label, self$logfc_cutoff)))
+                                                                  self$dataset_label, cutoff_label)))
       }
       
       if (!is.null(self$drugs_valid)) {
         utils::write.csv(self$drugs_valid,
-          file = file.path(self$out_dir, sprintf("%s_hits_logFC_%.2f_q<%.2f.csv", 
-                                                  self$dataset_label, self$logfc_cutoff, self$q_thresh)),
+          file = file.path(self$out_dir, sprintf("%s_hits_logFC_%s_q<%.2f.csv", 
+                                                  self$dataset_label, cutoff_label, self$q_thresh)),
           row.names = FALSE
         )
       }
@@ -625,6 +811,9 @@ DRP <- R6::R6Class(
     # --------- new methods for sweep mode ---------
     run_single = function() {
       self$log("Running single-cutoff mode")
+      
+      # Handle NULL logfc_cutoff (when using percentile filtering)
+      cutoff_label <- if (is.null(self$logfc_cutoff)) "percentile" else as.character(self$logfc_cutoff)
       
       if (self$combine_log2fc == "average") {
         # Score once using the single entry in signature list
@@ -640,7 +829,7 @@ DRP <- R6::R6Class(
         self$drugs <- query(
           self$rand_scores,
           self$obs_scores,
-          subset_comparison_id = sprintf("%s_logFC_%s", self$dataset_label, self$logfc_cutoff),
+          subset_comparison_id = sprintf("%s_logFC_%s", self$dataset_label, cutoff_label),
           analysis_id = self$analysis_id
         )
         
@@ -661,7 +850,7 @@ DRP <- R6::R6Class(
           drugs <- query(
             rand_scores,
             obs_scores,
-            subset_comparison_id = sprintf("%s_%s_logFC_%s", self$dataset_label, sig_name, self$logfc_cutoff),
+            subset_comparison_id = sprintf("%s_%s_logFC_%s", self$dataset_label, sig_name, cutoff_label),
             analysis_id = self$analysis_id
           )
           
@@ -1490,6 +1679,7 @@ run_dr <- function(
   gene_key = "SYMBOL",
   logfc_cols_pref = "log2FC",
   logfc_cutoff = 1,
+  percentile_filtering = NULL,
   q_thresh = 0.05,
   reversal_only = TRUE,
   seed = 123,
@@ -1508,6 +1698,7 @@ run_dr <- function(
     gene_key         = gene_key,
     logfc_cols_pref  = logfc_cols_pref,
     logfc_cutoff     = logfc_cutoff,
+    percentile_filtering = percentile_filtering,
     q_thresh         = q_thresh,
     reversal_only    = reversal_only,
     seed             = seed,

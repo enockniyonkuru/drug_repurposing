@@ -64,6 +64,7 @@ drp <- DRP$new(
   effect_fdr_thresh     = cfg$params$effect_fdr_thresh %||% 0.05,
   heterogeneity_thresh  = cfg$params$heterogeneity_thresh %||% 0.05,
   gene_conversion_table = cfg$params$gene_conversion_table %||% NULL,
+  percentile_filtering  = cfg$params$percentile_filtering %||% NULL,
   save_count_files      = isTRUE(cfg$params$save_count_files %||% FALSE),
   n_permutations        = cfg$params$n_permutations %||% 100000,
   save_null_scores      = isTRUE(cfg$params$save_null_scores %||% FALSE),

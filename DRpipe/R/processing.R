@@ -256,6 +256,10 @@ query_score <- function(cmap_signatures, dz_genes_up, dz_genes_down) {
     dz_genes_down <- data.frame(GeneID = dz_genes_down)
 
     # Iterate over experiments (columns 2..n), compute connectivity per experiment
+    n_experiments <- ncol(cmap_signatures) - 1
+    cat(sprintf("[QUERY_SCORE] Computing scores for %d experiments...\n", n_experiments))
+    flush.console()
+    
     dz_cmap_scores <- pbapply::pbsapply(
         2:ncol(cmap_signatures),
         function(exp_id) {
@@ -265,6 +269,8 @@ query_score <- function(cmap_signatures, dz_genes_up, dz_genes_down) {
         }
     )
 
+    cat(sprintf("[QUERY_SCORE] Complete! Computed %d scores\n", length(dz_cmap_scores)))
+    flush.console()
     return(dz_cmap_scores)
 }
 

@@ -7,15 +7,10 @@
 # Execution configuration - specify which profiles/operations to run
 execution:
   # Profile to use for runall.R (single profile execution)
-  # runall_profile: "Sweep_CoreFibroid"
-
-  runall_profile: "Tahoe_Eczema_creeds"
-
-
+  runall_profile: "CMAP_Acne_Sweep"
 
   # Profiles to compare in compare_profiles.R
-  # compare_profiles: ["CoreFibroid_logFC_0.25", "CoreFibroid_logFC_0.5", "CoreFibroid_logFC_1"]
-  compare_profiles: ["Tahoe_Chronic_granulomatous_disease_0.00","CMAP_Chronic_granulomatous_disease_0.00", "OG_CMAP_Chronic_granulomatous_disease_0.00"]
+  compare_profiles: ["CMAP_Acne_Lenient", "CMAP_Acne_Standard", "CMAP_Acne_Strict"]
 
 # ============================================================================
 # DEFAULT PROFILE (REQUIRED - DO NOT DELETE)
@@ -42,7 +37,7 @@ default:
     # Path to YOUR disease gene expression signature (CSV file)
     # Must contain: gene identifiers + log2 fold-change values
     # IMPORTANT: Verify your CSV has column headers! Missing headers is a common issue.
-    disease_file: "data/disease_signatures/CoreFibroidSignature_All_Datasets.csv"
+    disease_file: "data/disease_signatures/acne_signature.csv"
     
     # Path to drug experiment metadata (optional but recommended)
     # Contains drug names, cell lines, experimental conditions
@@ -60,18 +55,36 @@ default:
     # Column name in YOUR disease file containing gene identifiers
     # Common values: "SYMBOL", "Gene", "gene_name", "ENSEMBL", "ENTREZ"
     # IMPORTANT: Must match the actual column name in your CSV file exactly
-    gene_key: "SYMBOL"
+    gene_key: "gene_symbol"
     
     # Prefix for log2 fold-change columns in YOUR disease file
     # If you have columns like "log2FC_1", "log2FC_2", use "log2FC"
-    # If you have columns like "fc_rep1", "fc_rep2", use "fc_"
-    logfc_cols_pref: "log2FC"
+    # If you have columns like "logfc_dz:459", "logfc_dz:297", use "logfc_dz"
+    logfc_cols_pref: "logfc_dz"
     
-    # ---- Filtering Thresholds ----
-    # Absolute log2 fold-change threshold for gene filtering
-    # Genes with |log2FC| >= this value are considered differentially expressed
-    # Typical values: 0.5 (lenient), 1.0 (standard), 1.5 (strict)
-    logfc_cutoff: 0.5
+    # Path to gene conversion table for mapping gene symbols to Entrez IDs
+    # Used when gprofiler2 is unavailable or for faster processing
+    gene_conversion_table: "data/gene_id_conversion_table.tsv"
+    
+    # ---- Gene Filtering Options ----
+    # Choose ONE filtering method for each profile:
+    #
+    # Option 1: Fixed logfc cutoff (legacy - disease-independent)
+    #   Genes with |log2FC| >= this value are kept
+    #   Typical values: 0.10 (lenient), 0.15 (standard), 0.20 (strict)
+    #   DOWNSIDE: Different diseases have different gene distributions
+    #   - Acne data: max logfc=0.369, so 0.10 gives 29 genes
+    #   - Arthritis data: max logfc=0.302, so 0.10 gives 32 genes
+    #   - Glaucoma data: max logfc=0.282, so 0.10 gives 27 genes
+    logfc_cutoff: null
+    
+    # Option 2: Percentile-based filtering (RECOMMENDED - disease-adaptive)
+    #   Keeps the top N% of genes by absolute logFC within each disease
+    #   This ensures consistent gene set size relative to each disease's distribution
+    #   ADVANTAGE: Adapts to each disease's actual data distribution
+    percentile_filtering:
+      enabled: true
+      threshold: 25  # Keep top 75% of genes by |logFC| per disease
     
     # Column name for p-values/adjusted p-values in YOUR disease file
     # Set to null to skip p-value filtering (use fold-change only)
@@ -121,13 +134,13 @@ default:
     sweep_auto_grid: true
     
     # Step size for auto-generated cutoffs (e.g., 0.1 means 0.5, 0.6, 0.7...)
-    sweep_step: 0.1
+    sweep_step: 0.05
     
     # Minimum fraction of genes required at each cutoff (e.g., 0.20 = 20%)
     sweep_min_frac: 0.20
     
     # Minimum absolute number of genes required at each cutoff
-    sweep_min_genes: 200
+    sweep_min_genes: 5
     
     # Stop sweep if signature becomes too small
     sweep_stop_on_small: false
@@ -152,341 +165,461 @@ default:
     weights: null
 
 
-# Strict p-value threshold profile
-Endothelial_Strict:
+# ============================================================================
+# ACNE PROFILES (CMAP Database)
+# ============================================================================
+
+# Lenient fold-change threshold profile for Acne
+CMAP_Acne_Lenient:
   paths:
     signatures: "data/drug_signatures/cmap_signatures.RData"
-    disease_file: "data/disease_signatures/Endothelia_DEG.csv"
+    disease_file: "data/disease_signatures/acne_signature.csv"
     drug_meta: "data/drug_signatures/cmap_drug_experiments_new.csv"
     drug_valid: "data/drug_signatures/cmap_valid_instances.csv"
     out_dir: "results"
-  params:
-    gene_key: "SYMBOL"
-    logfc_cols_pref: "avg_log2FC"
-    logfc_cutoff: 0.25
-    pval_key: p_val_adj
-    pval_cutoff: 0.05
-    q_thresh: 0.05
-    reversal_only: true
-    seed: 123
-    mode: "single"
-
-# Standard p-value threshold profile
-Endothelial_Standard:
-  paths:
-    signatures: "data/drug_signatures/cmap_signatures.RData"
-    disease_file: "data/disease_signatures/Endothelia_DEG.csv"
-    drug_meta: "data/drug_signatures/cmap_drug_experiments_new.csv"
-    drug_valid: "data/drug_signatures/cmap_valid_instances.csv"
-    out_dir: "results"
-  params:
-    gene_key: "SYMBOL"
-    logfc_cols_pref: "avg_log2FC"
-    logfc_cutoff: 0.5
-    pval_key: p_val_adj
-    pval_cutoff: 0.05
-    q_thresh: 0.05
-    reversal_only: true
-    seed: 123
-    mode: "single"
-
-# Lenient p-value threshold profile
-Endothelial_Lenient:
-  paths:
-    signatures: "data/drug_signatures/cmap_signatures.RData"
-    disease_file: "data/disease_signatures/Endothelia_DEG.csv"
-    drug_meta: "data/drug_signatures/cmap_drug_experiments_new.csv"
-    drug_valid: "data/drug_signatures/cmap_valid_instances.csv"
-    out_dir: "results"
-  params:
-    gene_key: "SYMBOL"
-    logfc_cols_pref: "avg_log2FC"
-    logfc_cutoff: 1       
-    pval_key: p_val_adj
-    pval_cutoff: 0.05
-    q_thresh: 0.05
-    reversal_only: true
-    seed: 123
-    mode: "single"
-
-
-CoreFibroid_logFC_0.25:
-  paths:
-    signatures: "data/drug_signatures/cmap_signatures.RData"
-    disease_file: "data/disease_signatures/CoreFibroidSignature_All_Datasets.csv"
-    drug_meta: "data/drug_signatures/cmap_drug_experiments_new.csv"
-    drug_valid: "data/drug_signatures/cmap_valid_instances.csv"
-    out_dir: "results"
-  params:
-    gene_key: "SYMBOL"
-    logfc_cols_pref: "log2FC"
-    logfc_cutoff: 0.25
-    pval_key: null           # Column name for p-values (e.g., "p_val_adj", "FDR"). Set to null to skip p-value filtering
-    pval_cutoff: 0.05        # P-value threshold for filtering genes (only used if pval_key is not null)
-    q_thresh: 0.05
-    reversal_only: true
-    seed: 123
-    mode: "single"
-    sweep_cutoffs: null
-    sweep_min_frac: 0.20
-    sweep_min_genes: 200
-    combine_log2fc: "average"
-    robust_rule: "all"
-    robust_k: null
-    aggregate: "mean"
-    weights: null
-
-CoreFibroid_logFC_0.5:
-  paths:
-    signatures: "data/drug_signatures/cmap_signatures.RData"
-    disease_file: "data/disease_signatures/CoreFibroidSignature_All_Datasets.csv"
-    drug_meta: "data/drug_signatures/cmap_drug_experiments_new.csv"
-    drug_valid: "data/drug_signatures/cmap_valid_instances.csv"
-    out_dir: "results"
-  params:
-    gene_key: "SYMBOL"
-    logfc_cols_pref: "log2FC"
-    logfc_cutoff: 0.5        # More lenient: lower fold-change cutoff
-    pval_key: null           # Column name for p-values (e.g., "p_val_adj", "FDR"). Set to null to skip p-value filtering
-    pval_cutoff: 0.05        # P-value threshold for filtering genes (only used if pval_key is not null)
-    q_thresh: 0.05
-    reversal_only: true
-    seed: 123
-    mode: "single"
-    sweep_cutoffs: null
-    sweep_min_frac: 0.20
-    sweep_min_genes: 200
-    combine_log2fc: "average"
-    robust_rule: "all"
-    robust_k: null
-    aggregate: "mean"
-    weights: null
-
-CoreFibroid_logFC_1:
-  paths:
-    signatures: "data/drug_signatures/cmap_signatures.RData"
-    disease_file: "data/disease_signatures/CoreFibroidSignature_All_Datasets.csv"
-    drug_meta: "data/drug_signatures/cmap_drug_experiments_new.csv"
-    drug_valid: "data/drug_signatures/cmap_valid_instances.csv"
-    out_dir: "results"
-  params:
-    gene_key: "SYMBOL"
-    logfc_cols_pref: "log2FC"
-    logfc_cutoff: 1        # More stringent: higher fold-change cutoff
-    pval_key: null           # Column name for p-values (e.g., "p_val_adj", "FDR"). Set to null to skip p-value filtering
-    pval_cutoff: 0.05        # P-value threshold for filtering genes (only used if pval_key is not null)
-    q_thresh: 0.05
-    reversal_only: true
-    seed: 123
-    mode: "single"
-    sweep_cutoffs: null
-    sweep_min_frac: 0.20
-    sweep_min_genes: 200
-    combine_log2fc: "average"
-    robust_rule: "all"
-    robust_k: null
-    aggregate: "mean"
-    weights: null
-
-# Example sweep mode profile - tests multiple cutoffs for robust results
-Sweep_CoreFibroid:
-  paths:
-    signatures: "data/drug_signatures/cmap_signatures.RData"
-    disease_file: "data/disease_signatures/CoreFibroidSignature_All_Datasets.csv"
-    drug_meta: "data/drug_signatures/cmap_drug_experiments_new.csv"
-    drug_valid: "data/drug_signatures/cmap_valid_instances.csv"
-    out_dir: "results"
-  params:
-    gene_key: "SYMBOL"
-    logfc_cols_pref: "log2FC"
-    logfc_cutoff: 1              # Base cutoff (not used in sweep mode)
-    pval_key: null               # Column name for p-values (e.g., "p_val_adj", "FDR"). Set to null to skip p-value filtering
-    pval_cutoff: 0.05            # P-value threshold for filtering genes (only used if pval_key is not null)
-    q_thresh: 0.05
-    reversal_only: true
-    seed: 123
-    # Sweep mode configuration
-    mode: "sweep"                # Enable sweep mode
-    sweep_cutoffs: null          # Let auto-derive from data
-    sweep_auto_grid: true        # Auto-derive threshold grid
-    sweep_step: 0.6             # Step size for auto-grid
-    sweep_min_frac: 0.10         # Minimum 10% of genes
-    sweep_min_genes: 150         # Minimum 150 genes
-    sweep_stop_on_small: false   # Continue sweep even if signature becomes small
-    combine_log2fc: "average"    # Average multiple log2FC columns
-    robust_rule: "k_of_n"        # Require presence in k of n cutoffs
-    robust_k: 2                  # Must appear in at least 2 cutoffs
-    aggregate: "median"          # Use median for aggregation
-    weights: null                # No weighting
-
-
-
-# Sample TAHOE analysis profile
-Tahoe_Chronic_granulomatous_disease_0.00:
-  paths:
-    # TAHOE drug reference signatures database
-    signatures: "data/drug_signatures/tahoe_signatures.RData"
-    
-    # Disease gene expression signature (using available CoreFibroid data)
-    disease_file: "data/disease_signatures/CoreFibroidSignature_All_Datasets.csv"
-    
-    # TAHOE drug metadata
-    drug_meta: "data/drug_signatures/tahoe_drug_experiments_new.csv"
-    
-    # TAHOE valid instances list (null - no filtering, matches batch script)
-    drug_valid: null
-    
-    # Output directory
-    out_dir: "results"
-    
-  params:
-    gene_key: "SYMBOL"
-    logfc_cols_pref: "log2FC"
-    logfc_cutoff: 0.0
-    pval_key: null
-    pval_cutoff: 0.05
-    q_thresh: 0.5
-    reversal_only: true
-    seed: 123
-    analysis_id: "tahoe"
-    mode: "single"
-    sweep_cutoffs: null
-    sweep_min_frac: 0.20
-    sweep_min_genes: 200
-    combine_log2fc: "average"
-    robust_rule: "all"
-    robust_k: null
-    aggregate: "mean"
-    weights: null
-
-
-# TAHOE analysis profile for Fibroids
-Tahoe_CoreFibroid:
-  paths:
-    # TAHOE drug reference signatures database
-    signatures: "data/drug_signatures/tahoe_signatures.RData"
-    
-    # Disease gene expression signature for fibroids
-    disease_file: "data/disease_signatures/CoreFibroidSignature_All_Datasets.csv"
-    
-    # TAHOE drug metadata
-    drug_meta: "data/drug_signatures/tahoe_drug_experiments_new.csv"
-    
-    # TAHOE valid instances list (null - no filtering, matches batch script)
-    drug_valid: null
-    
-    # Output directory
-    out_dir: "results"
-    
-  params:
-    gene_key: "SYMBOL"
-    logfc_cols_pref: "log2FC"
-    logfc_cutoff: 0.5
-    pval_key: null
-    pval_cutoff: 0.05
-    q_thresh: 0.5
-    reversal_only: true
-    seed: 123
-    analysis_id: "tahoe"
-    mode: "single"
-    sweep_cutoffs: null
-    sweep_min_frac: 0.20
-    sweep_min_genes: 200
-    combine_log2fc: "average"
-    robust_rule: "all"
-    robust_k: null
-    aggregate: "mean"
-    weights: null
-
-
-
-# TAHOE analysis profile for Eczema (CREEDS)
-Tahoe_Eczema_creeds:
-  paths:
-    signatures: "data/drug_signatures/tahoe_signatures.RData"
-    disease_file: "data/disease_signatures/Eczema_creeds_signature.csv"
-    drug_meta: "data/drug_signatures/tahoe_drug_experiments_new.csv"
-    drug_valid: null
-    out_dir: "results"
-    
   params:
     gene_key: "gene_symbol"
     logfc_cols_pref: "logfc_dz"
-    logfc_cutoff: 0.0
+    gene_conversion_table: "data/gene_id_conversion_table.tsv"
+    logfc_cutoff: 0.033  # Lenient: ~187 genes (top 50%)
+    percentile_filtering:
+      enabled: false
+      threshold: 25
     pval_key: null
     pval_cutoff: 0.05
-    q_thresh: 0.5
-    reversal_only: true
-    seed: 123
-    analysis_id: "tahoe"
-    mode: "single"
-    sweep_cutoffs: null
-    sweep_min_frac: 0.20
-    sweep_min_genes: 200
-    combine_log2fc: "average"
-    robust_rule: "all"
-    robust_k: null
-    aggregate: "mean"
-    weights: null
-
-
-# CMAP analysis profile for Eczema (CREEDS)
-CMAP_Eczema_creeds:
-  paths:
-    signatures: "data/drug_signatures/cmap_signatures.RData"
-    disease_file: "data/disease_signatures/Eczema_creeds_signature.csv"
-    drug_meta: "data/drug_signatures/cmap_drug_experiments_new.csv"
-    # CMAP valid instances list - use specific file or null for no filtering
-    drug_valid: "data/drug_signatures/cmap_valid_instances_OG_015.csv"
-    out_dir: "results"
-    
-  params:
-    gene_key: "gene_symbol"
-    logfc_cols_pref: "logfc_dz"
-    logfc_cutoff: 0.0
-    pval_key: null
-    pval_cutoff: 0.05
-    q_thresh: 0.5
-    reversal_only: true
-    seed: 123
-    analysis_id: "cmap"
-    mode: "single"
-    sweep_cutoffs: null
-    sweep_min_frac: 0.20
-    sweep_min_genes: 200
-    combine_log2fc: "average"
-    robust_rule: "all"
-    robust_k: null
-    aggregate: "mean"
-    weights: null
-
-
-# Production profile template (customize paths/thresholds as needed)
-production:
-  paths:
-    signatures: "/data/cmap_signatures.RData"
-    disease_dir: "/data/disease/"
-    disease_pattern: "Fibroid.*\\.csv"
-    drug_meta: "/data/cmap_drug_experiments_new.csv"
-    drug_valid: "/data/cmap_valid_instances.csv"
-    out_dir: "/results/drugrep"
-  params:
-    gene_key: "SYMBOL"
-    logfc_cols_pref: "log2FC"
-    logfc_cutoff: 1
-    pval_key: null               # Column name for p-values (e.g., "p_val_adj", "FDR"). Set to null to skip p-value filtering
-    pval_cutoff: 0.05            # P-value threshold for filtering genes (only used if pval_key is not null)
     q_thresh: 0.05
     reversal_only: true
     seed: 123
     mode: "single"
-    sweep_cutoffs: null
-    sweep_min_frac: 0.20
-    sweep_min_genes: 200
+
+# Standard fold-change threshold profile for Acne
+CMAP_Acne_Standard:
+  paths:
+    signatures: "data/drug_signatures/cmap_signatures.RData"
+    disease_file: "data/disease_signatures/acne_signature.csv"
+    drug_meta: "data/drug_signatures/cmap_drug_experiments_new.csv"
+    drug_valid: "data/drug_signatures/cmap_valid_instances.csv"
+    out_dir: "results"
+  params:
+    gene_key: "gene_symbol"
+    logfc_cols_pref: "logfc_dz"
+    gene_conversion_table: "data/gene_id_conversion_table.tsv"
+    logfc_cutoff: 0.051  # Standard: ~94 genes (top 25%)
+    percentile_filtering:
+      enabled: false
+      threshold: 50
+    pval_key: null
+    pval_cutoff: 0.05
+    q_thresh: 0.05
+    reversal_only: true
+    seed: 123
+    mode: "single"
+
+# Strict fold-change threshold profile for Acne
+CMAP_Acne_Strict:
+  paths:
+    signatures: "data/drug_signatures/cmap_signatures.RData"
+    disease_file: "data/disease_signatures/acne_signature.csv"
+    drug_meta: "data/drug_signatures/cmap_drug_experiments_new.csv"
+    drug_valid: "data/drug_signatures/cmap_valid_instances.csv"
+    out_dir: "results"
+  params:
+    gene_key: "gene_symbol"
+    logfc_cols_pref: "logfc_dz"
+    gene_conversion_table: "data/gene_id_conversion_table.tsv"
+    logfc_cutoff: 0.07  # Strict: ~56 genes
+    pval_key: null
+    pval_cutoff: 0.05
+    q_thresh: 0.05
+    reversal_only: true
+    seed: 123
+    mode: "single"
+
+# Sweep mode profile for Acne - tests multiple fold-change cutoffs
+CMAP_Acne_Sweep:
+  paths:
+    signatures: "data/drug_signatures/cmap_signatures.RData"
+    disease_file: "data/disease_signatures/acne_signature.csv"
+    drug_meta: "data/drug_signatures/cmap_drug_experiments_new.csv"
+    drug_valid: "data/drug_signatures/cmap_valid_instances.csv"
+    out_dir: "results"
+  params:
+    gene_key: "gene_symbol"
+    logfc_cols_pref: "logfc_dz"
+    gene_conversion_table: "data/gene_id_conversion_table.tsv"
+    
+    # Optimized for acne data (max |logFC| = 0.202)
+    # Smaller step = more cutoffs with intermediate gene counts
+    logfc_cutoff: 0.0
+    
+    percentile_filtering:
+      enabled: false
+      threshold: 25
+    
+    pval_key: null
+    pval_cutoff: 0.05
+    q_thresh: 0.05
+    reversal_only: true
+    seed: 123
+    mode: "sweep"
     combine_log2fc: "average"
-    robust_rule: "all"
-    robust_k: null
-    aggregate: "mean"
+    sweep_auto_grid: true
+    sweep_step: 0.033            # Gives ~6 cutoffs: 0, 0.033, 0.066, 0.099, 0.132, 0.165, 0.198
+    sweep_min_frac: 0.01
+    sweep_min_genes: 10          # Need at least 10 genes for statistical power
+    sweep_stop_on_small: false
+    robust_rule: "k_of_n"
+    robust_k: 2                  # Drug must appear in at least 2 cutoffs
+    aggregate: "median"
     weights: null
 
 
+# ============================================================================
+# ARTHRITIS PROFILES (CMAP Database)
+# ============================================================================
+
+# Lenient fold-change threshold profile for Arthritis
+CMAP_Arthritis_Lenient:
+  paths:
+    signatures: "data/drug_signatures/cmap_signatures.RData"
+    disease_file: "data/disease_signatures/arthritis_signature.csv"
+    drug_meta: "data/drug_signatures/cmap_drug_experiments_new.csv"
+    drug_valid: "data/drug_signatures/cmap_valid_instances.csv"
+    out_dir: "results"
+  params:
+    gene_key: "gene_symbol"
+    logfc_cols_pref: "logfc_dz"
+    gene_conversion_table: "data/gene_id_conversion_table.tsv"
+    logfc_cutoff: 0.024  # Lenient: ~443 genes (top 50%)
+    percentile_filtering:
+      enabled: false
+      threshold: 25
+    pval_key: null
+    pval_cutoff: 0.05
+    q_thresh: 0.05
+    reversal_only: true
+    seed: 123
+    mode: "single"
+
+# Standard fold-change threshold profile for Arthritis
+CMAP_Arthritis_Standard:
+  paths:
+    signatures: "data/drug_signatures/cmap_signatures.RData"
+    disease_file: "data/disease_signatures/arthritis_signature.csv"
+    drug_meta: "data/drug_signatures/cmap_drug_experiments_new.csv"
+    drug_valid: "data/drug_signatures/cmap_valid_instances.csv"
+    out_dir: "results"
+  params:
+    gene_key: "gene_symbol"
+    logfc_cols_pref: "logfc_dz"
+    gene_conversion_table: "data/gene_id_conversion_table.tsv"
+    logfc_cutoff: 0.028  # Standard: ~222 genes (top 25%)
+    percentile_filtering:
+      enabled: false
+      threshold: 75
+    pval_key: null
+    pval_cutoff: 0.05
+    q_thresh: 0.05
+    reversal_only: true
+    seed: 123
+    mode: "single"
+
+# Strict fold-change threshold profile for Arthritis
+CMAP_Arthritis_Strict:
+  paths:
+    signatures: "data/drug_signatures/cmap_signatures.RData"
+    disease_file: "data/disease_signatures/arthritis_signature.csv"
+    drug_meta: "data/drug_signatures/cmap_drug_experiments_new.csv"
+    drug_valid: "data/drug_signatures/cmap_valid_instances.csv"
+    out_dir: "results"
+  params:
+    gene_key: "gene_symbol"
+    logfc_cols_pref: "logfc_dz"
+    gene_conversion_table: "data/gene_id_conversion_table.tsv"
+    logfc_cutoff: 0.04  # Strict: ~133 genes
+    pval_key: null
+    pval_cutoff: 0.05
+    q_thresh: 0.05
+    reversal_only: true
+    seed: 123
+    mode: "single"
+
+
+# ============================================================================
+# GLAUCOMA PROFILES (CMAP Database)
+# ============================================================================
+
+# Lenient fold-change threshold profile for Glaucoma
+CMAP_Glaucoma_Lenient:
+  paths:
+    signatures: "data/drug_signatures/cmap_signatures.RData"
+    disease_file: "data/disease_signatures/glaucoma_signature.csv"
+    drug_meta: "data/drug_signatures/cmap_drug_experiments_new.csv"
+    drug_valid: "data/drug_signatures/cmap_valid_instances.csv"
+    out_dir: "results"
+  params:
+    gene_key: "gene_symbol"
+    logfc_cols_pref: "logfc_dz"
+    gene_conversion_table: "data/gene_id_conversion_table.tsv"
+    logfc_cutoff: 0.033  # Lenient: ~229 genes
+    pval_key: null
+    pval_cutoff: 0.05
+    q_thresh: 0.05
+    reversal_only: true
+    seed: 123
+    mode: "single"
+
+# Standard fold-change threshold profile for Glaucoma
+CMAP_Glaucoma_Standard:
+  paths:
+    signatures: "data/drug_signatures/cmap_signatures.RData"
+    disease_file: "data/disease_signatures/glaucoma_signature.csv"
+    drug_meta: "data/drug_signatures/cmap_drug_experiments_new.csv"
+    drug_valid: "data/drug_signatures/cmap_valid_instances.csv"
+    out_dir: "results"
+  params:
+    gene_key: "gene_symbol"
+    logfc_cols_pref: "logfc_dz"
+    gene_conversion_table: "data/gene_id_conversion_table.tsv"
+    logfc_cutoff: 0.047  # Standard: ~115 genes (top 25%)
+    percentile_filtering:
+      enabled: false
+      threshold: 75
+    pval_key: null
+    pval_cutoff: 0.05
+    q_thresh: 0.05
+    reversal_only: true
+    seed: 123
+    mode: "single"
+
+# Strict fold-change threshold profile for Glaucoma
+CMAP_Glaucoma_Strict:
+  paths:
+    signatures: "data/drug_signatures/cmap_signatures.RData"
+    disease_file: "data/disease_signatures/glaucoma_signature.csv"
+    drug_meta: "data/drug_signatures/cmap_drug_experiments_new.csv"
+    drug_valid: "data/drug_signatures/cmap_valid_instances.csv"
+    out_dir: "results"
+  params:
+    gene_key: "gene_symbol"
+    logfc_cols_pref: "logfc_dz"
+    gene_conversion_table: "data/gene_id_conversion_table.tsv"
+    logfc_cutoff: 0.06  # Strict: ~69 genes
+    pval_key: null
+    pval_cutoff: 0.05
+    q_thresh: 0.05
+    reversal_only: true
+    seed: 123
+    mode: "single"
+
+
+# ============================================================================
+# TAHOE PROFILES (TAHOE Drug Signature Database)
+# ============================================================================
+
+# Lenient fold-change threshold profile for Acne (TAHOE)
+TAHOE_Acne_Lenient:
+  paths:
+    signatures: "data/drug_signatures/tahoe_signatures.RData"
+    disease_file: "data/disease_signatures/acne_signature.csv"
+    drug_meta: "data/drug_signatures/tahoe_drug_experiments_new.csv"
+    drug_valid: null
+    out_dir: "results"
+  params:
+    gene_key: "gene_symbol"
+    logfc_cols_pref: "logfc_dz"
+    gene_conversion_table: "data/gene_id_conversion_table.tsv"
+    logfc_cutoff: null
+    percentile_filtering:
+      enabled: true
+      threshold: 25  # Keep top 75% of genes by |logFC|
+    pval_key: null
+    pval_cutoff: 0.05
+    q_thresh: 0.05
+    reversal_only: true
+    seed: 123
+    mode: "single"
+
+# Standard fold-change threshold profile for Acne (TAHOE)
+TAHOE_Acne_Standard:
+  paths:
+    signatures: "data/drug_signatures/tahoe_signatures.RData"
+    disease_file: "data/disease_signatures/acne_signature.csv"
+    drug_meta: "data/drug_signatures/tahoe_drug_experiments_new.csv"
+    drug_valid: null
+    out_dir: "results"
+  params:
+    gene_key: "gene_symbol"
+    logfc_cols_pref: "logfc_dz"
+    gene_conversion_table: "data/gene_id_conversion_table.tsv"
+    logfc_cutoff: null
+    percentile_filtering:
+      enabled: true
+      threshold: 50  # Keep top 50% of genes by |logFC|
+    pval_key: null
+    pval_cutoff: 0.05
+    q_thresh: 0.05
+    reversal_only: true
+    seed: 123
+    mode: "single"
+
+# Strict fold-change threshold profile for Acne (TAHOE)
+TAHOE_Acne_Strict:
+  paths:
+    signatures: "data/drug_signatures/tahoe_signatures.RData"
+    disease_file: "data/disease_signatures/acne_signature.csv"
+    drug_meta: "data/drug_signatures/tahoe_drug_experiments_new.csv"
+    drug_valid: null
+    out_dir: "results"
+  params:
+    gene_key: "gene_symbol"
+    logfc_cols_pref: "logfc_dz"
+    gene_conversion_table: "data/gene_id_conversion_table.tsv"
+    logfc_cutoff: null
+    percentile_filtering:
+      enabled: true
+      threshold: 75  # Keep top 25% of genes by |logFC|
+    pval_key: null
+    pval_cutoff: 0.05
+    q_thresh: 0.05
+    reversal_only: true
+    seed: 123
+    mode: "single"
+
+# Lenient fold-change threshold profile for Arthritis (TAHOE)
+TAHOE_Arthritis_Lenient:
+  paths:
+    signatures: "data/drug_signatures/tahoe_signatures.RData"
+    disease_file: "data/disease_signatures/arthritis_signature.csv"
+    drug_meta: "data/drug_signatures/tahoe_drug_experiments_new.csv"
+    drug_valid: null
+    out_dir: "results"
+  params:
+    gene_key: "gene_symbol"
+    logfc_cols_pref: "logfc_dz"
+    gene_conversion_table: "data/gene_id_conversion_table.tsv"
+    logfc_cutoff: null
+    percentile_filtering:
+      enabled: true
+      threshold: 25  # Keep top 75% of genes by |logFC|
+    pval_key: null
+    pval_cutoff: 0.05
+    q_thresh: 0.05
+    reversal_only: true
+    seed: 123
+    mode: "single"
+
+# Standard fold-change threshold profile for Arthritis (TAHOE)
+TAHOE_Arthritis_Standard:
+  paths:
+    signatures: "data/drug_signatures/tahoe_signatures.RData"
+    disease_file: "data/disease_signatures/arthritis_signature.csv"
+    drug_meta: "data/drug_signatures/tahoe_drug_experiments_new.csv"
+    drug_valid: null
+    out_dir: "results"
+  params:
+    gene_key: "gene_symbol"
+    logfc_cols_pref: "logfc_dz"
+    gene_conversion_table: "data/gene_id_conversion_table.tsv"
+    logfc_cutoff: null
+    percentile_filtering:
+      enabled: true
+      threshold: 50  # Keep top 50% of genes by |logFC|
+    pval_key: null
+    pval_cutoff: 0.05
+    q_thresh: 0.05
+    reversal_only: true
+    seed: 123
+    mode: "single"
+
+# Strict fold-change threshold profile for Arthritis (TAHOE)
+TAHOE_Arthritis_Strict:
+  paths:
+    signatures: "data/drug_signatures/tahoe_signatures.RData"
+    disease_file: "data/disease_signatures/arthritis_signature.csv"
+    drug_meta: "data/drug_signatures/tahoe_drug_experiments_new.csv"
+    drug_valid: null
+    out_dir: "results"
+  params:
+    gene_key: "gene_symbol"
+    logfc_cols_pref: "logfc_dz"
+    gene_conversion_table: "data/gene_id_conversion_table.tsv"
+    logfc_cutoff: null
+    percentile_filtering:
+      enabled: true
+      threshold: 75  # Keep top 25% of genes by |logFC|
+    pval_key: null
+    pval_cutoff: 0.05
+    q_thresh: 0.05
+    reversal_only: true
+    seed: 123
+    mode: "single"
+
+# Lenient fold-change threshold profile for Glaucoma (TAHOE)
+TAHOE_Glaucoma_Lenient:
+  paths:
+    signatures: "data/drug_signatures/tahoe_signatures.RData"
+    disease_file: "data/disease_signatures/glaucoma_signature.csv"
+    drug_meta: "data/drug_signatures/tahoe_drug_experiments_new.csv"
+    drug_valid: null
+    out_dir: "results"
+  params:
+    gene_key: "gene_symbol"
+    logfc_cols_pref: "logfc_dz"
+    gene_conversion_table: "data/gene_id_conversion_table.tsv"
+    logfc_cutoff: null
+    percentile_filtering:
+      enabled: true
+      threshold: 25  # Keep top 75% of genes by |logFC|
+    pval_key: null
+    pval_cutoff: 0.05
+    q_thresh: 0.05
+    reversal_only: true
+    seed: 123
+    mode: "single"
+
+# Standard fold-change threshold profile for Glaucoma (TAHOE)
+TAHOE_Glaucoma_Standard:
+  paths:
+    signatures: "data/drug_signatures/tahoe_signatures.RData"
+    disease_file: "data/disease_signatures/glaucoma_signature.csv"
+    drug_meta: "data/drug_signatures/tahoe_drug_experiments_new.csv"
+    drug_valid: null
+    out_dir: "results"
+  params:
+    gene_key: "gene_symbol"
+    logfc_cols_pref: "logfc_dz"
+    gene_conversion_table: "data/gene_id_conversion_table.tsv"
+    logfc_cutoff: null
+    percentile_filtering:
+      enabled: true
+      threshold: 50  # Keep top 50% of genes by |logFC|
+    pval_key: null
+    pval_cutoff: 0.05
+    q_thresh: 0.05
+    reversal_only: true
+    seed: 123
+    mode: "single"
+
+# Strict fold-change threshold profile for Glaucoma (TAHOE)
+TAHOE_Glaucoma_Strict:
+  paths:
+    signatures: "data/drug_signatures/tahoe_signatures.RData"
+    disease_file: "data/disease_signatures/glaucoma_signature.csv"
+    drug_meta: "data/drug_signatures/tahoe_drug_experiments_new.csv"
+    drug_valid: null
+    out_dir: "results"
+  params:
+    gene_key: "gene_symbol"
+    logfc_cols_pref: "logfc_dz"
+    gene_conversion_table: "data/gene_id_conversion_table.tsv"
+    logfc_cutoff: null
+    percentile_filtering:
+      enabled: true
+      threshold: 75  # Keep top 25% of genes by |logFC|
+    pval_key: null
+    pval_cutoff: 0.05
+    q_thresh: 0.05
+    reversal_only: true
+    seed: 123
+    mode: "single"

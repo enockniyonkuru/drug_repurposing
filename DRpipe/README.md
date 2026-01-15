@@ -22,7 +22,9 @@
 ### 1.1 Features
 
 **Data Processing:**
-- Clean and filter differential expression (DEG) tables
+- Clean and filter differential expression (DEG) tables with two methods:
+  - **Fixed cutoff**: Traditional |logFC| > threshold filtering
+  - **Percentile-based (NEW)**: Data-adaptive filtering keeping top N% of genes
 - Map gene symbols to Entrez IDs using g:Profiler
 - Generate null score distributions using random gene sets
 - Compute connectivity (reversal) scores against drug signature databases (CMap and TAHOE)
@@ -35,6 +37,12 @@
 - Summarize overlaps across multiple datasets
 - Generate UpSet plots and intersection analyses
 - Export annotated results to CSV and Excel formats
+
+**Percentile-Based Gene Filtering (NEW):**
+- Automatically adapts filtering threshold to gene expression distribution
+- Formula: `quantile(abs(logFC), (100-threshold)/100)`
+- Supports both single and sweep mode analyses
+- Both "average" and "each" logFC combination methods
 
 ### 1.2 Package Structure
 
@@ -164,6 +172,49 @@ clean_table(
   db_gene_list          # Reference gene universe
 )
 ```
+
+#### `DRP$new()` - R6 Class Constructor with Percentile Filtering Support
+
+Creates a drug repurposing pipeline instance with optional percentile-based gene filtering.
+
+```r
+DRP$new(
+  signatures_rdata,              # Path to drug signatures RData file
+  disease_path,                  # Path to disease signature file(s)
+  disease_pattern = NULL,        # File name pattern to match disease files
+  cmap_meta_path = NULL,         # Path to CMap metadata CSV
+  cmap_valid_path = NULL,        # Path to CMap valid instances CSV
+  logfc_cutoff = 1,              # Fixed logFC threshold (percentile disabled)
+  percentile_filtering = NULL,   # NEW: list(enabled=T/F, threshold=numeric)
+  verbose = TRUE,                # Print progress messages
+  # ... other parameters
+)
+```
+
+**Gene Filtering Methods:**
+
+1. **Fixed Cutoff** (default):
+   ```r
+   # Keep genes with |logFC| > 1
+   DRP$new(..., logfc_cutoff = 1, 
+     percentile_filtering = list(enabled = FALSE, threshold = NULL))
+   ```
+
+2. **Percentile-Based (NEW)**:
+   ```r
+   # Keep top 50% of genes by |logFC|
+   DRP$new(..., logfc_cutoff = NULL,
+     percentile_filtering = list(enabled = TRUE, threshold = 50))
+   ```
+   - Calculates: `quantile(abs(logFC), (100-threshold)/100)`
+   - Adapts automatically to gene distribution
+   - When enabled, `logfc_cutoff` is ignored
+
+**Example (Acne, 373 raw genes):**
+- Fixed logFC=0.033: ~165 genes
+- 50th percentile (top 50%): ~187 genes
+- 75th percentile (top 25%): ~93 genes
+- 90th percentile (top 10%): ~37 genes
 
 #### `random_score()`
 Generates null distribution of connectivity scores.

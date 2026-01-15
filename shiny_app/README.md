@@ -246,11 +246,41 @@ Both analysis types support full sweep mode customization:
 - **Aggregation**: Select mean or median for score combination
 - **Combine log2FC**: Choose how to combine multiple log2FC columns
 
+### Gene Filtering Options
+
+The app supports two methods for gene filtering:
+
+#### 1. Fixed Cutoff Method
+- Uses a fixed absolute log fold-change threshold
+- Simple and interpretable
+- **Downside**: Different diseases have different gene distributions
+- Example: logFC > 0.033 keeps genes above this fixed threshold
+
+#### 2. Percentile-Based Filtering (NEW)
+- Filters genes dynamically based on the data distribution
+- Selects the top N% of genes by absolute log fold-change
+- **Advantage**: Adapts automatically to each disease's gene expression distribution
+- **Example**: 50th percentile keeps top 50% of genes by |logFC|
+
+**How to use:**
+- Each profile has a **"Use Percentile Filtering"** toggle switch
+- When **OFF**: Use fixed logFC cutoff value
+- When **ON**: Use percentile-based filtering (threshold slider 1-99%)
+- Calculation: `quantile(abs(logFC), (100-threshold)/100)`
+
+**Example (Acne with 373 genes):**
+- Fixed logFC cutoff (0.033): ~165 genes
+- 50th percentile (top 50%): ~187 genes  
+- 75th percentile (top 25%): ~93 genes
+
 ### Standard Workflow
 
 1. **Choose Analysis Type** - Select Single or Comparative analysis
 2. **Upload Data** - Upload disease gene expression CSV or load examples
 3. **Configure** - Create custom profiles or select existing ones
+   - Choose between fixed logFC cutoff or percentile-based filtering
+   - For percentile: select threshold (1-99%)
+   - For fixed cutoff: enter minimum absolute logFC value
 4. **Run Analysis** - Execute pipeline with real-time progress tracking
 5. **View Results** - Explore drug candidates with interactive tables
 6. **Visualizations** - Analyze results with dynamic plots
@@ -308,10 +338,11 @@ MYC,3.2,3.0,0.0001
 
 ### Example Data
 
-Two example datasets are included to test the application:
+Three example datasets are included to test the application:
 
-1. **Fibroid Example** - Core fibroid signature across datasets
-2. **Endothelial Example** - Endothelial cell DEG data
+1. **Acne** - Acne disease gene expression signature
+2. **Arthritis** - Arthritis disease gene expression signature
+3. **Glaucoma** - Glaucoma disease gene expression signature
 
 Load these from the Upload Data tab without providing your own file.
 

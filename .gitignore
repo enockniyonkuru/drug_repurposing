@@ -167,3 +167,6 @@ DRpipe_*.tar.gz
 !scripts/data/cmap_valid_instances.csv
 !scripts/data/CoreFibroidSignature_All_Datasets.csv
 !scripts/data/README.md
+
+# Large data files (exceeds GitHub 100MB limit)
+scripts/data/drug_signatures/tahoe_signatures.rds

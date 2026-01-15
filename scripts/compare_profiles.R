@@ -42,12 +42,13 @@ run_profile <- function(profile_name, config_file) {
     signatures_rdata = cfg$paths$signatures,
     disease_path     = cfg$paths$disease_file %||% cfg$paths$disease_dir,
     disease_pattern  = if (is.null(cfg$paths$disease_file)) cfg$paths$disease_pattern else NULL,
-    cmap_meta_path   = cfg$paths$cmap_meta,
-    cmap_valid_path  = cfg$paths$cmap_valid,
+    cmap_meta_path   = cfg$paths$drug_meta %||% cfg$paths$cmap_meta,
+    cmap_valid_path  = cfg$paths$drug_valid %||% cfg$paths$cmap_valid,
     out_dir          = out,
     gene_key         = cfg$params$gene_key %||% "SYMBOL",
     logfc_cols_pref  = cfg$params$logfc_cols_pref %||% "log2FC",
     logfc_cutoff     = cfg$params$logfc_cutoff %||% 1,
+    percentile_filtering = cfg$params$percentile_filtering,
     q_thresh         = cfg$params$q_thresh %||% 0.05,
     reversal_only    = isTRUE(cfg$params$reversal_only %||% TRUE),
     seed             = cfg$params$seed %||% 123,
@@ -127,22 +128,49 @@ if (length(drugs_list) == 0) {
 # Step 3: Filter for valid instances
 cat("Filtering for valid drug instances...\n")
 
-# Load CMAP metadata
-cmap_experiments <- read.csv(profile_results[[1]]$config$paths$cmap_meta, stringsAsFactors = FALSE)
-valid_instances <- read.csv(profile_results[[1]]$config$paths$cmap_valid, stringsAsFactors = FALSE)
-
-# Merge and filter valid experiments
-cmap_experiments_valid <- merge(cmap_experiments, valid_instances, by = "id")
-cmap_experiments_valid <- subset(cmap_experiments_valid, valid == 1 & DrugBank.ID != "NULL")
-
-# Apply filtering to each profile's results
-drugs_filtered <- lapply(drugs_list, function(x) {
-  if (nrow(x) > 0) {
-    valid_instance(x, cmap_experiments_valid)
+# Get first profile's config to load metadata
+first_profile <- names(profile_results)[1]
+if (is.null(first_profile) || !exists("first_profile")) {
+  warning("No valid profiles found. Skipping filtering.")
+  drugs_filtered <- drugs_list
+} else {
+  first_config <- profile_results[[first_profile]]$config
+  
+  # Load CMAP metadata if paths are available
+  cmap_meta_path <- first_config$paths$drug_meta %||% first_config$paths$cmap_meta
+  cmap_valid_path <- first_config$paths$drug_valid %||% first_config$paths$cmap_valid
+  
+  if (!is.null(cmap_meta_path) && file.exists(cmap_meta_path)) {
+    cmap_experiments <- read.csv(cmap_meta_path, stringsAsFactors = FALSE)
+    
+    if (!is.null(cmap_valid_path) && file.exists(cmap_valid_path)) {
+      valid_instances <- read.csv(cmap_valid_path, stringsAsFactors = FALSE)
+      
+      # Merge and filter valid experiments
+      cmap_experiments_valid <- merge(cmap_experiments, valid_instances, by = "id")
+      cmap_experiments_valid <- subset(cmap_experiments_valid, valid == 1 & DrugBank.ID != "NULL")
+      
+      # Apply filtering to each profile's results
+      drugs_filtered <- lapply(drugs_list, function(x) {
+        if (nrow(x) > 0) {
+          merged <- merge(x, cmap_experiments_valid, by.x = "exp_id", by.y = "id", all.x = FALSE)
+          if ("name" %in% names(merged)) {
+            merged <- merged[!is.na(merged$name) & merged$name != "", ]
+          }
+          merged
+        } else {
+          x
+        }
+      })
+    } else {
+      cat("Warning: CMap valid instances file not found\n")
+      drugs_filtered <- drugs_list
+    }
   } else {
-    x
+    cat("Warning: CMap metadata file not found\n")
+    drugs_filtered <- drugs_list
   }
-})
+}
 
 # Step 4: Generate comparison visualizations
 cat("Generating comparison visualizations...\n")
