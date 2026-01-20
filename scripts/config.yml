@@ -7,11 +7,7 @@
 # Execution configuration - specify which profiles/operations to run
 execution:
   # Profile to use for runall.R (single profile execution)
-<<<<<<< HEAD
   runall_profile: "CMAP_Acne_Sweep"
-=======
-  runall_profile: "CMAP_Acne_Lenient"
->>>>>>> tahoe_analysis
 
   # Profiles to compare in compare_profiles.R
   compare_profiles: ["CMAP_Acne_Lenient", "CMAP_Acne_Standard", "CMAP_Acne_Strict"]
@@ -185,11 +181,7 @@ CMAP_Acne_Lenient:
     gene_key: "gene_symbol"
     logfc_cols_pref: "logfc_dz"
     gene_conversion_table: "data/gene_id_conversion_table.tsv"
-<<<<<<< HEAD
     logfc_cutoff: 0.033  # Lenient: ~187 genes (top 50%)
-=======
-    logfc_cutoff: 0.033 
->>>>>>> tahoe_analysis
     percentile_filtering:
       enabled: false
       threshold: 25
@@ -212,11 +204,7 @@ CMAP_Acne_Standard:
     gene_key: "gene_symbol"
     logfc_cols_pref: "logfc_dz"
     gene_conversion_table: "data/gene_id_conversion_table.tsv"
-<<<<<<< HEAD
     logfc_cutoff: 0.051  # Standard: ~94 genes (top 25%)
-=======
-    logfc_cutoff: 0.055  
->>>>>>> tahoe_analysis
     percentile_filtering:
       enabled: false
       threshold: 50
@@ -239,14 +227,10 @@ CMAP_Acne_Strict:
     gene_key: "gene_symbol"
     logfc_cols_pref: "logfc_dz"
     gene_conversion_table: "data/gene_id_conversion_table.tsv"
-<<<<<<< HEAD
     logfc_cutoff: 0.07  # Strict: ~56 genes
-=======
-    logfc_cutoff: 0.066  
     percentile_filtering:
       enabled: false
       threshold: 50
->>>>>>> tahoe_analysis
     pval_key: null
     pval_cutoff: 0.05
     q_thresh: 0.05
