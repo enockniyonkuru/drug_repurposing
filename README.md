@@ -1,8 +1,10 @@
-# Drug Repurposing Analysis Pipeline
+# Computational Drug Repurposing Pipeline (CDRpipe)
 
 A comprehensive R package and Shiny application for drug repurposing analysis using disease gene expression signatures and drug signature databases (Connectivity Map/CMap and TAHOE) to identify potential therapeutic compounds.
 
 This pipeline identifies existing drugs that could be repurposed for new therapeutic applications by analyzing their ability to reverse disease-associated gene expression patterns using drug signature databases including the Connectivity Map and TAHOE.
+
+**🌐 Access the Shiny App:** [www.cdrpipe.org](https://www.cdrpipe.org)
 
 ---
 
@@ -610,7 +612,7 @@ The app will open in your default web browser (typically at `http://127.0.0.1:XX
 
 #### Step 2: Upload Data
 - **Option A**: Upload your disease signature CSV file
-- **Option B**: Load example data (Fibroid or Endothelial)
+- **Option B**: Load example data (Acne, Arthritis, or Glaucoma)
 
 **Required CSV format:**
 ```csv
@@ -726,10 +728,14 @@ drug_repurposing/
 │   ├── runall.R                       # Single analysis script
 │   ├── compare_profiles.R             # Comparative analysis script
 │   ├── data/                          # Input data
-│   │   ├── cmap_signatures.RData      # (Download required)
-│   │   ├── cmap_drug_experiments_new.csv
-│   │   ├── cmap_valid_instances.csv
-│   │   └── CoreFibroidSignature_All_Datasets.csv
+│   │   ├── drug_signatures/           # Drug signature databases
+│   │   │   ├── cmap_signatures.RData  # (Download required)
+│   │   │   ├── cmap_drug_experiments_new.csv
+│   │   │   └── cmap_valid_instances.csv
+│   │   └── disease_signatures/        # Example disease signatures
+│   │       ├── acne_signature.csv
+│   │       ├── arthritis_signature.csv
+│   │       └── glaucoma_signature.csv
 │   └── results/                       # Output directory
 ├── shiny_app/                         # Shiny application
 │   ├── app.R                          # Main app file
@@ -817,21 +823,21 @@ MyProfileName:                         # ← Profile identifier (you choose this
 ```yaml
 # Execution settings
 execution:
-  runall_profile: "MyAnalysis"
-  compare_profiles: ["Lenient", "Standard", "Strict"]
+  runall_profile: "CMAP_Acne_Standard"
+  compare_profiles: ["CMAP_Acne_Lenient", "CMAP_Acne_Standard", "CMAP_Acne_Strict"]
 
 # Default profile (technical requirement - leave as-is)
 default:
   paths:
     signatures: "data/drug_signatures/cmap_signatures.RData"
-    disease_file: "data/disease_signatures/CoreFibroidSignature_All_Datasets.csv"
+    disease_file: "data/disease_signatures/acne_signature.csv"
     drug_meta: "data/drug_signatures/cmap_drug_experiments_new.csv"
     drug_valid: "data/drug_signatures/cmap_valid_instances.csv"
     out_dir: "results"
   params:
-    gene_key: "SYMBOL"
-    logfc_cols_pref: "log2FC"
-    logfc_cutoff: 1.0
+    gene_key: "gene_symbol"
+    logfc_cols_pref: "logfc_dz"
+    logfc_cutoff: 0.05
     pval_key: null
     pval_cutoff: 0.05
     q_thresh: 0.05
@@ -840,37 +846,36 @@ default:
     mode: "single"
     combine_log2fc: "average"
 
-# Your custom single analysis profile (CMap)
-MyAnalysis:
+# Acne analysis profile (CMap) - Standard threshold
+CMAP_Acne_Standard:
   paths:
     signatures: "data/drug_signatures/cmap_signatures.RData"
-    disease_file: "data/disease_signatures/my_disease_data.csv"
+    disease_file: "data/disease_signatures/acne_signature.csv"
     drug_meta: "data/drug_signatures/cmap_drug_experiments_new.csv"
     drug_valid: "data/drug_signatures/cmap_valid_instances.csv"
     out_dir: "results"
   params:
-    gene_key: "SYMBOL"
-    logfc_cols_pref: "log2FC"
-    logfc_cutoff: 1.0
+    gene_key: "gene_symbol"
+    logfc_cols_pref: "logfc_dz"
+    logfc_cutoff: 0.051
     pval_key: null
     pval_cutoff: 0.05
     q_thresh: 0.05
     reversal_only: true
     seed: 123
     mode: "single"
-    combine_log2fc: "average"
 
-# TAHOE analysis example
-MyAnalysis_TAHOE:
+# TAHOE analysis example (using Acne signature)
+TAHOE_Acne_Standard:
   paths:
     signatures: "data/drug_signatures/tahoe_signatures.RData"
-    disease_file: "data/disease_signatures/my_disease_data.csv"
+    disease_file: "data/disease_signatures/acne_signature.csv"
     drug_meta: "data/drug_signatures/tahoe_drug_experiments_new.csv"
     drug_valid: "data/drug_signatures/tahoe_valid_instances.csv"
     out_dir: "results"
   params:
-    gene_key: "SYMBOL"
-    logfc_cols_pref: "log2FC"
+    gene_key: "gene_symbol"
+    logfc_cols_pref: "logfc_dz"
     logfc_cutoff: 1.0
     pval_key: null
     pval_cutoff: 0.05
@@ -878,54 +883,53 @@ MyAnalysis_TAHOE:
     reversal_only: true
     seed: 123
     mode: "single"
-    combine_log2fc: "average"
 
 > **Note on TAHOE Valid Instances:** When using TAHOE, the recommended valid instance threshold is `r = 0.35` (correlation-based quality control), compared to CMAP's `r = 0.15`. For detailed guidance on creating and tuning valid instances, drug signature filtering, and advanced parameter optimization, see the [tahoe_cmap_analysis Advanced Usage guide](tahoe_cmap_analysis/README.md#advanced-usage).
 
-# Parameter sensitivity analysis profiles
-Lenient:
+# Parameter sensitivity analysis profiles for Acne
+CMAP_Acne_Lenient:
   paths:
     signatures: "data/drug_signatures/cmap_signatures.RData"
-    disease_file: "data/disease_signatures/my_disease_data.csv"
+    disease_file: "data/disease_signatures/acne_signature.csv"
     drug_meta: "data/drug_signatures/cmap_drug_experiments_new.csv"
     drug_valid: "data/drug_signatures/cmap_valid_instances.csv"
     out_dir: "results"
   params:
-    gene_key: "SYMBOL"
-    logfc_cols_pref: "log2FC"
-    logfc_cutoff: 0.5
+    gene_key: "gene_symbol"
+    logfc_cols_pref: "logfc_dz"
+    logfc_cutoff: 0.033
     q_thresh: 0.05
     reversal_only: true
     seed: 123
     mode: "single"
 
-Standard:
+CMAP_Acne_Standard:
   paths:
     signatures: "data/drug_signatures/cmap_signatures.RData"
-    disease_file: "data/disease_signatures/my_disease_data.csv"
+    disease_file: "data/disease_signatures/acne_signature.csv"
     drug_meta: "data/drug_signatures/cmap_drug_experiments_new.csv"
     drug_valid: "data/drug_signatures/cmap_valid_instances.csv"
     out_dir: "results"
   params:
-    gene_key: "SYMBOL"
-    logfc_cols_pref: "log2FC"
-    logfc_cutoff: 1.0
+    gene_key: "gene_symbol"
+    logfc_cols_pref: "logfc_dz"
+    logfc_cutoff: 0.051
     q_thresh: 0.05
     reversal_only: true
     seed: 123
     mode: "single"
 
-Strict:
+CMAP_Acne_Strict:
   paths:
     signatures: "data/drug_signatures/cmap_signatures.RData"
-    disease_file: "data/disease_signatures/my_disease_data.csv"
+    disease_file: "data/disease_signatures/acne_signature.csv"
     drug_meta: "data/drug_signatures/cmap_drug_experiments_new.csv"
     drug_valid: "data/drug_signatures/cmap_valid_instances.csv"
     out_dir: "results"
   params:
-    gene_key: "SYMBOL"
-    logfc_cols_pref: "log2FC"
-    logfc_cutoff: 1.5
+    gene_key: "gene_symbol"
+    logfc_cols_pref: "logfc_dz"
+    logfc_cutoff: 0.07
     q_thresh: 0.05
     reversal_only: true
     seed: 123

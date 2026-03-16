@@ -1,0 +1,113 @@
+Disease,I,S,P,Precision_%,Recall_%
+Cancer/Tumor,121,30,46,24.793388429752067,65.21739130434783
+Cancer/Tumor|Endocrine System,60,13,34,21.666666666666668,38.23529411764706
+Cancer/Tumor|Endocrine System|Gastrointestinal,16,2,2,12.5,100.0
+Cancer/Tumor|Endocrine System|Reproductive/Breast,109,58,97,53.21100917431193,59.79381443298969
+Cancer/Tumor|Gastrointestinal,140,72,99,51.42857142857142,72.72727272727273
+Cancer/Tumor|Gastrointestinal|Infectious Disease|Respiratory,60,11,14,18.333333333333332,78.57142857142857
+Cancer/Tumor|Nervous System,77,18,34,23.376623376623375,52.94117647058824
+Cancer/Tumor|Reproductive/Breast,63,41,54,65.07936507936508,75.92592592592592
+Cancer/Tumor|Reproductive/Breast|Skin/Integumentary,75,10,23,13.333333333333334,43.47826086956522
+Cancer/Tumor|Respiratory,140,40,58,28.57142857142857,68.96551724137932
+Cancer/Tumor|Skin/Integumentary,61,11,39,18.0327868852459,28.205128205128204
+Cardiovascular,132,19,33,14.393939393939394,57.57575757575758
+Cardiovascular|Genetic/Congenital|Musculoskeletal|Nervous System,63,0,0,0.0,
+Cardiovascular|Musculoskeletal,46,1,1,2.1739130434782608,100.0
+Cardiovascular|Musculoskeletal|Pregnancy/Perinatal,64,2,2,3.125,100.0
+Endocrine System|Cancer/Tumor,56,12,24,21.428571428571427,50.0
+Endocrine System|Cancer/Tumor|Gastrointestinal,63,15,21,23.809523809523807,71.42857142857143
+Endocrine System|Gastrointestinal|Cancer/Tumor|Pancreas,41,25,25,60.97560975609756,100.0
+Endocrine System|Genetic/Congenital|Nervous System|Metabolic|Psychiatric,62,0,0,0.0,
+Endocrine System|Genetic/Congenital|Reproductive/Breast,16,1,1,6.25,100.0
+Gastrointestinal,58,0,2,0.0,0.0
+Gastrointestinal|Cancer/Tumor,94,20,41,21.27659574468085,48.78048780487805
+Gastrointestinal|Endocrine System,62,0,7,0.0,0.0
+Gastrointestinal|Genetic/Congenital,58,0,0,0.0,
+Gastrointestinal|Genetic/Congenital|Immune System,81,3,11,3.7037037037037033,27.27272727272727
+Gastrointestinal|Immune System|Genetic/Congenital,62,0,0,0.0,
+Gastrointestinal|Respiratory|Cancer/Tumor,65,10,16,15.384615384615385,62.5
+Genetic/Congenital,105,0,0,0.0,
+Genetic/Congenital|Cancer/Tumor|Gastrointestinal,4,0,0,0.0,
+Genetic/Congenital|Cancer/Tumor|Hematologic|Immune System,49,13,13,26.53061224489796,100.0
+Genetic/Congenital|Endocrine System|Respiratory|Cancer/Tumor,65,10,10,15.384615384615385,100.0
+Genetic/Congenital|Hematologic,56,1,1,1.7857142857142856,100.0
+Genetic/Congenital|Hematologic|Cancer/Tumor|Immune System|Musculoskeletal,26,0,0,0.0,
+Genetic/Congenital|Hematologic|Immune System,62,5,11,8.064516129032258,45.45454545454545
+Genetic/Congenital|Immune System|Gastrointestinal,64,3,15,4.6875,20.0
+Genetic/Congenital|Immune System|Hematologic|Metabolic|Cancer/Tumor,62,0,4,0.0,0.0
+Genetic/Congenital|Metabolic,57,2,7,3.508771929824561,28.57142857142857
+Genetic/Congenital|Musculoskeletal,42,1,1,2.380952380952381,100.0
+Genetic/Congenital|Musculoskeletal|Reproductive/Breast|Cancer/Tumor,65,0,0,0.0,
+Genetic/Congenital|Nervous System,60,3,8,5.0,37.5
+Genetic/Congenital|Nervous System|Musculoskeletal,58,3,5,5.172413793103448,60.0
+Genetic/Congenital|Respiratory,60,1,5,1.6666666666666667,20.0
+Genetic/Congenital|Skin/Integumentary,94,5,7,5.319148936170213,71.42857142857143
+Hematologic,81,4,18,4.938271604938271,22.22222222222222
+Hematologic|Cancer/Tumor|Genetic/Congenital,61,14,26,22.950819672131146,53.84615384615385
+Hematologic|Cancer/Tumor|Immune System|Genetic/Congenital,64,12,14,18.75,85.71428571428571
+Hematologic|Genetic/Congenital,66,5,5,7.575757575757576,100.0
+Hematologic|Musculoskeletal|Immune System|Cancer/Tumor|Genetic/Congenital,62,14,36,22.58064516129032,38.88888888888889
+Immune System|Genetic/Congenital|Skin/Integumentary,60,3,14,5.0,21.428571428571427
+Immune System|Hematologic|Cancer/Tumor|Genetic/Congenital,62,1,2,1.6129032258064515,50.0
+Immune System|Hematologic|Genetic/Congenital,65,0,4,0.0,0.0
+Immune System|Hematologic|Genetic/Congenital|Cancer/Tumor,63,21,25,33.33333333333333,84.0
+Immune System|Musculoskeletal,132,13,21,9.848484848484848,61.904761904761905
+Immune System|Skin/Integumentary,63,0,2,0.0,0.0
+Immune System|Visual System|Gastrointestinal,66,1,4,1.5151515151515151,25.0
+Infectious Disease,142,7,10,4.929577464788732,70.0
+Infectious Disease|Endocrine System|Gastrointestinal,29,0,0,0.0,
+Infectious Disease|Reproductive/Breast,57,5,5,8.771929824561402,100.0
+Infectious Disease|Respiratory,92,8,12,8.695652173913043,66.66666666666666
+Metabolic,71,4,7,5.633802816901409,57.14285714285714
+Metabolic|Endocrine System|Pancreas,62,8,28,12.903225806451612,28.57142857142857
+Metabolic|Psychiatric|Nervous System|Genetic/Congenital,62,2,3,3.225806451612903,66.66666666666666
+Metabolic|Urinary System,64,1,9,1.5625,11.11111111111111
+Musculoskeletal,123,12,13,9.75609756097561,92.3076923076923
+Musculoskeletal|Cardiovascular,63,2,4,3.1746031746031744,50.0
+Musculoskeletal|Genetic/Congenital,68,1,1,1.4705882352941175,100.0
+Musculoskeletal|Hematologic|Cancer/Tumor|Immune System,59,18,18,30.508474576271187,100.0
+Musculoskeletal|Immune System,61,5,9,8.19672131147541,55.55555555555556
+Musculoskeletal|Immune System|Urinary System,62,3,10,4.838709677419355,30.0
+Musculoskeletal|Immune System|Visual System|Genetic/Congenital,55,4,5,7.2727272727272725,80.0
+Musculoskeletal|Respiratory,61,1,1,1.639344262295082,100.0
+Musculoskeletal|Urinary System,34,0,0,0.0,
+Nervous System,125,7,11,5.6000000000000005,63.63636363636363
+Nervous System|Cancer/Tumor,60,3,4,5.0,75.0
+Nervous System|Cardiovascular,64,1,4,1.5625,25.0
+Nervous System|Genetic/Congenital,62,0,0,0.0,
+Nervous System|Genetic/Congenital|Musculoskeletal,39,1,1,2.564102564102564,100.0
+Nervous System|Immune System,98,10,14,10.204081632653061,71.42857142857143
+Nervous System|Musculoskeletal|Genetic/Congenital,62,1,1,1.6129032258064515,100.0
+Nervous System|Psychiatric,94,7,13,7.446808510638298,53.84615384615385
+Nervous System|Psychiatric|Genetic/Congenital,63,0,0,0.0,
+Nervous System|Psychiatric|Infectious Disease,61,0,0,0.0,
+Nervous System|Urinary System|Respiratory|Musculoskeletal|Immune System|Skin/Integumentary,62,1,4,1.6129032258064515,25.0
+Nervous System|Visual System,68,3,3,4.411764705882353,100.0
+Pancreas|Cancer/Tumor|Endocrine System|Gastrointestinal,59,13,14,22.033898305084744,92.85714285714286
+Pancreas|Endocrine System|Gastrointestinal|Immune System|Metabolic,67,3,9,4.477611940298507,33.33333333333333
+Pancreas|Endocrine System|Metabolic,65,8,19,12.307692307692308,42.10526315789473
+Phenotype,116,11,12,9.482758620689655,91.66666666666666
+Pregnancy/Perinatal|Cardiovascular|Genetic/Congenital,44,0,0,0.0,
+Psychiatric|Endocrine System|Gastrointestinal,61,0,0,0.0,
+Psychiatric|Nervous System,135,11,14,8.148148148148149,78.57142857142857
+Reproductive/Breast,60,1,4,1.6666666666666667,25.0
+Reproductive/Breast|Cancer/Tumor,93,49,74,52.68817204301075,66.21621621621621
+Reproductive/Breast|Cancer/Tumor|Skin/Integumentary,62,10,24,16.129032258064516,41.66666666666667
+Reproductive/Breast|Genetic/Congenital|Endocrine System,61,1,1,1.639344262295082,100.0
+Reproductive/Breast|Skin/Integumentary|Cancer/Tumor,62,33,112,53.2258064516129,29.464285714285715
+Respiratory,100,5,12,5.0,41.66666666666667
+Respiratory|Cancer/Tumor,62,8,37,12.903225806451612,21.62162162162162
+Respiratory|Genetic/Congenital|Metabolic,59,0,1,0.0,0.0
+Respiratory|Immune System,59,2,2,3.389830508474576,100.0
+Respiratory|Infectious Disease,62,2,6,3.225806451612903,33.33333333333333
+Respiratory|OTAR_0000009,60,3,10,5.0,30.0
+Skin/Integumentary,53,1,1,1.8867924528301887,100.0
+Skin/Integumentary|Cancer/Tumor,62,2,6,3.225806451612903,33.33333333333333
+Skin/Integumentary|Immune System,65,1,11,1.5384615384615385,9.090909090909092
+Skin/Integumentary|Immune System|Genetic/Congenital,67,3,14,4.477611940298507,21.428571428571427
+Urinary System,34,0,0,0.0,
+Urinary System|Cancer/Tumor,63,13,22,20.634920634920633,59.09090909090909
+Urinary System|Genetic/Congenital|Cancer/Tumor,60,0,0,0.0,
+Urinary System|Immune System|Skin/Integumentary|Nervous System|Musculoskeletal,60,1,1,1.6666666666666667,100.0
+Urinary System|Musculoskeletal|Nervous System|Immune System,62,1,2,1.6129032258064515,50.0
+Visual System,92,3,5,3.260869565217391,60.0

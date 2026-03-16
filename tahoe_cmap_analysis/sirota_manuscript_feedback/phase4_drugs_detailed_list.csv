@@ -1,0 +1,26 @@
+Drug,Clinical_Trial_Phase,Recovery_Frequency,Number_of_Diseases,Recovery_Methods,Diseases_Found_In
+DEXAMETHASONE,4.0,12,12,"BOTH, TAHOE_ONLY",ankylosing spondylitis; arthritis; autoimmune thrombocytopenic purpura; colitis; crohn's disease; multiple sclerosis; psoriasis; psoriasis vulgaris; psoriatic arthritis; rheumatoid arthritis; systemic lupus erythematosus; ulcerative colitis
+METHOTREXATE,4.0,11,11,"BOTH, CMAP_ONLY, TAHOE_ONLY",ankylosing spondylitis; childhood type dermatomyositis; colitis; crohn's disease; multiple sclerosis; psoriasis; psoriasis vulgaris; psoriatic arthritis; rheumatoid arthritis; scleroderma; systemic lupus erythematosus
+HYDROCORTISONE,4.0,7,7,CMAP_ONLY,crohn's disease; inflammatory bowel disease; psoriasis; psoriasis vulgaris; psoriatic arthritis; type 1 diabetes mellitus; ulcerative colitis
+DIMETHYL FUMARATE,4.0,5,5,TAHOE_ONLY,psoriasis; psoriasis vulgaris; psoriatic arthritis; relapsing-remitting multiple sclerosis; rheumatoid arthritis
+MELOXICAM,4.0,4,4,TAHOE_ONLY,ankylosing spondylitis; arthritis; rheumatoid arthritis; systemic lupus erythematosus
+BUDESONIDE,4.0,4,4,"BOTH, TAHOE_ONLY",colitis; crohn's disease; inflammatory bowel disease; ulcerative colitis
+PREDNISONE,4.0,4,4,CMAP_ONLY,psoriasis; relapsing-remitting multiple sclerosis; rheumatoid arthritis; ulcerative colitis
+CLOBETASOL PROPIONATE,4.0,4,4,TAHOE_ONLY,arthritis; psoriasis; psoriasis vulgaris; rheumatoid arthritis
+METHYLPREDNISOLONE,4.0,4,4,CMAP_ONLY,autoimmune thrombocytopenic purpura; multiple sclerosis; rheumatoid arthritis; scleroderma
+CELECOXIB,4.0,3,3,"BOTH, CMAP_ONLY, TAHOE_ONLY",ankylosing spondylitis; multiple sclerosis; rheumatoid arthritis
+PREDNISOLONE,4.0,3,3,CMAP_ONLY,multiple sclerosis; psoriasis vulgaris; rheumatoid arthritis
+NAPROXEN,4.0,3,3,"BOTH, CMAP_ONLY",ankylosing spondylitis; multiple sclerosis; rheumatoid arthritis
+FAMOTIDINE,4.0,3,3,CMAP_ONLY,psoriasis vulgaris; rheumatoid arthritis; systemic lupus erythematosus
+TAZAROTENE,4.0,2,2,TAHOE_ONLY,psoriasis; psoriasis vulgaris
+LEFLUNOMIDE,4.0,2,2,CMAP_ONLY,rheumatoid arthritis; sjogren's syndrome
+BETAMETHASONE DIPROPIONATE,4.0,2,2,TAHOE_ONLY,psoriasis; psoriasis vulgaris
+ETODOLAC,4.0,1,1,CMAP_ONLY,rheumatoid arthritis
+DIFLUNISAL,4.0,1,1,CMAP_ONLY,rheumatoid arthritis
+OXAPROZIN,4.0,1,1,CMAP_ONLY,rheumatoid arthritis
+PILOCARPINE,4.0,1,1,CMAP_ONLY,sjogren's syndrome
+PIROXICAM,4.0,1,1,CMAP_ONLY,arthritis
+DICLOFENAC,4.0,1,1,CMAP_ONLY,rheumatoid arthritis
+CAPSAICIN,4.0,1,1,CMAP_ONLY,arthritis
+SULINDAC,4.0,1,1,CMAP_ONLY,rheumatoid arthritis
+BACLOFEN,4.0,1,1,CMAP_ONLY,multiple sclerosis

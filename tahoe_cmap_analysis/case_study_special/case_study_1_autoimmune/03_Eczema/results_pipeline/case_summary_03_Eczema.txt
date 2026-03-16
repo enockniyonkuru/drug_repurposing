@@ -1,0 +1,30 @@
+CASE STUDY SUMMARY: 03_Eczema 
+====================================================================== 
+
+DISEASE SIGNATURE SUMMARY
+---------------------------------------------------------------------- 
+Initial genes (raw): 595 
+  Up-regulated: 595 
+  Down-regulated: 0 
+Final genes (standardized): 162 
+  Up-regulated: 162 
+  Down-regulated: 0 
+
+PIPELINE RESULTS SUMMARY
+---------------------------------------------------------------------- 
+  platform total_hits known_hits total_known_for_disease
+1     cmap         74          1                       1
+2    tahoe        374          0                       1
+3     both        445          1                       1
+  overlap_known_hits_both
+1                       0
+2                       0
+3                       0
+
+METHODOLOGY
+---------------------------------------------------------------------- 
+Disease signature: CREEDS manual standardized signatures
+CMap database: L1000 connectivity map
+TAHOE pipeline: In-house transcriptomic matching
+Significance threshold: q < 0.05 (FDR-corrected)
+Generated: 2025-12-05 11:41:40 

@@ -1,0 +1,220 @@
+ Color Consistency Rule:
+
+TAHOE: Serene Blue (e.g., #5DADE2 or steelblue2)
+
+CMAP: Warm Orange (e.g., #F39C12 or darkorange)
+
+BLOCK 1 — Drug Signature Charts (CMap and Tahoe)
+These charts satisfy all your PI feedback about describing the datasets and showing filtering effects.
+ 
+Chart 1. Experiment Count Before and After Filtering
+What to include:
+• CMap: number of experiments before QC and after QC
+• Tahoe: number of experiments before QC and after QC
+• Use two bars for each dataset: before vs after
+How to make it:
+In R or Python count rows in signature matrices before and after applying your internal consistency threshold.
+Plot a bar chart with two groups (CMap, Tahoe).
+ 
+Chart 2. Gene Universe Before and After Filtering
+What to include:
+• Number of genes available in CMap before mapping
+• Number after mapping to shared universe
+• Same for Tahoe
+How to make it:
+Count genes in raw matrices, then count genes in final matrices after mapping.
+Plot as grouped bars per dataset.
+ 
+Chart 3. Signature Strength Distribution
+What to include:
+• For each experiment compute one metric:
+absolute mean fold change or number of genes with absolute fold change greater than 1
+• Plot distribution for CMap
+• Plot distribution for Tahoe
+Use box plots or density curves.
+How to make it:
+Extract fold change values across all experiments for each dataset.
+Compute a strength measure per experiment and plot.
+ 
+Chart 4. Signature Stability Across Conditions (Tahoe only)
+What to include:
+• Dose consistency: correlation of signatures across doses for each drug
+• Cell line consistency: correlation of signatures across cell lines for each drug
+• Distribution of these correlations
+How to make it:
+Group Tahoe signatures by drug ID.
+Within each group compute pairwise Pearson correlations.
+Plot density of correlation values.
+ 
+BLOCK 2 — Disease Signature Charts
+These show the structure and strength of disease signatures and how filtering changed them.
+ 
+Chart 5. Distribution of Up and Down Genes
+What to include:
+• Histogram of up gene counts across 233 diseases
+• Histogram of down gene counts across 233 diseases
+How to make it:
+For each disease signature count number of up and down regulated genes.
+Plot two side by side histograms or density curves.
+ 
+Chart 6. Total Signature Size Before and After Filtering
+What to include:
+• Total number of genes per disease before and after gene mapping
+• Two distributions: before and after
+How to make it:
+For each disease signature count initial gene count and final gene count.
+Plot two overlapping distributions or paired box plots.
+ 
+Chart 7. Heatmap of Disease Signature Richness
+What to include:
+• Rows: diseases
+• Columns: up genes, down genes
+• Color gradient: gene counts
+How to make it:
+Create a matrix with two columns for each disease, fill values with gene counts.
+Plot heatmap.
+ 
+BLOCK 3 — Known Drug Universe and Coverage Charts
+These respond to your PI’s request about known drugs and platform coverage.
+ 
+Chart 8. Known Drug Coverage in Each Dataset
+What to include:
+• Number of known drugs present in CMap
+• Number present in Tahoe
+• Number present in both
+• Number missing from both
+Use four bars or a stacked bar.
+How to make it:
+Take list of known drugs.
+Check intersection with CMap drug names and Tahoe drug names.
+Count matches and plot.
+ 
+Chart 9. Known Drug Coverage per Disease Category
+What to include:
+• For each disease category calculate:
+number of known drugs covered by CMap
+number covered by Tahoe
+• Grouped bar chart per category
+How to make it:
+Map each disease to its category.
+Collect known drugs associated with each category.
+Check if they exist in CMap or Tahoe.
+Plot counts.
+ 
+Chart 10. Disease Level Known Drug Coverage Heatmap
+What to include:
+• Rows: diseases
+• Two columns:
+count of known drugs in CMap
+count of known drugs in Tahoe
+How to make it:
+Build a table where row equals disease and columns are counts.
+Plot heatmap.
+ 
+BLOCK 4 — Success Metric Charts (Beyond Precision and Recall)
+These measure success in a fair, normalized way.
+ 
+Chart 11. Enrichment Factor Distribution
+What to include:
+• Compute enrichment for each disease for both platforms
+• Plot distribution for CMap and Tahoe side by side
+How to make it:
+Formula:
+observed precision divided by expected precision
+expected precision equals known drugs in universe divided by total candidate drugs
+Compute per disease and plot density.
+ 
+Chart 12. Success at Top N Depth Curves
+What to include:
+• X axis: depth from 1 to maybe 200
+• Y axis: fraction of diseases with at least one known drug in the top X hits
+• Two lines: CMap and Tahoe
+How to make it:
+For each disease generate ranking of drugs.
+At each depth compute whether a known drug appears.
+Aggregate across diseases and plot curves.
+ 
+Chart 13. Normalized Success per Disease
+What to include:
+• For each disease:
+number of known drugs recovered divided by total known drugs available
+• Plot two distributions: CMap and Tahoe
+How to make it:
+Compute per disease fractional recall normalized by known drug count.
+Plot distribution.
+ 
+Chart 14. Jaccard Similarity per Disease
+What to include:
+• For each disease compute Jaccard on the sets of top hits:
+intersection divided by union
+• Plot distribution of these similarity values
+How to make it:
+Take top N hits for Tahoe and CMap.
+Compute Jaccard and plot.
+ 
+Chart 15. Global Venn Diagram of All Hits
+What to include:
+• Set of all significant hits across all diseases in Tahoe
+• Set of all in CMap
+• Draw Venn diagram for overlap
+How to make it:
+Collect all unique hits from each pipeline.
+Use any Venn diagram function.
+
+Add These Case Study Charts (Required)
+Pick two diseases that (1) have enough known drugs for evaluation, (2) show contrasting performance between Tahoe and CMap, or (3) represent important therapeutic areas.
+Examples you may consider:
+• One autoimmune disease
+• One infectious disease
+or
+• One disease where Tahoe wins
+• One disease where CMap wins
+Now here is exactly what to produce.
+ 
+CASE STUDY CHART 1 — Disease Signature Overview
+What to include:
+For each disease:
+• Volcano plot of fold change vs significance
+• Number of up genes and down genes
+• Label top ten most perturbed genes
+How to make it:
+Use the differential expression table for that disease.
+Plot log fold change on x axis and negative log p value on y axis.
+Color up genes and down genes.
+ 
+CASE STUDY CHART 2 — Top Hits From Tahoe and CMap
+What to include:
+• Bar plot of top ten Tahoe hits
+• Bar plot of top ten CMap hits
+• Highlight known drugs in a special color
+• Use the same colors for the pipelines as everywhere else
+How to make it:
+Extract the ranked drug tables for that disease from each platform.
+Plot bars of connectivity score or negative q value.
+ 
+CASE STUDY CHART 3 — Consensus Venn Diagram
+What to include:
+• Hits from Tahoe for that disease
+• Hits from CMap for that disease
+• Hits found by both
+• Label known drugs showing where they fall
+How to make it:
+Take top N hits from Tahoe and CMap.
+Generate a Venn diagram.
+ 
+CASE STUDY CHART 4 — Ranking and Known Drug Recovery
+What to include:
+• Plot rank position of each known drug in Tahoe and CMap
+• Use lines to connect the same drug across the two rankings
+• Show if one pipeline consistently ranks known drugs higher
+How to make it:
+Extract known drugs for that disease and look up their ranks in both lists.
+ 
+CASE STUDY CHART 5 — Small Molecular Mechanism Map (if available)
+What to include:
+• For top hits: show their mechanism classes
+• Use a small bar or dot plot
+• Show which mechanisms are shared or unique across pipelines
+How to make it:
+Map drug names to mechanism of action (from Open Targets or your MOA table).
+

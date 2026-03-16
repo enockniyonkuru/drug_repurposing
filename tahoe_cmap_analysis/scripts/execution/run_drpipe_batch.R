@@ -9,6 +9,19 @@
 suppressPackageStartupMessages(library(DRpipe))
 suppressPackageStartupMessages(library(argparse))
 
+# Source helper functions for percentile filtering
+script_dir <- dirname(normalizePath(sub("--file=", "", grep("--file=", commandArgs(), value = TRUE)), mustWork = FALSE))
+if (script_dir == "") script_dir <- getwd()
+apply_filter_path <- file.path(script_dir, "apply_percentile_filter.R")
+if (file.exists(apply_filter_path)) {
+  source(apply_filter_path)
+} else {
+  # Fallback to current working directory
+  if (file.exists("apply_percentile_filter.R")) {
+    source("apply_percentile_filter.R")
+  }
+}
+
 # Define command-line arguments
 parser <- ArgumentParser(description = "Run batch DRpipe analysis")
 parser$add_argument("--disease_dir", type = "character", required = TRUE, 
@@ -45,6 +58,12 @@ parser$add_argument("--logfc_col_select", type = "character", default = "all",
                     help = "LogFC column selection: 'all' or specific columns (comma-separated)")
 parser$add_argument("--use_averaging", type = "logical", default = TRUE,
                     help = "Use averaging across selected columns (default: TRUE)")
+parser$add_argument("--qval_threshold", type = "double", default = 0.05,
+                    help = "Q-value threshold for significance (default: 0.05)")
+parser$add_argument("--percentile_filtering", type = "logical", default = FALSE,
+                    help = "Enable percentile-based gene filtering (default: FALSE)")
+parser$add_argument("--percentile_threshold", type = "integer", default = 75,
+                    help = "Percentile threshold for gene filtering, 1-100 (default: 75)")
 
 # Parse arguments
 args <- parser$parse_args()
@@ -67,6 +86,9 @@ start_from       <- args$start_from
 end_at           <- args$end_at
 logfc_col_select <- args$logfc_col_select
 use_averaging    <- args$use_averaging
+qval_threshold   <- args$qval_threshold
+percentile_filtering <- args$percentile_filtering
+percentile_threshold <- args$percentile_threshold
 
 # Common parameters (from original script)
 cmap_valid <- NULL
@@ -171,6 +193,9 @@ run_pipeline <- function(sig_path, sig_name, disease_file, disease_name, batch_t
   cat("\n========================================\n")
   cat("Running", sig_name, "for", disease_name, "\n")
   cat("========================================\n")
+  cat("[STATUS] Loading signatures from:", basename(sig_path), "\n")
+  cat("[STATUS] File size:", round(file.size(sig_path) / (1024^3), 2), "GB\n")
+  flush.console()  # Force output to appear immediately
   
   # Preprocess the disease file - rename gene_key column and handle column selection
   preprocessed_file <- tempfile(fileext = ".csv")
@@ -227,6 +252,23 @@ run_pipeline <- function(sig_path, sig_name, disease_file, disease_name, batch_t
   
   cols_to_keep <- cols_to_keep[cols_to_keep %in% colnames(df)]
   df_out <- df[, cols_to_keep, drop = FALSE]
+  
+  # Apply percentile-based filtering if enabled
+  if (percentile_filtering) {
+    genes_before <- nrow(df_out)
+    cat("  Applying percentile-based gene filtering (", percentile_threshold, "th percentile)...\n", sep = "")
+    
+    # Apply filtering to whichever logfc column exists
+    logfc_col <- ifelse("logfc_dz" %in% colnames(df_out), "logfc_dz", colnames(df_out)[2])
+    df_out <- apply_percentile_filter(df_out, logfc_col = logfc_col, percentile_threshold = percentile_threshold)
+    genes_after <- nrow(df_out)
+    genes_removed <- genes_before - genes_after
+    pct_removed <- round(100 * genes_removed / genes_before, 2)
+    
+    cat("    Genes retained:", genes_after, "of", genes_before, 
+        "(removed", genes_removed, "-", pct_removed, "%)\n")
+  }
+  
   write.csv(df_out, preprocessed_file, row.names = FALSE, quote = FALSE)
   disease_file <- preprocessed_file
   
@@ -244,11 +286,11 @@ run_pipeline <- function(sig_path, sig_name, disease_file, disease_name, batch_t
     cmap_valid_path  = NULL,
     out_dir          = out_dir,
     gene_key         = "SYMBOL",
-    logfc_cols_pref  = logfc_cols_pref,
+    logfc_cols_pref  = "logfc_dz",  # Use 'logfc_dz' here because batch script creates/renames to this column
     logfc_cutoff     = 0.0,
     pval_key         = NULL,
     pval_cutoff      = 0.05,
-    q_thresh         = 0.5,
+    q_thresh         = qval_threshold,
     reversal_only    = TRUE,
     seed             = 123,
     verbose          = TRUE,
@@ -297,6 +339,15 @@ if (skip_existing) {
   existing_dirs <- list.dirs(out_root, full.names = FALSE, recursive = FALSE)
   cat("Found", length(existing_dirs), "existing result folders.\n\n")
 }
+
+# ===== MEMORY OPTIMIZATION: Force GC and set aggressive options =====
+# This helps prevent memory exhaustion when loading large RData files
+gc(verbose = FALSE)
+if (exists(".drp_signature_cache")) {
+  rm(".drp_signature_cache", envir = .GlobalEnv)
+  cat("Cleared signature cache to start fresh.\n\n")
+}
+# ===================================================================
 
 # Process each disease
 for (i in seq_along(disease_files)) {
@@ -398,6 +449,11 @@ for (i in seq_along(disease_files)) {
     error_message = ifelse(is.null(tahoe_result$error_msg), "", tahoe_result$error_msg),
     stringsAsFactors = FALSE
   ))
+  
+  # ===== MEMORY OPTIMIZATION: Clean up after each disease =====
+  # This prevents memory accumulation during the batch run
+  gc(verbose = FALSE)
+  # =========================================================
   
   # Log results
   log_conn <- file(batch_log_file, open = "at")

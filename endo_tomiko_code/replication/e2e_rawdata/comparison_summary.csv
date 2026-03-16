@@ -1,0 +1,7 @@
+"Signature","Tomiko_Total","DRpipe_Total","Overlap","Tomiko_Only","DRpipe_Only","Jaccard_Pct","Top20_Overlap"
+"Unstratified",282,274,274,8,0,97.2,17
+"ESE",208,138,138,70,0,66.3,19
+"MSE",289,286,286,3,0,99,18
+"PE",283,291,281,2,10,95.9,17
+"IIInIV",291,281,281,10,0,96.6,19
+"InII",284,281,281,3,0,98.9,20

@@ -1,0 +1,169 @@
+# 📑 MANUSCRIPT LAYOUT SUGGESTIONS
+
+## Recommended Figure Placements
+
+### Results Section - Main Text
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│ RESULTS                                                     │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│ Disease-Drug Candidate Identification                      │
+│                                                             │
+│ We applied both TAHOE and CMAP methods to identify         │
+│ potential drug candidates... [2-3 paragraphs of text]      │
+│                                                             │
+│  ┌───────────────────────────────────────┐               │
+│  │ FIGURE 1 (or appropriate number):     │               │
+│  │ Hit Distribution (02_all_diseases_    │               │
+│  │ hit_distribution.png)                 │               │
+│  │                                       │               │
+│  │ Shows bar chart of TAHOE vs CMAP     │               │
+│  │ across all 4 diseases                │               │
+│  └───────────────────────────────────────┘               │
+│                                                             │
+│ Method Validation                                           │
+│                                                             │
+│ To validate our findings against established               │
+│ databases... [paragraph of explanation]                   │
+│                                                             │
+│  ┌───────────────────────────────────────┐               │
+│  │ FIGURE 2 (or appropriate number):     │               │
+│  │ Recall Metrics (03_all_diseases_      │               │
+│  │ recall.png)                           │               │
+│  │                                       │               │
+│  │ Shows % of known pairs recovered      │               │
+│  │ for each method                       │               │
+│  └───────────────────────────────────────┘               │
+│                                                             │
+│ We observed that both methods recovered [X%] of...         │
+│                                                             │
+│  ┌───────────────────────────────────────┐               │
+│  │ FIGURE 3 (or appropriate number):     │               │
+│  │ Method Complementarity                │               │
+│  │ (06_performance_scatter.png)          │               │
+│  │                                       │               │
+│  │ Shows scatter plot of performance     │               │
+│  │ and method relationships              │               │
+│  └───────────────────────────────────────┘               │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Methods Section - Additional Evidence
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│ TABLE 1: Summary Statistics                                │
+│ (from: 08_summary_table.png)                              │
+│                                                             │
+│ Disease | TAHOE Hits | CMAP Hits | Common | TAHOE Recall  │
+│ ─────── | ────────── | ───────── | ────── | ──────────── │
+│   ...   |     ...    |    ...    |  ...   |     ...      │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Supplementary Materials
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│ SUPPLEMENTARY FIGURES                                       │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│ Supplementary Figure S1-S4: Individual Disease Analyses   │
+│ (One for each: cerebral palsy, eczema, AIP, CLL)          │
+│ File: 0X_disease_name/01_comprehensive_overview.png       │
+│                                                             │
+│ Supplementary Figure S5: Heat Map Analysis                │
+│ File: 04_all_diseases_heatmap.png                         │
+│                                                             │
+│ Supplementary Figure S6: OpenTarget Validation            │
+│ File: 05_all_diseases_ot_coverage.png                     │
+│                                                             │
+│ Supplementary Figure S7: Consensus Candidates             │
+│ File: 07_common_hits.png                                  │
+│                                                             │
+│ Supplementary Figure S8: Disease Summary Grid             │
+│ File: 09_disease_summary_grid.png                         │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## Figure Legend Examples
+
+### Main Text Example 1:
+**Figure 2. Hit Distribution Across Disease Cases**
+
+> "(A) Total number of drug candidates identified using TAHOE and CMAP methods for each of four disease cases. (B) Percentage of known disease-drug associations recovered by each method, as validated against the OpenTargets database. (C) Scatter plot comparing method-specific recall rates, with bubble size indicating total hit count. Results demonstrate complementary strengths of both approaches, with method performance varying by disease indication."
+
+---
+
+### Main Text Example 2:
+**Figure 3. Method Performance and Database Validation**
+
+> "Recall metrics showing the fraction of known disease-drug pairs (from OpenTargets) successfully identified by TAHOE and CMAP methods. CMAP demonstrates superior recall for autoimmune thrombocytopenic purpura (89%) while TAHOE shows consistent performance across other indications. Error bars represent... [add your methodology notes]"
+
+---
+
+### Supplementary Example:
+**Supplementary Figure S1. Comprehensive Analysis: Cerebral Palsy**
+
+> "Four-panel analysis for cerebral palsy case study: (a) Hit comparison between TAHOE (23 candidates) and CMAP (560 candidates) methods; (b) Recall metrics showing validation against known associations; (c) OpenTarget database coverage showing X pairs confirmed in established databases; (d) Method overlap analysis identifying 9 consensus drug candidates. Complete individual analyses for remaining diseases provided in Supplementary Figures S2-S4."
+
+---
+
+## Color Coding for Consistency
+
+Throughout your manuscript, maintain:
+- 🔵 **Blue (#5DADE2)** when referencing TAHOE results
+- 🟠 **Orange (#F39C12)** when referencing CMAP results
+
+---
+
+## Text Integration Examples
+
+### Introduction
+"...we employed two complementary computational approaches: TAHOE (method details...) and CMAP (method details...), as illustrated in Figure 1."
+
+### Results
+"TAHOE identified 23 candidates for cerebral palsy with 23% recall, while CMAP identified 560 candidates with 56% recall (Figure 2A). Both methods successfully recovered known disease-drug associations, with recovery rates varying by disease (Figure 2B). Method complementarity analysis revealed that approaches identified both overlapping and unique candidates (Figure 3)..."
+
+### Methods
+"All computational predictions were validated against the OpenTargets database, which contains X,XXX manually curated disease-drug associations. Recovery rates (recall) were calculated as shown in Table 1."
+
+### Discussion
+"The variable performance of TAHOE and CMAP across disease indications (Figure 2) suggests that method selection should be informed by the specific biological context..."
+
+---
+
+## Publication Checklist
+
+Before submitting your manuscript:
+
+- [ ] Main text includes 3-5 key figures from `02-07` files
+- [ ] Figure captions reference exact numbers from data
+- [ ] All figures are at 300 DPI or higher
+- [ ] Supplementary materials include all 4 individual disease analyses
+- [ ] Color scheme is consistent across all figures
+- [ ] Figure numbering is sequential and logical
+- [ ] All figures are referenced in text in order
+- [ ] Data table (S8) is included for exact reference values
+
+---
+
+## Quick Copy-Paste Ready
+
+All figures in `/visualizations/` are:
+✅ PNG format - paste directly into Word/Overleaf
+✅ 300 DPI - publication quality
+✅ Labeled axes - no editing needed
+✅ Professional fonts - no customization needed
+✅ Color scheme - publication appropriate
+
+---
+
+Generated: December 5, 2025
+Ready for: Peer-reviewed journal submission

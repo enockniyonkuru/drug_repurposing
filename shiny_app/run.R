@@ -67,44 +67,67 @@ cat("Libraries loaded successfully.\n\n")
 
 # Check for required data files
 cat("Checking for required data files...\n")
-data_dir <- "../scripts/data"
-required_files <- c(
+data_dir <- "../scripts/data/drug_signatures"
+
+# CMAP files
+cat("\n  CMAP Database:\n")
+cmap_files <- c(
   "cmap_signatures.RData",
   "cmap_drug_experiments_new.csv",
   "cmap_valid_instances.csv"
 )
 
-missing_files <- c()
-for (file in required_files) {
+cmap_missing <- c()
+for (file in cmap_files) {
   file_path <- file.path(data_dir, file)
   if (!file.exists(file_path)) {
-    missing_files <- c(missing_files, file)
-    cat(sprintf("  [MISSING] %s\n", file))
+    cmap_missing <- c(cmap_missing, file)
+    cat(sprintf("    [MISSING] %s\n", file))
   } else {
-    cat(sprintf("  [OK] %s\n", file))
+    cat(sprintf("    [OK] %s\n", file))
   }
 }
 
-if (length(missing_files) > 0) {
-  cat("\nWARNING: Some required data files are missing!\n")
-  if ("cmap_signatures.RData" %in% missing_files) {
-    cat("\nIMPORTANT: cmap_signatures.RData is required for the app to function.\n")
-    cat("Download it from: https://drive.google.com/drive/folders/1LvKiT0u3DGf5sW5bYVJk7scbM5rLmBx-?usp=sharing\n")
-    cat("Place it in: scripts/data/\n\n")
+# TAHOE files
+cat("\n  TAHOE Database:\n")
+tahoe_files <- c(
+  "tahoe_signatures.RData",
+  "tahoe_drug_experiments_new.csv"
+)
+
+tahoe_missing <- c()
+for (file in tahoe_files) {
+  file_path <- file.path(data_dir, file)
+  if (!file.exists(file_path)) {
+    tahoe_missing <- c(tahoe_missing, file)
+    cat(sprintf("    [MISSING] %s\n", file))
+  } else {
+    cat(sprintf("    [OK] %s\n", file))
+  }
+}
+
+if (length(cmap_missing) > 0 || length(tahoe_missing) > 0) {
+  cat("\nWARNING: Some data files are missing!\n")
+  if ("cmap_signatures.RData" %in% cmap_missing || "tahoe_signatures.RData" %in% tahoe_missing) {
+    cat("\nIMPORTANT: At least one signatures file is required for the app to function.\n")
+    cat("Download from: https://drive.google.com/drive/folders/1LvKiT0u3DGf5sW5bYVJk7scbM5rLmBx-?usp=sharing\n")
+    cat("Place files in: scripts/data/drug_signatures/\n\n")
   }
 } else {
-  cat("All required data files found.\n\n")
+  cat("\nAll required data files found.\n\n")
 }
 
-# Check for example data files
-cat("Checking for example data files...\n")
+# Check for example disease signature files
+cat("Checking for example disease signature files...\n")
+disease_dir <- "../scripts/data/disease_signatures"
 example_files <- c(
-  "CoreFibroidSignature_All_Datasets.csv",
-  "Endothelia_DEG.csv"
+  "acne_signature.csv",
+  "arthritis_signature.csv",
+  "glaucoma_signature.csv"
 )
 
 for (file in example_files) {
-  file_path <- file.path(data_dir, file)
+  file_path <- file.path(disease_dir, file)
   if (file.exists(file_path)) {
     cat(sprintf("  [OK] %s\n", file))
   } else {

@@ -1,0 +1,181 @@
+creeds_disease,disease_id,disease_name,drug_disease_match_id,drug_match_method,therapeutic_areas,primary_therapeutic_area
+Acute_Lung_Injury,EFO_0004610,acute lung injury,EFO_0004610,id_match,Respiratory|OTAR_0000009,Respiratory
+Alzheimer's_disease,MONDO_0004975,Alzheimer disease,MONDO_0004975,id_match,Nervous System|Psychiatric,Nervous System
+Barrett's_esophagus,EFO_0000280,Barrett's esophagus,EFO_0000280,id_match,Gastrointestinal,Gastrointestinal
+Cardiomyopathy,EFO_0000318,cardiomyopathy,EFO_0000318,id_match,Musculoskeletal|Cardiovascular,Musculoskeletal
+Crohn's_disease,EFO_0000384,Crohn's disease,EFO_0000384,id_match,Genetic/Congenital|Immune System|Gastrointestinal,Genetic/Congenital
+Diabetic_Nephropathy,EFO_0000401,diabetic nephropathy,EFO_0000401,id_match,Metabolic|Urinary System,Metabolic
+Diamond-Blackfan_anemia,MONDO_0015253,Diamond-Blackfan anemia,MONDO_0015253,id_match,Genetic/Congenital|Hematologic,Genetic/Congenital
+Down_syndrome,EFO_0001064,Down syndrome,EFO_0001064,id_match,Genetic/Congenital,Genetic/Congenital
+Duchenne_muscular_dystrophy,MONDO_0010679,Duchenne muscular dystrophy,MONDO_0010679,id_match,Genetic/Congenital|Nervous System|Musculoskeletal,Genetic/Congenital
+Ebola_hemorrhagic_fever,EFO_0007243,Ebola hemorrhagic fever,EFO_0007243,id_match,Infectious Disease,Infectious Disease
+Eczema,EFO_0000274,atopic eczema,EFO_0000274,id_match,Skin/Integumentary|Immune System,Skin/Integumentary
+HIV_encephalitis,EFO_0002608,AIDS dementia,EFO_0002608,id_match,Nervous System|Psychiatric|Infectious Disease,Nervous System
+Human_immunodeficiency_virus_infectious_disease,EFO_0000764,HIV infection,EFO_0000764,id_match,Infectious Disease|Reproductive/Breast,Infectious Disease
+Huntington's_disease,MONDO_0007739,Huntington disease,MONDO_0007739,id_match,Genetic/Congenital|Nervous System,Genetic/Congenital
+Hypoxia,EFO_0009444,hypoxia,EFO_0009444,id_match,Phenotype,Phenotype
+Ischemic_stroke,HP_0002140,Ischemic stroke,HP_0002140,id_match,Phenotype,Phenotype
+Lewy_body_dementia,EFO_0006792,Lewy body dementia,EFO_0006792,id_match,Metabolic|Psychiatric|Nervous System|Genetic/Congenital,Metabolic
+Marfan_syndrome,MONDO_0007947,Marfan syndrome,MONDO_0007947,id_match,Genetic/Congenital|Musculoskeletal,Genetic/Congenital
+NASH,EFO_1001249,non-alcoholic steatohepatitis,EFO_1001249,id_match,Gastrointestinal|Endocrine System,Gastrointestinal
+Nicotine_addiction,EFO_0003768,nicotine dependence,EFO_0003768,id_match,Psychiatric|Nervous System,Psychiatric
+Osteolysis,HP_0002797,Osteolysis,HP_0002797,id_match,Phenotype,Phenotype
+Parkinson's_disease,MONDO_0005180,Parkinson disease,MONDO_0005180,id_match,Genetic/Congenital|Nervous System,Genetic/Congenital
+Polymyositis,EFO_0003063,polymyositis,EFO_0003063,id_match,Urinary System|Musculoskeletal|Nervous System|Immune System,Urinary System
+Psoriasis_vulgaris,EFO_1001494,psoriasis vulgaris,EFO_1001494,id_match,Skin/Integumentary|Immune System|Genetic/Congenital,Skin/Integumentary
+Rett_syndrome,MONDO_0010726,Rett syndrome,MONDO_0010726,id_match,Nervous System|Psychiatric|Genetic/Congenital,Nervous System
+Schizophrenia,MONDO_0005090,schizophrenia,MONDO_0005090,id_match,Psychiatric|Nervous System,Psychiatric
+Septic_Shock,EFO_0006834,septic shock,EFO_0006834,id_match,Phenotype,Phenotype
+Sjogren's_syndrome,EFO_0000699,Sjogren syndrome,EFO_0000699,id_match,Immune System|Visual System|Gastrointestinal,Immune System
+Squamous_cell_carcinoma_of_mouth,EFO_0000199,oral squamous cell carcinoma,EFO_0000199,id_match,Cancer/Tumor|Gastrointestinal,Cancer/Tumor
+Turner_syndrome,MONDO_0019499,Turner syndrome,MONDO_0019499,id_match,Reproductive/Breast|Genetic/Congenital|Endocrine System,Reproductive/Breast
+Vulvar_intraepithelial_tumor,EFO_0002627,vulvar intraepithelial neoplasia,EFO_0002627,id_match,Reproductive/Breast|Cancer/Tumor,Reproductive/Breast
+Waldenstrom_Macroglobulinemia,EFO_0009441,Waldenstrom macroglobulinemia,EFO_0009441,id_match,Genetic/Congenital|Immune System|Hematologic|Metabolic|Cancer/Tumor,Genetic/Congenital
+Williams-Beuren_syndrome,MONDO_0008678,Williams syndrome,MONDO_0008678,id_match,Nervous System|Genetic/Congenital,Nervous System
+abdominal_aortic_aneurysm,EFO_0004214,Abdominal Aortic Aneurysm,EFO_0004214,id_match,Cardiovascular,Cardiovascular
+acne,EFO_0003894,acne,EFO_0003894,id_match,Genetic/Congenital|Skin/Integumentary,Genetic/Congenital
+actinic_keratosis,EFO_0002496,actinic keratosis,EFO_0002496,id_match,Skin/Integumentary|Cancer/Tumor,Skin/Integumentary
+acute_T_cell_leukemia,EFO_0000209,T-cell acute lymphoblastic leukemia,EFO_0000209,id_match,Hematologic|Cancer/Tumor|Immune System|Genetic/Congenital,Hematologic
+acute_myeloid_leukemia,EFO_0000222,acute myeloid leukemia,EFO_0000222,id_match,Musculoskeletal|Hematologic|Cancer/Tumor|Immune System,Musculoskeletal
+acute_myocardial_infarction,EFO_0008583,acute myocardial infarction,EFO_0008583,id_match,Cardiovascular,Cardiovascular
+adenoma,EFO_0000232,adenoma,EFO_0000232,id_match,Cancer/Tumor,Cancer/Tumor
+adenosquamous_cell_lung_carcinoma,EFO_0000233,adenosquamous lung carcinoma,EFO_0000233,id_match,Respiratory|Cancer/Tumor,Respiratory
+adrenoleukodystrophy,MONDO_0018544,adrenoleukodystrophy,MONDO_0018544,id_match,Endocrine System|Genetic/Congenital|Nervous System|Metabolic|Psychiatric,Endocrine System
+alcohol_abuse,MONDO_0002046,alcohol abuse,MONDO_0002046,id_match,Psychiatric,Psychiatric
+alcoholic_hepatitis,EFO_1001345,"Hepatitis, Alcoholic",EFO_1001345,id_match,Psychiatric|Endocrine System|Gastrointestinal,Psychiatric
+allergic_asthma,MONDO_0004784,allergic asthma,MONDO_0004784,id_match,Respiratory|Immune System,Respiratory
+allergic_contact_dermatitis,EFO_1000668,allergic contact dermatitis,EFO_1000668,id_match,Immune System|Skin/Integumentary,Immune System
+alpha_1-antitrypsin_deficiency,MONDO_0013282,alpha 1-antitrypsin deficiency,MONDO_0013282,id_match,Respiratory|Genetic/Congenital|Metabolic,Respiratory
+amyotrophic_lateral_sclerosis,MONDO_0004976,amyotrophic lateral sclerosis,MONDO_0004976,id_match,Nervous System,Nervous System
+anaplastic_thyroid_carcinoma,EFO_1000595,Thyroid Gland Undifferentiated (Anaplastic) Carcinoma,EFO_1000595,id_match,Cancer/Tumor|Endocrine System,Cancer/Tumor
+anemia,MONDO_0002280,anemia,MONDO_0002280,id_match,Hematologic,Hematologic
+ankylosing_spondylitis,EFO_0003898,ankylosing spondylitis,EFO_0003898,id_match,Immune System|Musculoskeletal,Immune System
+anterior_horn_cell_disease,EFO_0003782,motor neuron disease,EFO_0003782,id_match,Nervous System,Nervous System
+aplastic_anemia,MONDO_0015909,aplastic anemia,HP_0001915,name_match,Hematologic,Hematologic
+appendicitis,EFO_0007149,appendicitis,EFO_0007149,id_match,Gastrointestinal|Immune System|Genetic/Congenital,Gastrointestinal
+arthritis,EFO_0005856,arthritis,EFO_0005856,id_match,Musculoskeletal,Musculoskeletal
+arthropathy,HP_0003040,Arthropathy,HP_0003040,id_match,Phenotype,Phenotype
+asthma,MONDO_0004979,asthma,MONDO_0004979,id_match,Respiratory,Respiratory
+astrocytoma,EFO_0000272,astrocytoma,EFO_0000272,id_match,Nervous System|Cancer/Tumor,Nervous System
+atherosclerosis,EFO_0003914,atherosclerosis,EFO_0003914,id_match,Cardiovascular,Cardiovascular
+atopic_dermatitis,EFO_0000274,atopic eczema,EFO_0000274,id_match,Skin/Integumentary|Immune System,Skin/Integumentary
+autism_spectrum_disorder,EFO_0003756,autism spectrum disorder,EFO_0003756,id_match,Psychiatric|Nervous System,Psychiatric
+autistic_disorder,EFO_0003758,autism,EFO_0003758,id_match,Psychiatric|Nervous System,Psychiatric
+autoimmune_thrombocytopenic_purpura,EFO_0007160,autoimmune thrombocytopenic purpura,EFO_0007160,id_match,Genetic/Congenital|Hematologic|Immune System,Genetic/Congenital
+bacterial_infectious_disease,EFO_0000771,bacterial disease,EFO_0000771,id_match,Infectious Disease,Infectious Disease
+bipolar_disorder,MONDO_0004985,bipolar disorder,MONDO_0004985,id_match,Nervous System|Psychiatric,Nervous System
+breast_adenocarcinoma,EFO_0000304,breast adenocarcinoma,EFO_0000304,id_match,Reproductive/Breast|Cancer/Tumor|Skin/Integumentary,Reproductive/Breast
+breast_cancer,MONDO_0007254,breast cancer,MONDO_0007254,id_match,Reproductive/Breast|Skin/Integumentary|Cancer/Tumor,Reproductive/Breast
+bronchopulmonary_dysplasia,MONDO_0019091,bronchopulmonary dysplasia,MONDO_0019091,id_match,Respiratory,Respiratory
+cerebral_palsy,EFO_1000632,cerebral palsy,EFO_1000632,id_match,Nervous System,Nervous System
+cervical_cancer,MONDO_0002974,cervical cancer,MONDO_0002974,id_match,Cancer/Tumor|Reproductive/Breast,Cancer/Tumor
+cervix_carcinoma,EFO_0001061,cervical carcinoma,EFO_0001061,id_match,Cancer/Tumor|Reproductive/Breast,Cancer/Tumor
+childhood_type_dermatomyositis,EFO_0000557,juvenile dermatomyositis,EFO_0000557,id_match,Nervous System|Urinary System|Respiratory|Musculoskeletal|Immune System|Skin/Integumentary,Nervous System
+chronic_granulomatous_disease,MONDO_0018305,chronic granulomatous disease,MONDO_0018305,id_match,Immune System|Hematologic|Genetic/Congenital,Immune System
+chronic_lymphocytic_leukemia,EFO_0000095,chronic lymphocytic leukemia,EFO_0000095,id_match,Genetic/Congenital|Cancer/Tumor|Hematologic|Immune System,Genetic/Congenital
+chronic_myeloid_leukemia,EFO_0000339,chronic myelogenous leukemia,EFO_0000339,id_match,Hematologic|Musculoskeletal|Immune System|Cancer/Tumor|Genetic/Congenital,Hematologic
+chronic_obstructive_pulmonary_disease,EFO_0000341,chronic obstructive pulmonary disease,EFO_0000341,id_match,Respiratory,Respiratory
+colitis,EFO_0003872,colitis,EFO_0003872,id_match,Gastrointestinal|Genetic/Congenital|Immune System,Gastrointestinal
+colon_adenoma,MONDO_0000527,colon adenoma,MONDO_0000527,id_match,Gastrointestinal|Cancer/Tumor,Gastrointestinal
+colon_cancer,EFO_1001950,colon carcinoma,EFO_1001950,id_match,Cancer/Tumor|Gastrointestinal,Cancer/Tumor
+colorectal_adenocarcinoma,EFO_0000365,colorectal adenocarcinoma,EFO_0000365,id_match,Gastrointestinal|Cancer/Tumor,Gastrointestinal
+colorectal_cancer,MONDO_0005575,colorectal cancer,MONDO_0005575,id_match,Cancer/Tumor|Gastrointestinal,Cancer/Tumor
+cystic_fibrosis,MONDO_0009061,cystic fibrosis,MONDO_0009061,id_match,Genetic/Congenital|Respiratory,Genetic/Congenital
+cystitis,EFO_1000025,cystitis,EFO_1000025,id_match,Urinary System,Urinary System
+dengue_disease,EFO_0005547,dengue disease,EFO_0005547,id_match,Infectious Disease,Infectious Disease
+dengue_hemorrhagic_fever,EFO_0004227,Dengue Hemorrhagic Fever,EFO_0004227,id_match,Infectious Disease,Infectious Disease
+dermatomyositis,EFO_0000398,dermatomyositis,EFO_0000398,id_match,Urinary System|Immune System|Skin/Integumentary|Nervous System|Musculoskeletal,Urinary System
+diabetes_mellitus,EFO_0000400,diabetes mellitus,EFO_0000400,id_match,Metabolic|Endocrine System|Pancreas,Metabolic
+dilated_cardiomyopathy,EFO_0000407,dilated cardiomyopathy,EFO_0000407,id_match,Cardiovascular|Musculoskeletal,Cardiovascular
+discoid_lupus_erythematosus,MONDO_0019558,discoid lupus erythematosus,MONDO_0019558,id_match,Immune System|Musculoskeletal,Immune System
+ductal_carcinoma_in_situ,EFO_0000432,breast ductal carcinoma in situ,EFO_0000432,id_match,Cancer/Tumor|Reproductive/Breast|Skin/Integumentary,Cancer/Tumor
+endometrial_cancer,MONDO_0011962,endometrial cancer,MONDO_0011962,id_match,Reproductive/Breast|Cancer/Tumor,Reproductive/Breast
+endometriosis,EFO_0001065,endometriosis,EFO_0001065,id_match,Reproductive/Breast,Reproductive/Breast
+epidermolysis_bullosa_simplex,MONDO_0017610,epidermolysis bullosa simplex,MONDO_0017610,id_match,Genetic/Congenital|Skin/Integumentary,Genetic/Congenital
+esophagus_adenocarcinoma,EFO_0000478,esophageal adenocarcinoma,EFO_0000478,id_match,Gastrointestinal|Cancer/Tumor,Gastrointestinal
+esophagus_squamous_cell_carcinoma,EFO_0005922,esophageal squamous cell carcinoma,EFO_0005922,id_match,Gastrointestinal|Cancer/Tumor,Gastrointestinal
+facioscapulohumeral_muscular_dystrophy,MONDO_0001347,facioscapulohumeral muscular dystrophy,Orphanet_269,synonym_match,Nervous System|Musculoskeletal|Genetic/Congenital,Nervous System
+familial_hypercholesterolemia,EFO_0004911,familial hypercholesterolemia,EFO_0004911,id_match,Genetic/Congenital|Metabolic,Genetic/Congenital
+fragile_X_syndrome,MONDO_0010383,fragile X syndrome,MONDO_0010383,id_match,Genetic/Congenital,Genetic/Congenital
+gastroesophageal_reflux_disease,EFO_0003948,gastroesophageal reflux disease,EFO_0003948,id_match,Gastrointestinal|Genetic/Congenital,Gastrointestinal
+gastrointestinal_stromal_tumor,MONDO_0011719,gastrointestinal stromal tumor,MONDO_0011719,id_match,Genetic/Congenital|Cancer/Tumor|Gastrointestinal,Genetic/Congenital
+glaucoma,MONDO_0005041,glaucoma,MONDO_0005041,id_match,Visual System,Visual System
+glioblastoma_multiforme,EFO_0000519,glioblastoma multiforme,EFO_0000519,id_match,Cancer/Tumor|Nervous System,Cancer/Tumor
+head_and_neck_squamous_cell_carcinoma,EFO_0000181,head and neck squamous cell carcinoma,EFO_0000181,id_match,Cancer/Tumor,Cancer/Tumor
+hemorrhagic_thrombocythemia,EFO_0000479,essential thrombocythemia,EFO_0000479,id_match,Genetic/Congenital|Hematologic|Cancer/Tumor|Immune System|Musculoskeletal,Genetic/Congenital
+hepatitis_C,EFO_0003047,hepatitis C virus infection,EFO_0003047,id_match,Infectious Disease|Endocrine System|Gastrointestinal,Infectious Disease
+hepatocellular_carcinoma,EFO_0000182,hepatocellular carcinoma,EFO_0000182,id_match,Endocrine System|Cancer/Tumor|Gastrointestinal,Endocrine System
+hypertension,EFO_0000537,hypertension,EFO_0000537,id_match,Cardiovascular,Cardiovascular
+idiopathic_pulmonary_fibrosis,EFO_0000768,idiopathic pulmonary fibrosis,EFO_0000768,id_match,Cancer/Tumor|Respiratory,Cancer/Tumor
+inclusion_body_myositis,EFO_0007323,inclusion body myositis,EFO_0007323,id_match,Immune System|Musculoskeletal,Immune System
+inflammatory_bowel_disease,EFO_0003767,inflammatory bowel disease,EFO_0003767,id_match,Genetic/Congenital|Immune System|Gastrointestinal,Genetic/Congenital
+influenza,EFO_0007328,influenza,EFO_0007328,id_match,Infectious Disease|Respiratory,Infectious Disease
+intellectual_disability,HP_0001249,Intellectual disability,HP_0001249,id_match,Phenotype,Phenotype
+interstitial_cystitis,EFO_0008507,interstitial cystitis,EFO_0008507,id_match,Musculoskeletal|Urinary System,Musculoskeletal
+intracranial_aneurysm,EFO_0003870,brain aneurysm,EFO_0003870,id_match,Nervous System|Cardiovascular,Nervous System
+invasive_ductal_carcinoma,EFO_0000186,invasive breast ductal carcinoma,EFO_0000186,id_match,Cancer/Tumor|Reproductive/Breast|Skin/Integumentary,Cancer/Tumor
+juvenile_rheumatoid_arthritis,EFO_0002609,juvenile idiopathic arthritis,EFO_0002609,id_match,Immune System|Musculoskeletal,Immune System
+large_cell_neuroendocrine_carcinoma,EFO_0000563,large cell neuroendocrine carcinoma,EFO_0000563,id_match,Endocrine System|Cancer/Tumor,Endocrine System
+leukemia,EFO_0000565,leukemia,EFO_0000565,id_match,Cancer/Tumor|Hematologic,Cancer/Tumor
+liver_cirrhosis,EFO_0001422,cirrhosis of liver,EFO_0001422,id_match,Cancer/Tumor|Endocrine System|Gastrointestinal,Cancer/Tumor
+lung_adenocarcinoma,EFO_0000571,lung adenocarcinoma,EFO_0000571,id_match,Cancer/Tumor|Respiratory,Cancer/Tumor
+lung_large_cell_carcinoma,EFO_0003050,large cell lung carcinoma,EFO_0003050,id_match,Cancer/Tumor|Respiratory,Cancer/Tumor
+lung_small_cell_carcinoma,EFO_0000702,small cell lung carcinoma,EFO_0000702,id_match,Genetic/Congenital|Endocrine System|Respiratory|Cancer/Tumor,Genetic/Congenital
+lung_squamous_cell_carcinoma,EFO_0000708,squamous cell lung carcinoma,EFO_0000708,id_match,Cancer/Tumor|Respiratory,Cancer/Tumor
+lupus_erythematosus,MONDO_0004670,lupus erythematosus,MONDO_0004670,id_match,Musculoskeletal|Immune System,Musculoskeletal
+macular_degeneration,EFO_0009606,macular degeneration,EFO_0009606,id_match,Nervous System|Visual System,Nervous System
+malignant_pleural_mesothelioma,EFO_0000770,malignant pleural mesothelioma,EFO_0000770,id_match,Gastrointestinal|Respiratory|Cancer/Tumor,Gastrointestinal
+melanoma,EFO_0000756,melanoma,EFO_0000756,id_match,Cancer/Tumor,Cancer/Tumor
+mental_depression,MONDO_0002050,depressive disorder,MONDO_0002050,id_match,Nervous System|Psychiatric,Nervous System
+monoclonal_gammopathy_of_uncertain_significance,EFO_0000203,monoclonal gammopathy,EFO_0000203,id_match,Hematologic,Hematologic
+morbid_obesity,EFO_0001074,morbid obesity,EFO_0001074,id_match,Metabolic,Metabolic
+multiple_myeloma,EFO_0001378,multiple myeloma,EFO_0001378,id_match,Immune System|Hematologic|Genetic/Congenital|Cancer/Tumor,Immune System
+multiple_sclerosis,MONDO_0005301,multiple sclerosis,MONDO_0005301,id_match,Nervous System|Immune System,Nervous System
+muscular_dystrophy,MONDO_0020121,muscular dystrophy,MONDO_0020121,id_match,Nervous System|Genetic/Congenital|Musculoskeletal,Nervous System
+myelodysplastic_syndrome,EFO_0000198,myelodysplastic syndrome,EFO_0000198,id_match,Hematologic|Cancer/Tumor|Genetic/Congenital,Hematologic
+myocardial_infarction,EFO_0000612,myocardial infarction,EFO_0000612,id_match,Cardiovascular,Cardiovascular
+myotonic_dystrophy_type_1,MONDO_0008056,myotonic dystrophy type 1,MONDO_0008056,id_match,Cardiovascular|Genetic/Congenital|Musculoskeletal|Nervous System,Cardiovascular
+nasopharynx_carcinoma,MONDO_0015459,nasopharyngeal carcinoma,MONDO_0015459,id_match,Cancer/Tumor|Gastrointestinal|Infectious Disease|Respiratory,Cancer/Tumor
+nephroblastoma,Orphanet_654,Nephroblastoma,MONDO_0006058,synonym_match,Urinary System|Genetic/Congenital|Cancer/Tumor,Urinary System
+nicotine_dependence,EFO_0003768,nicotine dependence,EFO_0003768,id_match,Psychiatric|Nervous System,Psychiatric
+obesity,EFO_0001073,obesity,EFO_0001073,id_match,Metabolic,Metabolic
+oligodendroglioma,EFO_0000632,oligodendroglioma,EFO_0000632,id_match,Cancer/Tumor|Nervous System,Cancer/Tumor
+osteoarthritis,MONDO_0005178,osteoarthritis,MONDO_0005178,id_match,Musculoskeletal,Musculoskeletal
+osteoporosis,EFO_0003882,osteoporosis,EFO_0003882,id_match,Musculoskeletal|Genetic/Congenital,Musculoskeletal
+ovarian_cancer,MONDO_0008170,ovarian cancer,MONDO_0008170,id_match,Cancer/Tumor|Endocrine System|Reproductive/Breast,Cancer/Tumor
+pancreatic_cancer,EFO_1000359,Malignant Pancreatic Neoplasm,EFO_1000359,id_match,Endocrine System|Gastrointestinal|Cancer/Tumor|Pancreas,Endocrine System
+pancreatic_ductal_adenocarcinoma,MONDO_0005184,pancreatic ductal adenocarcinoma,MONDO_0005184,id_match,Pancreas|Cancer/Tumor|Endocrine System|Gastrointestinal,Pancreas
+papillary_thyroid_carcinoma,EFO_0000641,papillary thyroid carcinoma,EFO_0000641,id_match,Endocrine System|Cancer/Tumor,Endocrine System
+peripartum_cardiomyopathy,EFO_0002628,peripartum cardiomyopathy,EFO_0002628,id_match,Cardiovascular|Musculoskeletal|Pregnancy/Perinatal,Cardiovascular
+polycystic_ovary_syndrome,EFO_0000660,polycystic ovary syndrome,EFO_0000660,id_match,Endocrine System|Genetic/Congenital|Reproductive/Breast,Endocrine System
+post-traumatic_stress_disorder,EFO_0001358,post-traumatic stress disorder,EFO_0001358,id_match,Nervous System|Psychiatric,Nervous System
+pre-eclampsia,EFO_0000668,preeclampsia,EFO_0000668,id_match,Pregnancy/Perinatal|Cardiovascular|Genetic/Congenital,Pregnancy/Perinatal
+primary_open_angle_glaucoma,EFO_0004190,open-angle glaucoma,EFO_0004190,id_match,Visual System,Visual System
+prostate_cancer,MONDO_0008315,prostate cancer,MONDO_0008315,id_match,Reproductive/Breast|Cancer/Tumor,Reproductive/Breast
+psoriasis,EFO_0000676,psoriasis,EFO_0000676,id_match,Immune System|Genetic/Congenital|Skin/Integumentary,Immune System
+psoriatic_arthritis,EFO_0003778,psoriatic arthritis,EFO_0003778,id_match,Immune System|Musculoskeletal,Immune System
+pulmonary_fibrosis,EFO_0009448,pulmonary fibrosis,EFO_0009448,id_match,Cancer/Tumor|Respiratory,Cancer/Tumor
+pulmonary_hypertension,MONDO_0005149,pulmonary hypertension,MONDO_0005149,id_match,Cardiovascular,Cardiovascular
+pulmonary_sarcoidosis,DOID_13406,pulmonary sarcoidosis,DOID_13406,id_match,Musculoskeletal|Respiratory,Musculoskeletal
+relapsing-remitting_multiple_sclerosis,EFO_0003929,relapsing-remitting multiple sclerosis,EFO_0003929,id_match,Nervous System|Immune System,Nervous System
+renal_cell_carcinoma,EFO_0000681,renal cell carcinoma,EFO_0000681,id_match,Urinary System|Cancer/Tumor,Urinary System
+rheumatoid_arthritis,EFO_0000685,rheumatoid arthritis,EFO_0000685,id_match,Immune System|Musculoskeletal,Immune System
+salivary_gland_adenoid_cystic_carcinoma,MONDO_0003175,salivary gland adenoid cystic carcinoma,MONDO_0003175,id_match,Cancer/Tumor|Gastrointestinal,Cancer/Tumor
+sarcoidosis,MONDO_0019338,sarcoidosis,MONDO_0019338,id_match,Musculoskeletal,Musculoskeletal
+scleroderma,EFO_1001993,scleroderma,EFO_1001993,id_match,Musculoskeletal|Immune System|Visual System|Genetic/Congenital,Musculoskeletal
+serous_cystadenocarcinoma,MONDO_0024621,serous cystadenocarcinoma,EFO_0003825,synonym_match,Cancer/Tumor,Cancer/Tumor
+severe_acute_respiratory_syndrome,EFO_0000694,severe acute respiratory syndrome,EFO_0000694,id_match,Infectious Disease|Respiratory,Infectious Disease
+sickle_cell_anemia,MONDO_0011382,sickle cell anemia,MONDO_0011382,id_match,Hematologic|Genetic/Congenital,Hematologic
+skin_squamous_cell_carcinoma,MONDO_0002529,skin squamous cell carcinoma,MONDO_0002529,id_match,Cancer/Tumor|Skin/Integumentary,Cancer/Tumor
+smoldering_myeloma,EFO_0003073,asymptomatic myeloma,EFO_0003073,id_match,Immune System|Hematologic|Cancer/Tumor|Genetic/Congenital,Immune System
+stomach_cancer,EFO_0003897,stomach neoplasm,EFO_0003897,id_match,Cancer/Tumor|Gastrointestinal,Cancer/Tumor
+swine_influenza,EFO_0005226,swine influenza,EFO_0005226,id_match,Respiratory|Infectious Disease,Respiratory
+systemic_lupus_erythematosus,MONDO_0007915,systemic lupus erythematosus,MONDO_0007915,id_match,Musculoskeletal|Immune System|Urinary System,Musculoskeletal
+tendinitis,MONDO_0004857,tendinitis,MONDO_0004857,id_match,Immune System|Musculoskeletal,Immune System
+testicular_cancer,EFO_0005088,testicular carcinoma,EFO_0005088,id_match,Cancer/Tumor|Endocrine System|Reproductive/Breast,Cancer/Tumor
+tuberculosis,MONDO_0018076,tuberculosis,MONDO_0018076,id_match,Infectious Disease,Infectious Disease
+type_1_diabetes_mellitus,MONDO_0005147,type 1 diabetes mellitus,MONDO_0005147,id_match,Pancreas|Endocrine System|Gastrointestinal|Immune System|Metabolic,Pancreas
+type_2_diabetes_mellitus,MONDO_0005148,type 2 diabetes mellitus,MONDO_0005148,id_match,Pancreas|Endocrine System|Metabolic,Pancreas
+ulcerative_colitis,EFO_0000729,ulcerative colitis,EFO_0000729,id_match,Gastrointestinal|Genetic/Congenital|Immune System,Gastrointestinal
+urticaria,EFO_0005531,urticaria,EFO_0005531,id_match,Skin/Integumentary,Skin/Integumentary
+uterine_fibroid,EFO_0000731,uterine fibroid,EFO_0000731,id_match,Genetic/Congenital|Musculoskeletal|Reproductive/Breast|Cancer/Tumor,Genetic/Congenital

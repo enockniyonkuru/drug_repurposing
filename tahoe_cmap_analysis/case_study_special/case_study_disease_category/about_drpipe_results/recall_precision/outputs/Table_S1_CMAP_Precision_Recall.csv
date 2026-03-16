@@ -1,0 +1,102 @@
+Disease_ID,Disease,I,S,P,Precision,Recall
+EFO_0003047,hepatitis C,39,2,2,5.1,100.0
+EFO_0000304,breast adenocarcinoma,46,3,3,6.5,100.0
+EFO_0007149,appendicitis,51,1,1,2.0,100.0
+HP_0001249,intellectual disability,132,3,3,2.3,100.0
+EFO_0000095,chronic lymphocytic leukemia,63,8,8,12.7,100.0
+MONDO_0015253,Diamond-Blackfan anemia,54,3,3,5.6,100.0
+EFO_0007160,autoimmune thrombocytopenic purpura,16,2,2,12.5,100.0
+EFO_0000272,astrocytoma,37,2,2,5.4,100.0
+EFO_0004911,familial hypercholesterolemia,48,2,2,4.2,100.0
+EFO_0003782,anterior horn cell disease,33,1,1,3.0,100.0
+MONDO_0009061,cystic fibrosis,56,1,1,1.8,100.0
+MONDO_0017610,epidermolysis bullosa simplex,61,2,2,3.3,100.0
+MONDO_0004670,lupus erythematosus,29,1,1,3.4,100.0
+EFO_0000222,acute myeloid leukemia,8,2,2,25.0,100.0
+EFO_0000339,chronic myeloid leukemia,41,6,6,14.6,100.0
+EFO_0000676,psoriasis,29,1,1,3.4,100.0
+EFO_0006792,Lewy body dementia,15,1,1,6.7,100.0
+EFO_0003872,colitis,43,3,3,7.0,100.0
+EFO_0000668,pre-eclampsia,39,2,2,5.1,100.0
+EFO_0004610,Acute Lung Injury,23,1,1,4.3,100.0
+EFO_0000407,dilated cardiomyopathy,57,2,2,3.5,100.0
+EFO_0001422,liver cirrhosis,36,1,1,2.8,100.0
+EFO_0000274,Eczema,24,1,1,4.2,100.0
+EFO_0000519,glioblastoma multiforme,56,4,4,7.1,100.0
+EFO_0002496,actinic keratosis,20,1,1,5.0,100.0
+EFO_0000660,polycystic ovary syndrome,18,1,1,5.6,100.0
+EFO_1000668,allergic contact dermatitis,68,1,1,1.5,100.0
+EFO_0000182,hepatocellular carcinoma,40,4,4,10.0,100.0
+MONDO_0007254,breast cancer,14,6,6,42.9,100.0
+EFO_0000233,adenosquamous cell lung carcinoma,15,1,1,6.7,100.0
+EFO_0000365,colorectal adenocarcinoma,127,6,7,4.7,85.7
+EFO_0007243,Ebola hemorrhagic fever,142,6,7,4.2,85.7
+EFO_0000186,invasive ductal carcinoma,89,5,6,5.6,83.3
+EFO_0003767,inflammatory bowel disease,96,3,4,3.1,75.0
+MONDO_0004979,asthma,73,5,7,6.8,71.4
+EFO_0000764,Human immunodeficiency virus infectious disease,65,7,10,10.8,70.0
+MONDO_0002050,mental depression,124,10,15,8.1,66.7
+MONDO_0004784,allergic asthma,57,6,9,10.5,66.7
+MONDO_0002974,cervical cancer,59,8,13,13.6,61.5
+EFO_0003897,stomach cancer,160,22,36,13.8,61.1
+MONDO_0005149,pulmonary hypertension,118,23,40,19.5,57.5
+MONDO_0002280,anemia,97,9,17,9.3,52.9
+EFO_1001494,Psoriasis vulgaris,43,2,4,4.7,50.0
+EFO_0000694,severe acute respiratory syndrome,53,3,6,5.7,50.0
+EFO_0001378,multiple myeloma,44,5,10,11.4,50.0
+MONDO_0005147,type 1 diabetes mellitus,50,8,16,16.0,50.0
+MONDO_0008315,prostate cancer,113,21,47,18.6,44.7
+MONDO_0007915,systemic lupus erythematosus,43,4,9,9.3,44.4
+EFO_0004190,primary open angle glaucoma,80,3,7,3.8,42.9
+EFO_0003778,psoriatic arthritis,91,3,7,3.3,42.9
+EFO_1001993,scleroderma,44,2,5,4.5,40.0
+EFO_0009606,macular degeneration,57,2,5,3.5,40.0
+MONDO_0005178,osteoarthritis,104,10,25,9.6,40.0
+DOID_13406,pulmonary sarcoidosis,38,2,5,5.3,40.0
+MONDO_0005301,multiple sclerosis,75,8,23,10.7,34.8
+EFO_0000731,uterine fibroid,36,1,3,2.8,33.3
+EFO_0005088,testicular cancer,50,9,29,18.0,31.0
+EFO_1001249,NASH,50,3,10,6.0,30.0
+EFO_0000198,myelodysplastic syndrome,41,4,16,9.8,25.0
+EFO_0003948,gastroesophageal reflux disease,57,1,4,1.8,25.0
+EFO_0000756,melanoma,61,10,43,16.4,23.3
+MONDO_0005180,Parkinson's disease,37,3,15,8.1,20.0
+EFO_0003882,osteoporosis,45,1,5,2.2,20.0
+EFO_0000681,renal cell carcinoma,42,2,11,4.8,18.2
+EFO_1000359,pancreatic cancer,39,6,35,15.4,17.1
+EFO_0005531,urticaria,40,1,6,2.5,16.7
+EFO_0000641,papillary thyroid carcinoma,38,1,6,2.6,16.7
+MONDO_0005148,type 2 diabetes mellitus,45,4,33,8.9,12.1
+EFO_0001073,obesity,36,3,26,8.3,11.5
+MONDO_0011382,sickle cell anemia,44,2,18,4.5,11.1
+MONDO_0002529,skin squamous cell carcinoma,38,1,9,2.6,11.1
+EFO_0003768,Nicotine addiction,71,1,22,1.4,4.5
+EFO_0000708,lung squamous cell carcinoma,73,0,4,0.0,0.0
+MONDO_0019499,Turner syndrome,42,0,1,0.0,0.0
+MONDO_0015459,nasopharynx carcinoma,43,0,9,0.0,0.0
+EFO_0000699,Sjogren's syndrome,41,0,3,0.0,0.0
+EFO_0003073,smoldering myeloma,34,0,1,0.0,0.0
+EFO_0009441,Waldenstrom Macroglobulinemia,36,0,2,0.0,0.0
+EFO_1000595,anaplastic thyroid carcinoma,6,0,0,0.0,
+MONDO_0013282,alpha 1-antitrypsin deficiency,43,0,0,0.0,
+EFO_0003063,Polymyositis,15,0,0,0.0,
+EFO_0000398,dermatomyositis,58,0,0,0.0,
+Orphanet_654,nephroblastoma,43,0,0,0.0,
+MONDO_0018305,chronic granulomatous disease,34,0,0,0.0,
+EFO_0000401,Diabetic Nephropathy,3,0,0,0.0,
+EFO_0000318,Cardiomyopathy,5,0,0,0.0,
+MONDO_0008678,Williams-Beuren syndrome,33,0,0,0.0,
+MONDO_0008056,myotonic dystrophy type 1,31,0,0,0.0,
+MONDO_0001347,facioscapulohumeral muscular dystrophy,1,0,0,0.0,
+MONDO_0010383,fragile X syndrome,17,0,0,0.0,
+EFO_0000479,hemorrhagic thrombocythemia,7,0,0,0.0,
+MONDO_0018544,adrenoleukodystrophy,50,0,0,0.0,
+MONDO_0010726,Rett syndrome,37,0,0,0.0,
+EFO_0002608,HIV encephalitis,1,0,0,0.0,
+EFO_0000557,childhood type dermatomyositis,4,0,0,0.0,
+EFO_0001065,endometriosis,8,0,0,0.0,
+MONDO_0005184,pancreatic ductal adenocarcinoma,1,0,0,0.0,
+EFO_1001345,alcoholic hepatitis,5,0,0,0.0,
+MONDO_0002046,alcohol abuse,4,0,0,0.0,
+EFO_0000770,malignant pleural mesothelioma,8,0,0,0.0,
+EFO_0000702,lung small cell carcinoma,11,0,0,0.0,

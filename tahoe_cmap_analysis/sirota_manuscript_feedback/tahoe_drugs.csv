@@ -1,0 +1,380 @@
+drug_name,in_cmap
+(R)-Verapamil (hydrochloride),No
+(S)-Crizotinib,No
+18β-Glycyrrhetinic acid,No
+4EGI-1,No
+5-Azacytidine,No
+5-Fluorouracil,No
+8-Hydroxyquinoline,No
+9-ING-41,No
+APTO-253,No
+AT7519,No
+AZD-7648,No
+AZD-8055,No
+AZD1390,No
+AZD2858,No
+Abemaciclib,No
+Abiraterone acetate,No
+Acetazolamide,Yes
+Acetohexamide,Yes
+Adagrasib,No
+Adenine,No
+Adenosine,No
+Afatinib,No
+Aliskiren,No
+Allantoin,Yes
+Allopurinol,No
+Almonertinib (hydrochloride),No
+Almonertinib (mesylate),No
+Alpelisib,No
+Altretamine,Yes
+Amsacrine,No
+Anastrozole,No
+Anethole trithione,No
+Apalutamide,No
+Aprepitant,No
+Arbutin,No
+Artemether,No
+Artesunate,No
+Asciminib,No
+Aspirin,No
+Ataluren,No
+Atazanavir (sulfate),No
+Auranofin,No
+Azithromycin (hydrate),No
+BAY1125976,No
+BI-3406,No
+BI-78D3,No
+Baicalin,No
+Balsalazide (sodium hydrate),No
+Belinostat,No
+Belumosudil,No
+Belumosudil (mesylate),No
+Belzutifan,No
+Bendamustine,No
+Benproperine (phosphate),No
+Bentamapimod,No
+Benztropine (mesylate),No
+Berbamine,No
+Berbamine (dihydrochloride),No
+Berberine (chloride hydrate),No
+Bergenin,Yes
+Bestatin,No
+Bestatin (hydrochloride),No
+Betamethasone dipropionate,No
+Bexarotene,No
+Bicalutamide,No
+Bimatoprost,No
+Bimiralisib,No
+Binimetinib,No
+Bisoprolol (hemifumarate),No
+Bortezomib,No
+Bosentan (hydrate),No
+Brimonidine,No
+Brivudine,No
+Budesonide,Yes
+Busulfan,No
+CP21R7,No
+Cabozantinib (S-malate),No
+Canagliflozin,No
+Canagliflozin (hemihydrate),No
+Capivasertib,No
+Capmatinib,No
+Captopril,Yes
+Carbamazepine,Yes
+Carbidopa (monohydrate),No
+Celecoxib,Yes
+Cepharanthine,No
+Chlorhexidine (diacetate),No
+Ciclopirox,Yes
+Cilostazol,No
+Cinacalcet,No
+Citalopram (hydrobromide),No
+Clobetasol propionate,No
+Clofarabine,No
+Clonidine (hydrochloride),No
+Clopidogrel,No
+Clotrimazole,Yes
+Cloxacillin (sodium),No
+Cobimetinib,No
+Crizotinib (hydrochloride),No
+Cyclosporin A,No
+Cysteamine (hydrochloride),No
+Cytarabine,No
+Cytarabine (hydrochloride),No
+DT-061,No
+DTP3,No
+Dabrafenib,No
+Daidzin,No
+Dapagliflozin,No
+"Dapagliflozin ((2S)-1,2-propanediol, hydrate)",No
+Daptomycin,No
+Darinaparsin,No
+Darolutamide,No
+Decitabine,Yes
+Delamanid,No
+Demeclocycline,Yes
+Dexamethasone,Yes
+Dexmedetomidine,No
+Diammonium Glycyrrhizinate,No
+Digitoxin,No
+Dihydroartemisinin,No
+Dimethyl fumarate,No
+Dinaciclib,No
+Diphenhydramine,Yes
+Docetaxel,No
+Docetaxel (Trihydrate),No
+Dorzolamide (hydrochloride),No
+Doxorubicin (hydrochloride),No
+Doxycycline (monohydrate),No
+Drospirenone,No
+ERK5-IN-2,No
+ETC-206,No
+EX229,No
+Econazole,Yes
+Edoxaban (tosylate monohydrate),No
+Elagolix sodium,No
+Elimusertib hydrochloride,No
+Encorafenib,No
+Entecavir (monohydrate),No
+Entrectinib,No
+Epirubicin (hydrochloride),No
+Eplerenone,No
+Erdafitinib ,No
+Erlotinib,No
+Erythromycin,Yes
+Esmolol (hydrochloride),No
+Estrone sulfate (potassium),No
+Everolimus,No
+Fedratinib (hydrochloride hydrate),No
+Fenofibrate,Yes
+Ferulic acid,No
+Filgotinib,No
+Finasteride,Yes
+Fingolimod (hydrochloride),No
+Flumatinib (mesylate),No
+Flutamide,Yes
+Fluvoxamine,Yes
+Fluvoxamine (maleate),No
+Folic acid,Yes
+Fostamatinib (disodium hexahydrate),No
+Fulvestrant,Yes
+Fumaric acid,No
+Furosemide,Yes
+Fusidic acid,Yes
+Futibatinib,No
+GSK1059615,No
+Gallic acid,No
+Gallic acid (hydrate),No
+Gefitinib,Yes
+Gemcitabine,No
+Gemfibrozil,Yes
+Glasdegib,No
+Glycyrrhizic acid,No
+Goserelin (acetate),No
+HI-TOPK-032,No
+Harringtonine,No
+Hesperidin,Yes
+Hexylresorcinol,No
+Homoharringtonine,No
+Hydroxyfasudil,No
+Hydroxyurea,No
+IQ 1,No
+Idarubicin (hydrochloride),No
+Idoxuridine,Yes
+Imiquimod (hydrochloride),No
+Imiquimod (maleate),No
+Indacaterol (maleate),No
+Infigratinib,No
+Ipatasertib,No
+Irinotecan,Yes
+Irinotecan (hydrochloride),No
+Isocorydine,Yes
+Ivabradine (hydrochloride),No
+Ivermectin,Yes
+Ixazomib,No
+Ixazomib citrate,No
+L-Eflornithine (monohydrochloride),No
+L-Thyroxine (sodium salt pentahydrate),No
+LB-100,No
+LJI308,No
+LY-2584702 (tosylate salt),No
+LY2090314,No
+Lactate (calcium),No
+Lapatinib ditosylate,No
+Larotrectinib,No
+Larotrectinib sulfate,No
+Lenalidomide (hemihydrate),No
+Levobupivacaine (hydrochloride),No
+Lidocaine (hydrochloride),No
+Ligustrazine,No
+Lipoic acid,No
+Lonafarnib,No
+Loperamide (hydrochloride),No
+Lopinavir,No
+Lucanthone,No
+Lumateperone (tosylate),No
+MK-3903,No
+MK-8353,No
+ML264,No
+Macitentan,No
+Malotilate,No
+Mebendazole,Yes
+Medroxyprogesterone acetate,No
+Megestrol,Yes
+Meloxicam,No
+Menadione,Yes
+Methotrexate,Yes
+Methyl aminolevulinate (hydrochloride),No
+Methylprednisolone succinate,No
+Methylthiouracil,No
+Mifepristone,Yes
+Minodronic acid,No
+Mitoxantrone (dihydrochloride),No
+Monocrotaline,Yes
+Mozavaptan,No
+NG25,No
+NVP-BHG712,No
+Nafamostat (mesylate),No
+Naproxen,Yes
+Neratinib,No
+Neratinib (maleate),No
+Nevirapine,No
+Niclosamide (olamine),No
+Nimesulide,Yes
+Norepinephrine (hydrochloride),No
+OTS514,No
+Olanzapine,No
+Oleic acid,No
+Omeprazole,Yes
+Omeprazole (sodium),No
+Orlistat,Yes
+Ornidazole,Yes
+Osimertinib (mesylate),No
+Ouabain (Octahydrate),No
+Oxaliplatin,No
+Oxaprozin,Yes
+PF-06260933,No
+PH-797804,No
+Paclitaxel,Yes
+Palmatine (chloride),No
+Panobinostat,No
+Pasireotide (acetate),No
+Pemetrexed,No
+Pemigatinib,No
+Penfluridol,No
+Pentagastrin,No
+Pentamidine (isethionate),No
+Pentoxifylline,Yes
+Peretinoin,No
+Perindopril (erbumine),No
+Pexidartinib (hydrochloride),No
+Phenylephrine (hydrochloride),No
+Phenytoin (sodium),No
+Pimitespib,No
+Pimozide,Yes
+Pioglitazone,Yes
+Piroxicam,Yes
+Pitavastatin (Calcium),No
+Plicamycin,No
+Ponatinib,No
+Posaconazole,No
+Pralsetinib,No
+Pravastatin (sodium),No
+Procainamide (hydrochloride),No
+Proglumide,Yes
+Pyridoxine,Yes
+Pyridoxine (hydrochloride),No
+Quinestrol,No
+Quinidine (15% dihydroquinidine),No
+RMC-6236,No
+Radotinib,No
+Ralimetinib dimesylate,No
+Raltitrexed,No
+Ranolazine,No
+Rapamycin,No
+Regorafenib,No
+Relugolix,No
+Resveratrol,Yes
+Retinoic acid,No
+Ribociclib,No
+Rifaximin,No
+Riluzole hydrochloride,No
+Rimonabant,No
+Rimonabant (Hydrochloride),No
+Ritonavir,No
+Ropivacaine (hydrochloride monohydrate),No
+Rosiglitazone,Yes
+Roxadustat,No
+Rucaparib (phosphate),No
+Rutin (trihydrate),No
+S-Adenosyl-L-methionine (disulfate tosylate),No
+SBI-0640756,No
+Sacubitril/Valsartan,No
+Salicylic acid,No
+Sapanisertib,No
+Saquinavir,Yes
+Selinexor ,No
+Sildenafil,No
+Silodosin,No
+Simotinib,No
+Sinomenine,No
+Sivelestat (sodium tetrahydrate),No
+Sodium Salicylate,No
+Sonidegib,No
+Sulfatinib,No
+Sulfisoxazole,No
+Sunitinib,No
+TAK-733,No
+TAK-901,No
+Tadalafil,No
+Talc,No
+Tazarotene,No
+Temsirolimus,No
+Temuterkib,No
+Terfenadine,Yes
+Tetracycline (hydrochloride),No
+Thymol,No
+Thymopentin,No
+Tirabrutinib,No
+Tirabrutinib (hydrochloride),No
+Tofacitinib,No
+Tofacitinib (citrate),No
+Tolcapone,No
+Tolmetin,Yes
+Tomivosertib,No
+Topotecan (hydrochloride),No
+Torkinib,No
+Trametinib,No
+Trametinib (DMSO_TF solvate),No
+Tranilast,No
+Triamcinolone,Yes
+Triclosan,No
+Trifluridine,Yes
+Trimetrexate,No
+Tubulin inhibitor 6,No
+Tucatinib,No
+Tucidinostat,No
+ULK-101,No
+Uridine,No
+Valdecoxib,Yes
+Vandetanib,No
+Vemurafenib,No
+Verapamil,Yes
+Verteporfin,Yes
+Vilanterol,No
+Vinblastine (sulfate),No
+Vismodegib,No
+Vitamin K4,No
+Volasertib,No
+Voriconazole,No
+Vortioxetine,No
+XRK3F2,No
+Zileuton,No
+c-Kit-IN-1,No
+crizotinib,No
+olaparib,No
+palbociclib,No
+venetoclax,No
+vincristine,No
+γ-Oryzanol,No

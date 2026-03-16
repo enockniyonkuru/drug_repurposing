@@ -1,0 +1,47 @@
+import pandas as pd
+
+df = pd.read_csv('data/disease_signatures/creeds_disease_gene_counts_across_stages.csv')
+df_valid = df[df['genes_after_shared_gene_filter'] > 0]
+
+before = df_valid['genes_before_standardization']
+after_standard = df_valid['genes_after_standardization']
+after_filter = df_valid['genes_after_shared_gene_filter']
+
+print("="*60)
+print("DISEASE SIGNATURE SIZE STATISTICS FOR MANUSCRIPT")
+print("="*60)
+print()
+print(f"Total signatures analyzed: {len(df)}")
+print(f"Valid signatures (>0 genes after all filtering): {len(df_valid)}")
+print()
+print("-"*60)
+print("STAGE 1: Raw signatures (before any filtering)")
+print("-"*60)
+print(f"  Mean size: {before.mean():.0f} genes")
+print(f"  Range: {before.min()} - {before.max()} genes")
+print(f"  Median: {before.median():.0f} genes")
+print()
+print("-"*60)
+print("STAGE 2: After significance/fold-change thresholds")
+print("-"*60)
+print(f"  Mean size: {after_standard.mean():.0f} genes")
+print(f"  Range: {after_standard.min()} - {after_standard.max()} genes")
+print(f"  Median: {after_standard.median():.0f} genes")
+print()
+print("-"*60)
+print("STAGE 3: After shared gene filter (final)")
+print("-"*60)
+print(f"  Mean size: {after_filter.mean():.0f} genes")
+print(f"  Range: {after_filter.min()} - {after_filter.max()} genes")
+print(f"  Median: {after_filter.median():.0f} genes")
+print()
+print("="*60)
+print("SUGGESTED MANUSCRIPT TEXT:")
+print("="*60)
+print()
+print(f"We analyzed {len(df)} manually curated disease signatures,")
+print(f"each defined by sets of upregulated and downregulated genes,")
+print(f"with a mean size of approximately {before.mean():.0f} genes")
+print(f"(range: {before.min()}-{before.max()}) prior to filtering")
+print(f"and {after_filter.mean():.0f} (range: {after_filter.min()}-{after_filter.max()})")
+print(f"after applying significance and fold-change thresholds.")

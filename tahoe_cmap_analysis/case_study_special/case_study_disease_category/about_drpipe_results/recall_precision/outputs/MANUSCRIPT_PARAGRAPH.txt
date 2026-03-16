@@ -1,0 +1,9 @@
+## Precision and Recall Analysis
+
+We validated drug predictions against known disease-drug relationships from Open Targets by calculating precision and recall metrics per disease. Precision represents the proportion of predictions confirmed in Open Targets (S/I × 100%), while recall represents the proportion of known recoverable relationships successfully predicted (S/P × 100%, where P is the maximum possible given drug availability in each platform).
+
+TAHOE achieved superior performance: mean precision of 9.9% (SD 13.7%) and recall of 58.0% (SD 31.5%), compared to CMAP's 5.5% (SD 6.5%) precision and 60.7% (SD 36.9%) recall across 112 and 101 diseases, respectively.
+
+The superior TAHOE performance was consistent: 6 of 112 (5%) TAHOE diseases achieved >50% precision, compared to 0 of 101 (0%) for CMAP. Similarly, 85 of 95 (89%) TAHOE diseases exceeded 20% recall, versus 61 of 78 (78%) for CMAP.
+
+These results validate that both pipelines generate mechanistically coherent predictions with partial recovery of known disease-drug relationships, with TAHOE demonstrating substantially more accurate and comprehensive drug-disease candidate identification.

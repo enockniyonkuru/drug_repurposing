@@ -1,0 +1,46 @@
+// --- STEP 1: The Source ---
+// We name the source node to include the context you asked for.
+// The tool automatically adds the total "2,668" below this text.
+
+118k Open Targets (2,668 available in CMAP & TAHOE) [982] CMAP Only Available
+118k Open Targets (2,668 available in CMAP & TAHOE) [269] TAHOE Only Available
+118k Open Targets (2,668 available in CMAP & TAHOE) [1417] Available in Both
+
+// --- STEP 2: The Logic (The "Twist") ---
+// Splitting the flows so "Both" contributes to everyone.
+
+// A. FROM "CMAP ONLY" INPUT
+CMAP Only Available [179] Recovered CMAP (19.8%) out of 2,399 Available
+CMAP Only Available [803] Not Recovered
+
+// B. FROM "TAHOE ONLY" INPUT
+TAHOE Only Available [129] Recovered TAHOE (50.4%) out of 1,686 Available
+TAHOE Only Available [140] Not Recovered
+
+// C. FROM "AVAILABLE IN BOTH" INPUT
+// 1. To Shared Success
+Available in Both [37] Recovered by Both
+// 2. To CMAP Success (The remainder of the 437)
+Available in Both [258] Recovered CMAP (19.8%) out of 2,399 Available
+// 3. To TAHOE Success (The remainder of the 812)
+Available in Both [683] Recovered TAHOE (50.4%) out of 1,686 Available
+// 4. The rest is lost
+Available in Both [439] Not Recovered
+
+// --- STYLING ---
+// Source Node
+:118k Open Targets (2,668 available in CMAP & TAHOE) #36454F
+// Lost Data (Grey)
+:Not Recovered #D3D3D3
+
+// CMAP: Warm Orange
+:CMAP Only Available #F39C12
+:Recovered CMAP (19.8%) out of 2,399 Available #F39C12
+
+// TAHOE: Serene Blue
+:TAHOE Only Available #5DADE2
+:Recovered TAHOE (50.4%) out of 1,686 Available #5DADE2
+
+// Both: Purple
+:Available in Both #B07AA1
+:Recovered by Both #B07AA1

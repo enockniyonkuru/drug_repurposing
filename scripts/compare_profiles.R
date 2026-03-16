@@ -37,49 +37,70 @@ run_profile <- function(profile_name, config_file) {
   out <- file.path(root, paste0(profile_name, "_", ts))
   io_ensure_dir(out)
 
-  # Run pipeline
-  run_dr(
+  # Run pipeline using DRP class for full parameter support
+  drp <- DRP$new(
     signatures_rdata = cfg$paths$signatures,
     disease_path     = cfg$paths$disease_file %||% cfg$paths$disease_dir,
     disease_pattern  = if (is.null(cfg$paths$disease_file)) cfg$paths$disease_pattern else NULL,
-    cmap_meta_path   = cfg$paths$cmap_meta,
-    cmap_valid_path  = cfg$paths$cmap_valid,
+    cmap_meta_path   = cfg$paths$cmap_meta %||% NULL,
+    cmap_valid_path  = cfg$paths$cmap_valid %||% NULL,
+    drug_meta_path   = cfg$paths$drug_meta %||% NULL,
+    drug_valid_path  = cfg$paths$drug_valid %||% NULL,
     out_dir          = out,
     gene_key         = cfg$params$gene_key %||% "SYMBOL",
     logfc_cols_pref  = cfg$params$logfc_cols_pref %||% "log2FC",
     logfc_cutoff     = cfg$params$logfc_cutoff %||% 1,
+    percentile_filtering = cfg$params$percentile_filtering,
+    pval_key         = cfg$params$pval_key %||% NULL,
+    pval_cutoff      = cfg$params$pval_cutoff %||% 0.05,
     q_thresh         = cfg$params$q_thresh %||% 0.05,
     reversal_only    = isTRUE(cfg$params$reversal_only %||% TRUE),
     seed             = cfg$params$seed %||% 123,
+    n_permutations   = cfg$params$n_permutations %||% 100000,
     verbose          = TRUE,
     make_plots       = TRUE
   )
+  
+  drp$run_all(make_plots = TRUE)
 
   return(list(profile = profile_name, output_dir = out, config = cfg))
 }
 
 # Function to load results from a profile run
 load_profile_results <- function(output_dir, profile_name) {
-  # Find the results RData file
-  result_files <- list.files(output_dir, pattern = "_results\\.RData$", full.names = TRUE)
+  # First, try to load the filtered hits CSV files
+  hit_files <- list.files(output_dir, pattern = "hits_logFC.*\\.csv$", full.names = TRUE)
+  
+  if (length(hit_files) > 0) {
+    cat("Loading filtered hits from CSV:", hit_files[1], "\n")
+    drugs <- read.csv(hit_files[1], stringsAsFactors = FALSE)
+    cat("Loaded", nrow(drugs), "significant hits for", profile_name, "\n")
+  } else {
+    # Fallback: load from RData file
+    result_files <- list.files(output_dir, pattern = "_results\\.RData$", full.names = TRUE)
 
-  if (length(result_files) == 0) {
-    warning("No results file found in ", output_dir)
-    return(NULL)
+    if (length(result_files) == 0) {
+      warning("No results file found in ", output_dir)
+      return(NULL)
+    }
+
+    # Load the results
+    load(result_files[1])  # loads 'results' object
+
+    # Extract drug predictions and disease signatures
+    drugs <- results[[1]]
+    dz_signature <- results[[2]]
   }
 
-  # Load the results
-  load(result_files[1])  # loads 'results' object
+  # Add profile identifier if not already present
+  if (!"profile" %in% names(drugs)) {
+    drugs$profile <- profile_name
+  }
+  if (!"subset_comparison_id" %in% names(drugs)) {
+    drugs$subset_comparison_id <- profile_name
+  }
 
-  # Extract drug predictions and disease signatures
-  drugs <- results[[1]]
-  dz_signature <- results[[2]]
-
-  # Add profile identifier
-  drugs$profile <- profile_name
-  drugs$subset_comparison_id <- profile_name
-
-  return(list(drugs = drugs, dz_signature = dz_signature))
+  return(list(drugs = drugs, dz_signature = NULL))
 }
 
 # Main execution
@@ -127,42 +148,63 @@ if (length(drugs_list) == 0) {
 # Step 3: Filter for valid instances
 cat("Filtering for valid drug instances...\n")
 
-# Load CMAP metadata
-cmap_experiments <- read.csv(profile_results[[1]]$config$paths$cmap_meta, stringsAsFactors = FALSE)
-valid_instances <- read.csv(profile_results[[1]]$config$paths$cmap_valid, stringsAsFactors = FALSE)
-
-# Merge and filter valid experiments
-cmap_experiments_valid <- merge(cmap_experiments, valid_instances, by = "id")
-cmap_experiments_valid <- subset(cmap_experiments_valid, valid == 1 & DrugBank.ID != "NULL")
-
-# Apply filtering to each profile's results
-drugs_filtered <- lapply(drugs_list, function(x) {
-  if (nrow(x) > 0) {
-    valid_instance(x, cmap_experiments_valid)
-  } else {
+# Get first profile's config to load metadata
+first_profile <- names(profile_results)[1]
+if (is.null(first_profile) || !exists("first_profile")) {
+  warning("No valid profiles found. Skipping filtering.")
+  drugs_filtered <- drugs_list
+} else {
+  # The CSV files already contain filtered, valid drugs with metadata
+  # We just need to ensure consistent column names and remove any NAs
+  drugs_filtered <- lapply(names(drugs_list), function(profile_name) {
+    x <- drugs_list[[profile_name]]
+    cat("Debug: Profile", profile_name, "has", nrow(x), "drugs\n")
+    
+    # Update subset_comparison_id to match profile name for grouping
+    if (nrow(x) > 0) {
+      x$subset_comparison_id <- profile_name
+      x$profile <- profile_name
+      
+      # Remove rows with missing name or cmap_score
+      if ("name" %in% names(x)) {
+        x <- x[!is.na(x$name) & x$name != "", ]
+      }
+      if ("cmap_score" %in% names(x)) {
+        x <- x[!is.na(x$cmap_score), ]
+      }
+      cat("Debug: Profile", profile_name, "after cleanup:", nrow(x), "drugs\n")
+    }
     x
-  }
-})
+  })
+  names(drugs_filtered) <- names(drugs_list)
+}
 
 # Step 4: Generate comparison visualizations
 cat("Generating comparison visualizations...\n")
 
 # Plot score distributions across profiles
-pl_hist_revsc(drugs_filtered, save = "profile_comparison_score_dist.jpg", path = img_dir)
+pl_hist_revsc(drugs_filtered, save = "profile_comparison_score_dist.jpg", path = paste0(img_dir, "/"))
 
 # Combine results for cross-profile analysis
 drugs_combined <- do.call("rbind", drugs_filtered)
 
+# Remove rows with missing critical columns
+drugs_combined <- drugs_combined[!is.na(drugs_combined$name) & drugs_combined$name != "" &
+                                 !is.na(drugs_combined$subset_comparison_id) & 
+                                 !is.na(drugs_combined$cmap_score), ]
+
+cat("Combined dataset has", nrow(drugs_combined), "rows after removing NAs\n")
+
 if (nrow(drugs_combined) > 0) {
   # Overlap analysis across profiles
-  pl_overlap(drugs_combined, save = "profile_overlap_heatmap.jpg", path = img_dir)
+  pl_overlap(drugs_combined, save = "profile_overlap_heatmap.jpg", path = paste0(img_dir, "/"))
   pl_overlap(drugs_combined, at_least2 = TRUE, width = 7,
-             save = "profile_overlap_atleast2.jpg", path = img_dir)
+             save = "profile_overlap_atleast2.jpg", path = paste0(img_dir, "/"))
 
   # UpSet plot for profile intersections
   profile_drug_sets <- prepare_upset_drug(drugs_combined)
   pl_upset(profile_drug_sets, title = "Drug Overlap Across Profiles",
-           save = "profile_upset.jpg", path = img_dir)
+           save = "profile_upset.jpg", path = paste0(img_dir, "/"))
 
   # Export individual profile results
   for (profile in names(drugs_filtered)) {

@@ -1,0 +1,214 @@
+Platform,Disease,U_count,P_count,I_count
+CMAP,Cancer/Tumor,45,43,61
+CMAP,Cancer/Tumor|Endocrine System,0,0,6
+CMAP,Cancer/Tumor|Endocrine System|Gastrointestinal,1,1,36
+CMAP,Cancer/Tumor|Endocrine System|Reproductive/Breast,32,29,50
+CMAP,Cancer/Tumor|Gastrointestinal,41,36,160
+CMAP,Cancer/Tumor|Gastrointestinal|Infectious Disease|Respiratory,9,9,43
+CMAP,Cancer/Tumor|Nervous System,4,4,56
+CMAP,Cancer/Tumor|Reproductive/Breast,13,13,59
+CMAP,Cancer/Tumor|Reproductive/Breast|Skin/Integumentary,6,6,89
+CMAP,Cancer/Tumor|Respiratory,4,4,73
+CMAP,Cancer/Tumor|Skin/Integumentary,9,9,38
+CMAP,Cardiovascular,44,40,118
+CMAP,Cardiovascular|Genetic/Congenital|Musculoskeletal|Nervous System,0,0,31
+CMAP,Cardiovascular|Musculoskeletal,2,2,57
+CMAP,Endocrine System|Cancer/Tumor,7,6,38
+CMAP,Endocrine System|Cancer/Tumor|Gastrointestinal,4,4,40
+CMAP,Endocrine System|Gastrointestinal|Cancer/Tumor|Pancreas,36,35,39
+CMAP,Endocrine System|Genetic/Congenital|Nervous System|Metabolic|Psychiatric,0,0,50
+CMAP,Endocrine System|Genetic/Congenital|Reproductive/Breast,1,1,18
+CMAP,Gastrointestinal|Cancer/Tumor,7,7,127
+CMAP,Gastrointestinal|Endocrine System,11,10,50
+CMAP,Gastrointestinal|Genetic/Congenital,4,4,57
+CMAP,Gastrointestinal|Genetic/Congenital|Immune System,3,3,43
+CMAP,Gastrointestinal|Immune System|Genetic/Congenital,1,1,51
+CMAP,Gastrointestinal|Respiratory|Cancer/Tumor,0,0,8
+CMAP,Genetic/Congenital,0,0,17
+CMAP,Genetic/Congenital|Cancer/Tumor|Hematologic|Immune System,8,8,63
+CMAP,Genetic/Congenital|Endocrine System|Respiratory|Cancer/Tumor,0,0,11
+CMAP,Genetic/Congenital|Hematologic,3,3,54
+CMAP,Genetic/Congenital|Hematologic|Cancer/Tumor|Immune System|Musculoskeletal,0,0,7
+CMAP,Genetic/Congenital|Hematologic|Immune System,2,2,16
+CMAP,Genetic/Congenital|Immune System|Gastrointestinal,4,4,96
+CMAP,Genetic/Congenital|Immune System|Hematologic|Metabolic|Cancer/Tumor,2,2,36
+CMAP,Genetic/Congenital|Metabolic,2,2,48
+CMAP,Genetic/Congenital|Musculoskeletal|Reproductive/Breast|Cancer/Tumor,4,3,36
+CMAP,Genetic/Congenital|Nervous System,15,15,37
+CMAP,Genetic/Congenital|Respiratory,1,1,56
+CMAP,Genetic/Congenital|Skin/Integumentary,2,2,61
+CMAP,Hematologic,17,17,97
+CMAP,Hematologic|Cancer/Tumor|Genetic/Congenital,16,16,41
+CMAP,Hematologic|Genetic/Congenital,18,18,44
+CMAP,Hematologic|Musculoskeletal|Immune System|Cancer/Tumor|Genetic/Congenital,6,6,41
+CMAP,Immune System|Genetic/Congenital|Skin/Integumentary,1,1,29
+CMAP,Immune System|Hematologic|Cancer/Tumor|Genetic/Congenital,1,1,34
+CMAP,Immune System|Hematologic|Genetic/Congenital,0,0,34
+CMAP,Immune System|Hematologic|Genetic/Congenital|Cancer/Tumor,11,10,44
+CMAP,Immune System|Musculoskeletal,7,7,91
+CMAP,Immune System|Skin/Integumentary,1,1,68
+CMAP,Immune System|Visual System|Gastrointestinal,4,3,41
+CMAP,Infectious Disease,7,7,142
+CMAP,Infectious Disease|Endocrine System|Gastrointestinal,2,2,39
+CMAP,Infectious Disease|Reproductive/Breast,10,10,65
+CMAP,Infectious Disease|Respiratory,6,6,53
+CMAP,Metabolic,28,26,36
+CMAP,Metabolic|Psychiatric|Nervous System|Genetic/Congenital,1,1,15
+CMAP,Metabolic|Urinary System,0,0,3
+CMAP,Musculoskeletal,26,25,104
+CMAP,Musculoskeletal|Cardiovascular,0,0,5
+CMAP,Musculoskeletal|Genetic/Congenital,5,5,45
+CMAP,Musculoskeletal|Hematologic|Cancer/Tumor|Immune System,2,2,8
+CMAP,Musculoskeletal|Immune System,1,1,29
+CMAP,Musculoskeletal|Immune System|Urinary System,9,9,43
+CMAP,Musculoskeletal|Immune System|Visual System|Genetic/Congenital,5,5,44
+CMAP,Musculoskeletal|Respiratory,5,5,38
+CMAP,Nervous System,1,1,33
+CMAP,Nervous System|Cancer/Tumor,2,2,37
+CMAP,Nervous System|Genetic/Congenital,0,0,33
+CMAP,Nervous System|Immune System,25,23,75
+CMAP,Nervous System|Musculoskeletal|Genetic/Congenital,0,0,1
+CMAP,Nervous System|Psychiatric,16,15,124
+CMAP,Nervous System|Psychiatric|Genetic/Congenital,0,0,37
+CMAP,Nervous System|Psychiatric|Infectious Disease,0,0,1
+CMAP,Nervous System|Urinary System|Respiratory|Musculoskeletal|Immune System|Skin/Integumentary,0,0,4
+CMAP,Nervous System|Visual System,5,5,57
+CMAP,Pancreas|Cancer/Tumor|Endocrine System|Gastrointestinal,0,0,1
+CMAP,Pancreas|Endocrine System|Gastrointestinal|Immune System|Metabolic,16,16,50
+CMAP,Pancreas|Endocrine System|Metabolic,42,33,45
+CMAP,Phenotype,3,3,132
+CMAP,Pregnancy/Perinatal|Cardiovascular|Genetic/Congenital,2,2,39
+CMAP,Psychiatric,0,0,4
+CMAP,Psychiatric|Endocrine System|Gastrointestinal,0,0,5
+CMAP,Psychiatric|Nervous System,24,22,71
+CMAP,Reproductive/Breast,0,0,8
+CMAP,Reproductive/Breast|Cancer/Tumor,50,47,113
+CMAP,Reproductive/Breast|Cancer/Tumor|Skin/Integumentary,3,3,46
+CMAP,Reproductive/Breast|Genetic/Congenital|Endocrine System,1,1,42
+CMAP,Reproductive/Breast|Skin/Integumentary|Cancer/Tumor,6,6,14
+CMAP,Respiratory,7,7,73
+CMAP,Respiratory|Cancer/Tumor,1,1,15
+CMAP,Respiratory|Genetic/Congenital|Metabolic,0,0,43
+CMAP,Respiratory|Immune System,9,9,57
+CMAP,Respiratory|OTAR_0000009,1,1,23
+CMAP,Skin/Integumentary,6,6,40
+CMAP,Skin/Integumentary|Cancer/Tumor,1,1,20
+CMAP,Skin/Integumentary|Immune System,1,1,24
+CMAP,Skin/Integumentary|Immune System|Genetic/Congenital,4,4,43
+CMAP,Urinary System|Cancer/Tumor,11,11,42
+CMAP,Urinary System|Genetic/Congenital|Cancer/Tumor,0,0,43
+CMAP,Urinary System|Immune System|Skin/Integumentary|Nervous System|Musculoskeletal,0,0,58
+CMAP,Urinary System|Musculoskeletal|Nervous System|Immune System,0,0,15
+CMAP,Visual System,8,7,80
+TAHOE,Cancer/Tumor,47,46,121
+TAHOE,Cancer/Tumor|Endocrine System,34,34,60
+TAHOE,Cancer/Tumor|Endocrine System|Gastrointestinal,2,2,16
+TAHOE,Cancer/Tumor|Endocrine System|Reproductive/Breast,101,97,109
+TAHOE,Cancer/Tumor|Gastrointestinal,101,99,140
+TAHOE,Cancer/Tumor|Gastrointestinal|Infectious Disease|Respiratory,14,14,60
+TAHOE,Cancer/Tumor|Nervous System,35,34,77
+TAHOE,Cancer/Tumor|Reproductive/Breast,55,54,63
+TAHOE,Cancer/Tumor|Reproductive/Breast|Skin/Integumentary,23,23,75
+TAHOE,Cancer/Tumor|Respiratory,59,58,140
+TAHOE,Cancer/Tumor|Skin/Integumentary,39,39,61
+TAHOE,Cardiovascular,33,33,132
+TAHOE,Cardiovascular|Genetic/Congenital|Musculoskeletal|Nervous System,0,0,63
+TAHOE,Cardiovascular|Musculoskeletal,1,1,46
+TAHOE,Cardiovascular|Musculoskeletal|Pregnancy/Perinatal,2,2,64
+TAHOE,Endocrine System|Cancer/Tumor,25,24,56
+TAHOE,Endocrine System|Cancer/Tumor|Gastrointestinal,21,21,63
+TAHOE,Endocrine System|Gastrointestinal|Cancer/Tumor|Pancreas,25,25,41
+TAHOE,Endocrine System|Genetic/Congenital|Nervous System|Metabolic|Psychiatric,0,0,62
+TAHOE,Endocrine System|Genetic/Congenital|Reproductive/Breast,1,1,16
+TAHOE,Gastrointestinal,2,2,58
+TAHOE,Gastrointestinal|Cancer/Tumor,41,41,94
+TAHOE,Gastrointestinal|Endocrine System,7,7,62
+TAHOE,Gastrointestinal|Genetic/Congenital,0,0,58
+TAHOE,Gastrointestinal|Genetic/Congenital|Immune System,11,11,81
+TAHOE,Gastrointestinal|Immune System|Genetic/Congenital,0,0,62
+TAHOE,Gastrointestinal|Respiratory|Cancer/Tumor,16,16,65
+TAHOE,Genetic/Congenital,0,0,105
+TAHOE,Genetic/Congenital|Cancer/Tumor|Gastrointestinal,0,0,4
+TAHOE,Genetic/Congenital|Cancer/Tumor|Hematologic|Immune System,13,13,49
+TAHOE,Genetic/Congenital|Endocrine System|Respiratory|Cancer/Tumor,10,10,65
+TAHOE,Genetic/Congenital|Hematologic,1,1,56
+TAHOE,Genetic/Congenital|Hematologic|Cancer/Tumor|Immune System|Musculoskeletal,0,0,26
+TAHOE,Genetic/Congenital|Hematologic|Immune System,11,11,62
+TAHOE,Genetic/Congenital|Immune System|Gastrointestinal,15,15,64
+TAHOE,Genetic/Congenital|Immune System|Hematologic|Metabolic|Cancer/Tumor,5,4,62
+TAHOE,Genetic/Congenital|Metabolic,7,7,57
+TAHOE,Genetic/Congenital|Musculoskeletal,1,1,42
+TAHOE,Genetic/Congenital|Musculoskeletal|Reproductive/Breast|Cancer/Tumor,0,0,65
+TAHOE,Genetic/Congenital|Nervous System,8,8,60
+TAHOE,Genetic/Congenital|Nervous System|Musculoskeletal,5,5,58
+TAHOE,Genetic/Congenital|Respiratory,5,5,60
+TAHOE,Genetic/Congenital|Skin/Integumentary,7,7,94
+TAHOE,Hematologic,19,18,81
+TAHOE,Hematologic|Cancer/Tumor|Genetic/Congenital,27,26,61
+TAHOE,Hematologic|Cancer/Tumor|Immune System|Genetic/Congenital,15,14,64
+TAHOE,Hematologic|Genetic/Congenital,5,5,66
+TAHOE,Hematologic|Musculoskeletal|Immune System|Cancer/Tumor|Genetic/Congenital,39,36,62
+TAHOE,Immune System|Genetic/Congenital|Skin/Integumentary,14,14,60
+TAHOE,Immune System|Hematologic|Cancer/Tumor|Genetic/Congenital,2,2,62
+TAHOE,Immune System|Hematologic|Genetic/Congenital,4,4,65
+TAHOE,Immune System|Hematologic|Genetic/Congenital|Cancer/Tumor,26,25,63
+TAHOE,Immune System|Musculoskeletal,21,21,132
+TAHOE,Immune System|Skin/Integumentary,2,2,63
+TAHOE,Immune System|Visual System|Gastrointestinal,4,4,66
+TAHOE,Infectious Disease,10,10,142
+TAHOE,Infectious Disease|Endocrine System|Gastrointestinal,0,0,29
+TAHOE,Infectious Disease|Reproductive/Breast,6,5,57
+TAHOE,Infectious Disease|Respiratory,12,12,92
+TAHOE,Metabolic,7,7,71
+TAHOE,Metabolic|Endocrine System|Pancreas,29,28,62
+TAHOE,Metabolic|Psychiatric|Nervous System|Genetic/Congenital,3,3,62
+TAHOE,Metabolic|Urinary System,9,9,64
+TAHOE,Musculoskeletal,13,13,123
+TAHOE,Musculoskeletal|Cardiovascular,4,4,63
+TAHOE,Musculoskeletal|Genetic/Congenital,1,1,68
+TAHOE,Musculoskeletal|Hematologic|Cancer/Tumor|Immune System,18,18,59
+TAHOE,Musculoskeletal|Immune System,9,9,61
+TAHOE,Musculoskeletal|Immune System|Urinary System,10,10,62
+TAHOE,Musculoskeletal|Immune System|Visual System|Genetic/Congenital,5,5,55
+TAHOE,Musculoskeletal|Respiratory,1,1,61
+TAHOE,Musculoskeletal|Urinary System,0,0,34
+TAHOE,Nervous System,11,11,125
+TAHOE,Nervous System|Cancer/Tumor,4,4,60
+TAHOE,Nervous System|Cardiovascular,4,4,64
+TAHOE,Nervous System|Genetic/Congenital,0,0,62
+TAHOE,Nervous System|Genetic/Congenital|Musculoskeletal,1,1,39
+TAHOE,Nervous System|Immune System,14,14,98
+TAHOE,Nervous System|Musculoskeletal|Genetic/Congenital,1,1,62
+TAHOE,Nervous System|Psychiatric,13,13,94
+TAHOE,Nervous System|Psychiatric|Genetic/Congenital,0,0,63
+TAHOE,Nervous System|Psychiatric|Infectious Disease,0,0,61
+TAHOE,Nervous System|Urinary System|Respiratory|Musculoskeletal|Immune System|Skin/Integumentary,4,4,62
+TAHOE,Nervous System|Visual System,3,3,68
+TAHOE,Pancreas|Cancer/Tumor|Endocrine System|Gastrointestinal,14,14,59
+TAHOE,Pancreas|Endocrine System|Gastrointestinal|Immune System|Metabolic,9,9,67
+TAHOE,Pancreas|Endocrine System|Metabolic,19,19,65
+TAHOE,Phenotype,12,12,116
+TAHOE,Pregnancy/Perinatal|Cardiovascular|Genetic/Congenital,0,0,44
+TAHOE,Psychiatric|Endocrine System|Gastrointestinal,0,0,61
+TAHOE,Psychiatric|Nervous System,14,14,135
+TAHOE,Reproductive/Breast,4,4,60
+TAHOE,Reproductive/Breast|Cancer/Tumor,76,74,93
+TAHOE,Reproductive/Breast|Cancer/Tumor|Skin/Integumentary,25,24,62
+TAHOE,Reproductive/Breast|Genetic/Congenital|Endocrine System,1,1,61
+TAHOE,Reproductive/Breast|Skin/Integumentary|Cancer/Tumor,116,112,62
+TAHOE,Respiratory,12,12,100
+TAHOE,Respiratory|Cancer/Tumor,38,37,62
+TAHOE,Respiratory|Genetic/Congenital|Metabolic,1,1,59
+TAHOE,Respiratory|Immune System,2,2,59
+TAHOE,Respiratory|Infectious Disease,6,6,62
+TAHOE,Respiratory|OTAR_0000009,10,10,60
+TAHOE,Skin/Integumentary,1,1,53
+TAHOE,Skin/Integumentary|Cancer/Tumor,6,6,62
+TAHOE,Skin/Integumentary|Immune System,11,11,65
+TAHOE,Skin/Integumentary|Immune System|Genetic/Congenital,14,14,67
+TAHOE,Urinary System,0,0,34
+TAHOE,Urinary System|Cancer/Tumor,23,22,63
+TAHOE,Urinary System|Genetic/Congenital|Cancer/Tumor,0,0,60
+TAHOE,Urinary System|Immune System|Skin/Integumentary|Nervous System|Musculoskeletal,1,1,60
+TAHOE,Urinary System|Musculoskeletal|Nervous System|Immune System,2,2,62
+TAHOE,Visual System,5,5,92

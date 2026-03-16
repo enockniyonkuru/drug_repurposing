@@ -1,0 +1,7 @@
+"Signature","Genes_Up","Genes_Down","Total_Genes","Drugs","Top_Drug","Top_Score"
+"Unstratified",516,104,620,282,"fenoprofen",-0.7655
+"ESE",156,41,197,208,"flumetasone",-0.7854
+"MSE",517,133,650,289,"fenoprofen",-0.8041
+"PE",1062,236,1298,283,"fenoprofen",-0.7693
+"IIInIV",408,96,504,291,"flumetasone",-0.7439
+"InII",885,209,1094,284,"fenoprofen",-0.794

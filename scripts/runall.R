@@ -64,11 +64,17 @@ drp <- DRP$new(
   effect_fdr_thresh     = cfg$params$effect_fdr_thresh %||% 0.05,
   heterogeneity_thresh  = cfg$params$heterogeneity_thresh %||% 0.05,
   gene_conversion_table = cfg$params$gene_conversion_table %||% NULL,
+  probe_id_key          = cfg$params$probe_id_key %||% NULL,
+  probe_id_fallback     = if (!is.null(cfg$params$probe_id_fallback)) cfg$params$probe_id_fallback else TRUE,
+  percentile_filtering  = cfg$params$percentile_filtering %||% NULL,
   save_count_files      = isTRUE(cfg$params$save_count_files %||% FALSE),
   n_permutations        = cfg$params$n_permutations %||% 100000,
   save_null_scores      = isTRUE(cfg$params$save_null_scores %||% FALSE),
   per_threshold_dirs    = isTRUE(cfg$params$per_threshold_dirs %||% FALSE),
-  blood_label           = cfg$params$blood_label %||% "blood"
+  blood_label           = cfg$params$blood_label %||% "blood",
+  # P-value calculation parameters (critical for ESE reproducibility)
+  pvalue_method         = cfg$params$pvalue_method %||% "continuous",
+  phipson_smyth_correction = if (!is.null(cfg$params$phipson_smyth_correction)) cfg$params$phipson_smyth_correction else TRUE
 )
 
 # Run the pipeline with plots

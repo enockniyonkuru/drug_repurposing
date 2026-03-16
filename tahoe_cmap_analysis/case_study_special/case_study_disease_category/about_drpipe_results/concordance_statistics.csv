@@ -1,0 +1,9 @@
+Metric,CMAP,Tahoe,Type
+Cosine Similarity,0.849968357908837,0.9868421574064763,Similarity (higher=better)
+Pearson Correlation,0.7995826706670917,0.9837466397950366,Similarity (higher=better)
+Spearman Correlation,0.8648852701377434,0.8892035078112062,Similarity (higher=better)
+Bhattacharyya Coefficient,0.949690341975894,0.9763283520389067,Similarity (higher=better)
+Jensen-Shannon Divergence,0.220660868320512,0.14999360372619502,Divergence (lower=better)
+KL Divergence,0.21032041670515997,0.09262917471816451,Divergence (lower=better)
+Total Variation Distance,0.27785305249022435,0.12275688170168043,Divergence (lower=better)
+Hellinger Distance,0.22429814538712967,0.15385593248585896,Divergence (lower=better)

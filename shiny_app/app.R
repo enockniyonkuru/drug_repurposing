@@ -39,7 +39,7 @@ my_theme <- fresh::create_theme(
 
 # UI Definition
 ui <- dashboardPage(
-  dashboardHeader(title = "Drug Repurposing Pipeline"),
+  dashboardHeader(title = "CDRpipe"),
   
   dashboardSidebar(
     sidebarMenu(id = "sidebar",
@@ -328,6 +328,157 @@ ui <- dashboardPage(
           margin-top: 20px;
           flex-wrap: wrap;
         }
+        
+        /* ===== FIX: Form Element Text Visibility ===== */
+        
+        /* Fix text color for all input fields */
+        input[type='text'],
+        input[type='number'],
+        textarea,
+        select {
+          color: #000000 !important;
+          background-color: #ffffff !important;
+        }
+        
+        /* Fix placeholder text visibility */
+        input[type='text']::placeholder,
+        input[type='number']::placeholder,
+        textarea::placeholder {
+          color: #666666 !important;
+          opacity: 1 !important;
+        }
+        
+        input[type='text']::-webkit-input-placeholder,
+        input[type='number']::-webkit-input-placeholder,
+        textarea::-webkit-input-placeholder {
+          color: #666666 !important;
+          opacity: 1 !important;
+        }
+        
+        input[type='text']:-moz-placeholder,
+        input[type='number']:-moz-placeholder,
+        textarea:-moz-placeholder {
+          color: #666666 !important;
+          opacity: 1 !important;
+        }
+        
+        /* Fix select dropdown text visibility */
+        select {
+          color: #000000 !important;
+          background-color: #ffffff !important;
+        }
+        
+        select option {
+          color: #000000 !important;
+          background-color: #ffffff !important;
+        }
+        
+        /* Fix pickerInput visibility */
+        .picker-inline {
+          color: #000000 !important;
+        }
+        
+        .picker-inline .btn-default {
+          color: #000000 !important;
+          background-color: #ffffff !important;
+          border: 1px solid #cccccc !important;
+        }
+        
+        .picker-inline .btn-default:hover {
+          color: #000000 !important;
+          background-color: #f5f5f5 !important;
+        }
+        
+        /* Fix dropdown menu text visibility */
+        .dropdown-menu {
+          background-color: #ffffff !important;
+          color: #000000 !important;
+        }
+        
+        .dropdown-menu > li > a,
+        .dropdown-menu > a {
+          color: #000000 !important;
+          background-color: transparent !important;
+        }
+        
+        .dropdown-menu > li > a:hover,
+        .dropdown-menu > a:hover {
+          color: #000000 !important;
+          background-color: #f5f5f5 !important;
+        }
+        
+        .dropdown-menu > .active > a,
+        .dropdown-menu > .active > a:hover,
+        .dropdown-menu > .active > a:focus {
+          color: #ffffff !important;
+          background-color: #0F4C75 !important;
+        }
+        
+        /* Fix shinyWidgets materialSwitch text */
+        .material-switch label {
+          color: #0F4C75 !important;
+        }
+        
+        .material-switch label::before {
+          background-color: #ffffff !important;
+          border-color: #cccccc !important;
+        }
+        
+        /* Fix pickerInput button text when selected */
+        .btn-default {
+          color: #000000 !important;
+          background-color: #ffffff !important;
+        }
+        
+        .btn-default:hover {
+          color: #000000 !important;
+          background-color: #f5f5f5 !important;
+        }
+        
+        /* Fix picker button active state */
+        .btn-default.active {
+          color: #ffffff !important;
+          background-color: #0F4C75 !important;
+          border-color: #0F4C75 !important;
+        }
+        
+        /* Fix button dropdown text in picker */
+        .btn-group > .btn-default.dropdown-toggle {
+          color: #000000 !important;
+          background-color: #ffffff !important;
+        }
+        
+        /* Fix label colors for better contrast */
+        .form-group label,
+        label {
+          color: #0F4C75 !important;
+          font-weight: 500;
+        }
+        
+        /* Fix box titles and headers */
+        .box-title,
+        .box > .box-header > .box-title {
+          color: #0F4C75 !important;
+          font-weight: 600;
+        }
+        
+        /* Fix slider input text */
+        .irs--shiny .irs-min,
+        .irs--shiny .irs-max,
+        .irs--shiny .irs-from,
+        .irs--shiny .irs-to,
+        .irs--shiny .irs-single {
+          color: #000000 !important;
+          background-color: #0F4C75 !important;
+          border-color: #0F4C75 !important;
+        }
+        
+        /* Fix slider text visibility */
+        .irs--shiny .irs-from::before,
+        .irs--shiny .irs-to::before,
+        .irs--shiny .irs-single::before {
+          border-color: #0F4C75 transparent transparent transparent !important;
+        }
       "))
     ),
     
@@ -338,7 +489,7 @@ ui <- dashboardPage(
         fluidRow(
           column(12,
             div(class = "home-hero",
-              div(class = "home-title", "🔬 Drug Repurposing Pipeline"),
+              div(class = "home-title", "🔬 Computational Drug Repurposing Pipeline (CDRpipe)"),
               div(class = "home-subtitle", "Identify existing drugs for new therapeutic applications")
             )
           )
@@ -569,9 +720,11 @@ ui <- dashboardPage(
                      accept = c("text/csv", ".csv")),
             hr(),
             h4("Or Load Example Data:"),
-            actionButton("loadFibroid", "Load Fibroid Example", 
+            actionButton("loadAcne", "Load Acne Example", 
                         class = "btn-info", icon = icon("download")),
-            actionButton("loadEndothelial", "Load Endothelial Example", 
+            actionButton("loadArthritis", "Load Arthritis Example", 
+                        class = "btn-info", icon = icon("download")),
+            actionButton("loadGlaucoma", "Load Glaucoma Example", 
                         class = "btn-info", icon = icon("download"))
           ),
           
@@ -1008,12 +1161,12 @@ server <- function(input, output, session) {
   })
   
   # Load example data
-  observeEvent(input$loadFibroid, {
+  observeEvent(input$loadAcne, {
     tryCatch({
-      path <- "../scripts/data/disease_signatures/CoreFibroidSignature_All_Datasets.csv"
+      path <- "../scripts/data/disease_signatures/acne_signature.csv"
       if (file.exists(path)) {
         values$data <- read.csv(path, stringsAsFactors = FALSE, check.names = FALSE)
-        showNotification("Fibroid data loaded!", type = "message")
+        showNotification("Acne data loaded!", type = "message")
       } else {
         showNotification(paste("File not found:", path), type = "error")
       }
@@ -1022,12 +1175,26 @@ server <- function(input, output, session) {
     })
   })
   
-  observeEvent(input$loadEndothelial, {
+  observeEvent(input$loadArthritis, {
     tryCatch({
-      path <- "../scripts/data/disease_signatures/Endothelia_DEG.csv"
+      path <- "../scripts/data/disease_signatures/arthritis_signature.csv"
       if (file.exists(path)) {
         values$data <- read.csv(path, stringsAsFactors = FALSE, check.names = FALSE)
-        showNotification("Endothelial data loaded!", type = "message")
+        showNotification("Arthritis data loaded!", type = "message")
+      } else {
+        showNotification(paste("File not found:", path), type = "error")
+      }
+    }, error = function(e) {
+      showNotification(paste("Error:", e$message), type = "error")
+    })
+  })
+  
+  observeEvent(input$loadGlaucoma, {
+    tryCatch({
+      path <- "../scripts/data/disease_signatures/glaucoma_signature.csv"
+      if (file.exists(path)) {
+        values$data <- read.csv(path, stringsAsFactors = FALSE, check.names = FALSE)
+        showNotification("Glaucoma data loaded!", type = "message")
       } else {
         showNotification(paste("File not found:", path), type = "error")
       }
@@ -1116,9 +1283,27 @@ server <- function(input, output, session) {
                      selected = "SYMBOL"),
           
           textInput("customLogFCPrefix", "Log2FC Column Prefix:", value = "log2FC"),
-          numericInput("customLogFCCutoff", "Log2FC Cutoff:", value = 1.0, min = 0, step = 0.1),
           
-          selectInput("customPvalKey", "P-value Column (optional):", 
+          # Filtering method selection
+          h5("Filtering Method:"),
+          shinyWidgets::materialSwitch("customUsePercentile", "Use Percentile Filtering", value = FALSE, status = "success"),
+          
+          # Fixed cutoff option
+          conditionalPanel(
+            condition = "!input.customUsePercentile",
+            numericInput("customLogFCCutoff", "Log2FC Cutoff:", value = 1.0, min = 0, step = 0.1)
+          ),
+          
+          # Percentile filtering option
+          conditionalPanel(
+            condition = "input.customUsePercentile",
+            sliderInput("customPercentileThreshold", "Percentile Threshold (%):", 
+                       min = 1, max = 99, value = 50, step = 1),
+            p(style = "color: #666; font-size: 12px;",
+              "Keeps genes above the Nth percentile of |logFC| values. Example: 50% keeps top 50% of genes.")
+          ),
+          
+          selectInput("customPvalKey", "P-value Column (optional):",
                      choices = c("None" = "", if(!is.null(values$data)) names(values$data)),
                      selected = ""),
           
@@ -1134,6 +1319,10 @@ server <- function(input, output, session) {
           conditionalPanel(
             condition = "input.customMode == 'sweep'",
             h4("Sweep Mode Settings"),
+            h5("Filtering Method:"),
+            shinyWidgets::materialSwitch("customSweepUsePercentile", "Use Percentile Sweep", value = FALSE, status = "success"),
+            p(style = "color: #666; font-size: 12px;",
+              "If enabled, sweeps across percentile thresholds instead of fixed log2FC cutoffs."),
             shinyWidgets::materialSwitch("customSweepAutoGrid", "Auto-generate threshold grid", value = TRUE, status = "success"),
             numericInput("customSweepStep", "Step size:", value = 0.1, min = 0.05, step = 0.05),
             numericInput("customSweepMinFrac", "Min fraction of genes:", value = 0.20, min = 0.05, max = 1, step = 0.05),
@@ -1200,7 +1389,25 @@ server <- function(input, output, session) {
                      selected = "SYMBOL"),
           
           textInput("compCustomLogFCPrefix", "Log2FC Column Prefix:", value = "log2FC"),
-          numericInput("compCustomLogFCCutoff", "Log2FC Cutoff:", value = 1.0, min = 0, step = 0.1),
+          
+          # Filtering method selection
+          h5("Filtering Method:"),
+          shinyWidgets::materialSwitch("compCustomUsePercentile", "Use Percentile Filtering", value = FALSE, status = "success"),
+          
+          # Fixed cutoff option
+          conditionalPanel(
+            condition = "!input.compCustomUsePercentile",
+            numericInput("compCustomLogFCCutoff", "Log2FC Cutoff:", value = 1.0, min = 0, step = 0.1)
+          ),
+          
+          # Percentile filtering option
+          conditionalPanel(
+            condition = "input.compCustomUsePercentile",
+            sliderInput("compCustomPercentileThreshold", "Percentile Threshold (%):", 
+                       min = 1, max = 99, value = 50, step = 1),
+            p(style = "color: #666; font-size: 12px;",
+              "Keeps genes above the Nth percentile of |logFC| values. Example: 50% keeps top 50% of genes.")
+          ),
           
           selectInput("compCustomPvalKey", "P-value Column (optional):", 
                      choices = c("None" = "", if(!is.null(values$data)) names(values$data)),
@@ -1218,6 +1425,10 @@ server <- function(input, output, session) {
           conditionalPanel(
             condition = "input.compCustomMode == 'sweep'",
             h4("Sweep Mode Settings"),
+            h5("Filtering Method:"),
+            shinyWidgets::materialSwitch("compCustomSweepUsePercentile", "Use Percentile Sweep", value = FALSE, status = "success"),
+            p(style = "color: #666; font-size: 12px;",
+              "If enabled, sweeps across percentile thresholds instead of fixed log2FC cutoffs."),
             shinyWidgets::materialSwitch("compCustomSweepAutoGrid", "Auto-generate threshold grid", value = TRUE, status = "success"),
             numericInput("compCustomSweepStep", "Step size:", value = 0.1, min = 0.05, step = 0.05),
             numericInput("compCustomSweepMinFrac", "Min fraction of genes:", value = 0.20, min = 0.05, max = 1, step = 0.05),
@@ -1251,6 +1462,14 @@ server <- function(input, output, session) {
   observeEvent(input$saveComparativeProfile, {
     req(input$compCustomProfileName)
     
+    # Handle percentile filtering vs fixed cutoff
+    comp_logfc_cutoff_val <- if(input$compCustomUsePercentile) NULL else input$compCustomLogFCCutoff
+    comp_percentile_filtering_val <- if(input$compCustomUsePercentile) {
+      list(enabled = TRUE, threshold = input$compCustomPercentileThreshold)
+    } else {
+      list(enabled = FALSE, threshold = NULL)
+    }
+    
     # Build sweep parameters if in sweep mode
     sweep_params <- if (input$compCustomMode == "sweep") {
       list(
@@ -1273,7 +1492,8 @@ server <- function(input, output, session) {
         list(
           gene_key = input$compCustomGeneKey,
           logfc_cols_pref = input$compCustomLogFCPrefix,
-          logfc_cutoff = input$compCustomLogFCCutoff,
+          logfc_cutoff = comp_logfc_cutoff_val,
+          percentile_filtering = comp_percentile_filtering_val,
           pval_key = if(input$compCustomPvalKey == "") NULL else input$compCustomPvalKey,
           pval_cutoff = input$compCustomPvalCutoff,
           q_thresh = input$compCustomQThresh,
@@ -1472,8 +1692,18 @@ server <- function(input, output, session) {
         
         pval_key_val <- if(input$customPvalKey == "") NULL else input$customPvalKey
         
-        # Check if using a profile from config
-        profile_selected <- !is.null(values$selected_profile_name) && values$selected_profile_name != ""
+        # Handle percentile filtering vs fixed cutoff
+        logfc_cutoff_val <- if(input$customUsePercentile) NULL else input$customLogFCCutoff
+        percentile_filtering_val <- if(input$customUsePercentile) {
+          list(enabled = TRUE, threshold = input$customPercentileThreshold)
+        } else {
+          list(enabled = FALSE, threshold = NULL)
+        }
+        
+        # Check if using a profile from config (not "custom" option)
+        profile_selected <- !is.null(values$selected_profile_name) && 
+                           values$selected_profile_name != "" && 
+                           values$selected_profile_name != "custom"
         
         if (profile_selected) {
           # Use paths from the profile config
@@ -1519,6 +1749,39 @@ server <- function(input, output, session) {
           selected_valid <- NULL
         }
         
+        # Get gene_conversion_table from profile or use default
+        gene_conversion_path <- if (profile_selected && !is.null(profile_config$params$gene_conversion_table)) {
+          conv_path <- profile_config$params$gene_conversion_table
+          if (!grepl("^/|^\\.\\./", conv_path)) {
+            file.path("../scripts", conv_path)
+          } else {
+            conv_path
+          }
+        } else {
+          "../scripts/data/gene_id_conversion_table.tsv"
+        }
+
+        # When a profile is selected, use profile config for filtering params
+        cat("[DEBUG] profile_selected:", profile_selected, "\n")
+        cat("[DEBUG] selected_profile_name:", values$selected_profile_name, "\n")
+        if (profile_selected) {
+          cat("[DEBUG] Using profile config for filtering params\n")
+          profile_percentile_filtering <- profile_config$params$percentile_filtering
+          cat("[DEBUG] profile_percentile_filtering:", 
+              if(is.null(profile_percentile_filtering)) "NULL" else paste("enabled=", profile_percentile_filtering$enabled), "\n")
+          if (!is.null(profile_percentile_filtering) && isTRUE(profile_percentile_filtering$enabled)) {
+            logfc_cutoff_val <- NULL
+            percentile_filtering_val <- profile_percentile_filtering
+            cat("[DEBUG] Using percentile filtering, threshold:", profile_percentile_filtering$threshold, "\n")
+          } else {
+            logfc_cutoff_val <- profile_config$params$logfc_cutoff %||% 0.05
+            percentile_filtering_val <- NULL
+            cat("[DEBUG] Using fixed logfc_cutoff:", logfc_cutoff_val, "\n")
+          }
+        } else {
+          cat("[DEBUG] NOT using profile config - using UI values\n")
+        }
+
           drp_args <- c(
           list(
             signatures_rdata = values$selected_drug_signature,
@@ -1526,9 +1789,11 @@ server <- function(input, output, session) {
             drug_meta_path = selected_meta,
             drug_valid_path = selected_valid,
             out_dir = tempdir(),
-            gene_key = input$customGeneKey,
-            logfc_cols_pref = input$customLogFCPrefix,
-            logfc_cutoff = input$customLogFCCutoff,
+            gene_key = if(profile_selected) profile_config$params$gene_key %||% input$customGeneKey else input$customGeneKey,
+            logfc_cols_pref = if(profile_selected) profile_config$params$logfc_cols_pref %||% input$customLogFCPrefix else input$customLogFCPrefix,
+            logfc_cutoff = logfc_cutoff_val,
+            percentile_filtering = percentile_filtering_val,
+            gene_conversion_table = gene_conversion_path,
             pval_key = pval_key_val,
             pval_cutoff = input$customPvalCutoff,
             q_thresh = input$customQThresh,
@@ -1558,10 +1823,9 @@ server <- function(input, output, session) {
         incProgress(0.3)
         if (drp$mode == "single") {
           drp$run_single()
-          # Single mode needs explicit annotation
+          # Note: run_single() already calls annotate_and_filter() internally
           values$analysisLog <- paste0(values$analysisLog, "Annotating results...\n")
           incProgress(0.2)
-          drp$annotate_and_filter()
         } else {
           # Sweep mode handles annotation internally during parallel processing
           drp$run_sweep()
@@ -1723,6 +1987,29 @@ server <- function(input, output, session) {
             NULL
           }
           
+          # Get gene_conversion_table from profile config
+          profile_gene_conv_path <- if (!is.null(profile_config$params$gene_conversion_table)) {
+            conv_path <- profile_config$params$gene_conversion_table
+            if (!grepl("^/|^\\.\\./", conv_path)) {
+              file.path("../scripts", conv_path)
+            } else {
+              conv_path
+            }
+          } else {
+            "../scripts/data/gene_id_conversion_table.tsv"
+          }
+
+          # Determine logfc_cutoff: use NULL if percentile_filtering is enabled
+          profile_percentile_filtering <- profile_config$params$percentile_filtering
+          profile_logfc_cutoff <- if (!is.null(profile_percentile_filtering) && 
+                                      isTRUE(profile_percentile_filtering$enabled)) {
+            # When percentile filtering is enabled, don't apply a fixed cutoff
+            NULL
+          } else {
+            # Use config value or default to a reasonable value
+            profile_config$params$logfc_cutoff %||% 0.05
+          }
+
           drp_args <- list(
             signatures_rdata = profile_drug_signature,
             disease_path = temp_file,
@@ -1731,7 +2018,9 @@ server <- function(input, output, session) {
             out_dir = tempdir(),
             gene_key = profile_config$params$gene_key %||% "SYMBOL",
             logfc_cols_pref = profile_config$params$logfc_cols_pref %||% "log2FC",
-            logfc_cutoff = profile_config$params$logfc_cutoff %||% 1,
+            logfc_cutoff = profile_logfc_cutoff,
+            percentile_filtering = profile_percentile_filtering,
+            gene_conversion_table = profile_gene_conv_path,
             pval_key = pval_key_val,
             pval_cutoff = profile_config$params$pval_cutoff %||% 0.05,
             q_thresh = profile_config$params$q_thresh %||% 0.05,
@@ -2330,11 +2619,20 @@ server <- function(input, output, session) {
         stringsAsFactors = FALSE
       )
       
-      # Use DRpipe's prepare_heatmap function
+      # Create a cmap_exp dataframe for drug name mapping
+      # h_drug_names expects 'id' column, so rename exp_id to id
+      cmap_exp_for_heatmap <- data.frame(
+        id = top_drugs$exp_id,
+        name = top_drugs$name,
+        stringsAsFactors = FALSE
+      )
+      
+      # Use DRpipe's prepare_heatmap function with cmap_exp for drug name mapping
       heatmap_data <- DRpipe::prepare_heatmap(
         top_drugs_subset,
         dz_sig = values$drp_object$disease_sig,
-        cmap_sig = values$drp_object$cmap_sig
+        cmap_sig = values$drp_object$cmap_sig,
+        cmap_exp = cmap_exp_for_heatmap
       )
       
       if (is.null(heatmap_data) || nrow(heatmap_data) == 0) {

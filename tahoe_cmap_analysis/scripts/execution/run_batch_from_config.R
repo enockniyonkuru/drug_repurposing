@@ -58,6 +58,7 @@ tryCatch({
   logfc_cols_pref  <- config$analysis$logfc_cols_pref %||% "logfc_dz"
   logfc_col_select <- config$analysis$logfc_column_selection %||% "all"
   use_averaging    <- config$analysis$use_averaging
+  qval_threshold   <- config$analysis$qval_threshold %||% 0.05
   out_root         <- config$output$root_directory
   report_dir       <- config$output$report_directory
   report_prefix    <- config$output$report_prefix
@@ -66,12 +67,17 @@ tryCatch({
   start_from       <- config$runtime$start_from_disease %||% 1
   end_at           <- config$runtime$end_at_disease
   
+  # Extract percentile filtering configuration
+  percentile_filtering_enabled <- config$analysis$percentile_filtering$enabled %||% FALSE
+  percentile_threshold <- config$analysis$percentile_filtering$threshold %||% 75
+  
   # Handle NA values and defaults
   if (is.na(skip_existing)) skip_existing <- FALSE
   if (is.na(verbose)) verbose <- TRUE
   if (is.na(use_averaging)) use_averaging <- TRUE
   if (is.na(start_from) || is.null(start_from)) start_from <- 1
   if (!is.null(end_at) && is.na(end_at)) end_at <- NULL
+  if (is.na(percentile_filtering_enabled)) percentile_filtering_enabled <- FALSE
   
 }, error = function(e) {
   cat("Error extracting configuration values:", conditionMessage(e), "\n")
@@ -99,6 +105,11 @@ if (verbose) {
   cat("  Q-value threshold:", config$analysis$qval_threshold, "\n")
   cat("  LogFC column selection:", ifelse(is.character(logfc_col_select) && logfc_col_select == "all", "all", paste(logfc_col_select, collapse=", ")), "\n")
   cat("  Use averaging:", use_averaging, "\n")
+  if (percentile_filtering_enabled) {
+    cat("  Gene filtering: Percentile-based (top", percentile_threshold, "% per disease)\n")
+  } else {
+    cat("  Gene filtering: None (logfc_cutoff = 0.0)\n")
+  }
   cat("\nOutput Configuration:\n")
   cat("  Root directory:", out_root, "\n")
   cat("  Report directory:", report_dir, "\n")
@@ -146,7 +157,8 @@ cmd_args <- c(
   sprintf("--out_root '%s'", out_root),
   sprintf("--report_dir '%s'", report_dir),
   sprintf("--report_prefix '%s'", report_prefix),
-  sprintf("--start_from %d", start_from)
+  sprintf("--start_from %d", start_from),
+  sprintf("--qval_threshold %f", qval_threshold)
 )
 
 if (skip_existing) {
@@ -167,6 +179,12 @@ if (is.character(logfc_col_select) && length(logfc_col_select) == 1) {
 
 if (!use_averaging) {
   cmd_args <- c(cmd_args, "--use_averaging FALSE")
+}
+
+# Add percentile filtering parameters if enabled
+if (percentile_filtering_enabled) {
+  cmd_args <- c(cmd_args, "--percentile_filtering TRUE")
+  cmd_args <- c(cmd_args, sprintf("--percentile_threshold %d", percentile_threshold))
 }
 
 # Execute the batch script

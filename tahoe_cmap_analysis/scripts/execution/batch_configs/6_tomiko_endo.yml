@@ -1,0 +1,69 @@
+# ENDOMETRIOSIS STANDARDIZED Disease Signatures Batch Configuration
+# Using standardized disease signatures from CREEDS, Laura, and Tomiko sources
+# QC Filtering: Mean/median consistency, median effect size >= 0.02, adj.p-value < 0.05
+
+# ============================================================================
+# DISEASE CONFIGURATION
+# ============================================================================
+disease:
+  source: "Tomiko Endometriosis Signatures"
+  directory: "/Users/enockniyonkuru/Desktop/drug_repurposing/tahoe_cmap_analysis/data/disease_signatures/6_tomiko_diseases_signatures"
+
+# ============================================================================
+# CMAP DRUG SIGNATURES CONFIGURATION
+# ============================================================================
+cmap:
+  signatures: "/Users/enockniyonkuru/Desktop/drug_repurposing/tahoe_cmap_analysis/data/drug_signatures/cmap/cmap_signatures.RData"
+  metadata: "/Users/enockniyonkuru/Desktop/drug_repurposing/tahoe_cmap_analysis/data/drug_signatures/cmap/cmap_drug_experiments_new.csv"
+  valid_instances: "/Users/enockniyonkuru/Desktop/drug_repurposing/tahoe_cmap_analysis/data/drug_signatures/cmap/cmap_valid_instances_old.csv"
+
+# ============================================================================
+# TAHOE DRUG SIGNATURES CONFIGURATION
+# ============================================================================
+tahoe:
+  signatures: "/Users/enockniyonkuru/Desktop/drug_repurposing/tahoe_cmap_analysis/data/drug_signatures/tahoe/tahoe_signatures.RData"
+  metadata: "/Users/enockniyonkuru/Desktop/drug_repurposing/tahoe_cmap_analysis/data/drug_signatures/tahoe/tahoe_drug_experiments_new.csv"
+
+# ============================================================================
+# GENE CONVERSION AND ANALYSIS
+# ============================================================================
+analysis:
+  gene_table: "/Users/enockniyonkuru/Desktop/drug_repurposing/tahoe_cmap_analysis/data/gene_id_conversion_table.tsv"
+  qval_threshold: 0.05
+  # Column selection options:
+  # - Use "all" to use all logfc columns with the specified prefix
+  # - Use specific column names like "logfc_dz:459" to use only that column
+  # - Use multiple columns like ["logfc_dz:459", "logfc_dz:297"] to use specific columns
+  logfc_column_selection: "all"  # or specific columns like "logfc_dz"
+  use_averaging: true  # Set to false to use columns individually without averaging
+  
+  # Gene filtering options:
+  # Choose ONE filtering method:
+  # Option 1: Fixed logfc cutoff (Tomiko-specific alternative)
+  #   logfc_cutoff: 1.15  # Conservative cutoff for Tomiko's strong effects
+  # Option 2: Percentile-based (RECOMMENDED for Tomiko)
+  #   NOTE: threshold = X means "keep genes >= Xth percentile" (TOP (100-X)%)
+  #   Example: threshold: 80 = keep genes >= 80th percentile = TOP 20% of genes
+  percentile_filtering:
+    enabled: true
+    threshold: 85  # TOMIKO-OPTIMIZED: Keeps TOP 15% of genes (~232 genes avg) - strongest signals only
+
+# ============================================================================
+# OUTPUT CONFIGURATION
+# ============================================================================
+output:
+  root_directory: "/Users/enockniyonkuru/Desktop/drug_repurposing/tahoe_cmap_analysis/results/6_tomiko_endo"
+  report_directory: "/Users/enockniyonkuru/Desktop/drug_repurposing/tahoe_cmap_analysis/reports"
+  report_prefix: "6_tomiko_diseases_signatures"
+
+# ============================================================================
+# RUNTIME OPTIONS
+# ============================================================================
+runtime:
+  skip_existing_results: true
+  verbose: true
+  # Disease range options (1-indexed):
+  # - Leave empty or set to 1 to start from first disease
+  # - Set to specific number (e.g., 100) to start from disease 100
+  start_from_disease: 1  # Start processing from this disease number
+  end_at_disease: null   # End at this disease number (null = process all remaining)

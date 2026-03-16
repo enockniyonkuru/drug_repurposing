@@ -1,0 +1,48 @@
+// KNOWN DRUG PAIRS SANKEY DIAGRAM
+// Format for online Sankey tools (e.g., sankeymatic.com)
+// Source → Available Pairs → Recovered Pairs
+
+// ============================================================================
+// STAGE 1: SOURCE DATASETS → STAGE 2: AVAILABLE PAIRS
+// ============================================================================
+
+CMap [2399] Available
+Tahoe [1686] Available
+OpenTargets [4262] Available
+
+// ============================================================================
+// STAGE 2: AVAILABLE PAIRS → STAGE 3: RECOVERED PAIRS
+// ============================================================================
+
+Available [437] CMapRecovered
+Available [812] TahoeRecovered
+Available [37] BothRecovered
+
+// ============================================================================
+// COLOR SCHEME
+// ============================================================================
+// CMap Orange
+CMap #F39C12
+Available #999999
+CMapRecovered #F39C12
+
+// Tahoe Blue
+Tahoe #5DADE2
+TahoeRecovered #5DADE2
+
+// Both Purple
+BothRecovered #9B59B6
+
+// Open Targets Green
+OpenTargets #27AE60
+
+// ============================================================================
+// NOTES
+// ============================================================================
+// CMap Available: 2,399 pairs
+// Tahoe Available: 1,686 pairs
+// Open Targets: 4,262 drugs
+//
+// Recovered - CMap Only: 437 pairs (44.6%)
+// Recovered - Tahoe Only: 812 pairs (50.4%)
+// Recovered - Both: 37 pairs (2.6%)

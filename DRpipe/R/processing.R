@@ -48,7 +48,9 @@ clean_table <- function(x,
                         logFC_cutoff = 0.25,
                         pval_key = "p_val_adj",
                         pval_cutoff = 0.05,
-                        db_gene_list) {
+                        db_gene_list,
+                        probe_id_key = NULL,
+                        probe_id_fallback = TRUE) {
 
     # --- Validate key arguments ----------------------------------------------
     if (!is.character(logFC_key) || length(logFC_key) != 1) {
@@ -62,17 +64,49 @@ clean_table <- function(x,
     }
 
     # Track gene counts after each filter stage
-    track <- vector("integer", 5)
-    names(track) <- c("init", "padj", "logFC", "entrez", "cmap")
+    track <- vector("integer", 6)
+    names(track) <- c("init", "padj", "logFC", "entrez", "fallback", "cmap")
     track["init"] <- nrow(x)
 
     # --- Keep essential columns; optionally filter by adjusted p-value --------
-    if (is.null(pval_key)) {
-        # Only gene and logFC available/kept
-        x <- x[, c(gene_key, logFC_key)]
-    } else {
-        # Keep gene, p-value, and logFC
-        x <- x[, c(gene_key, pval_key, logFC_key)]
+    # Determine which columns to keep
+    cols_to_keep <- c(gene_key, logFC_key)
+    if (!is.null(pval_key) && pval_key %in% names(x)) cols_to_keep <- c(cols_to_keep, pval_key)
+    if (!is.null(probe_id_key) && probe_id_key %in% names(x) && probe_id_key != gene_key) {
+        cols_to_keep <- c(cols_to_keep, probe_id_key)
+    }
+    # If probe_id_fallback is enabled, also keep potential probe ID columns for fallback
+    if (probe_id_fallback) {
+        fallback_cols <- c("X", "probe.id")
+        for (fc in fallback_cols) {
+            if (fc %in% names(x) && !(fc %in% cols_to_keep)) {
+                cols_to_keep <- c(cols_to_keep, fc)
+            }
+        }
+        # Handle empty string column name (common in CSV with row names)
+        # We'll store the column index instead and use it later
+        empty_col_idx <- which(names(x) == "")
+        if (length(empty_col_idx) > 0) {
+            # Rename empty column to a valid name for subsetting
+            names(x)[empty_col_idx[1]] <- ".probe_id_fallback"
+            if (!(".probe_id_fallback" %in% cols_to_keep)) {
+                cols_to_keep <- c(cols_to_keep, ".probe_id_fallback")
+            }
+        }
+    }
+    cols_to_keep <- unique(cols_to_keep)
+    
+    # Filter to only columns that exist (excluding empty strings)
+    cols_to_keep <- cols_to_keep[cols_to_keep != ""]
+    cols_existing <- cols_to_keep[cols_to_keep %in% names(x)]
+    
+    if (length(cols_existing) == 0) {
+        stop(sprintf("clean_table: No valid columns found. Requested: %s. Available: %s", 
+                paste(cols_to_keep, collapse=", "), paste(names(x), collapse=", ")))
+    }
+    x <- x[, cols_existing, drop = FALSE]
+    
+    if (!is.null(pval_key)) {
         # Select significant genes by p-value
         x <- x[which(x[[pval_key]] < pval_cutoff), ]
     }
@@ -97,10 +131,55 @@ clean_table <- function(x,
         mthreshold = 1,
         filter_na  = FALSE
     )
-    # Attach Entrez to table; drop genes that failed mapping
+    # Attach Entrez to table
     x$GeneID <- entrez$target
+    
+    # Count successful mappings
+    n_mapped <- sum(!is.na(x$GeneID))
+    n_failed <- sum(is.na(x$GeneID))
+    track["entrez"] <- n_mapped
+    
+    # --- Fallback: Use probe IDs directly for genes that failed g:Profiler ----
+    if (probe_id_fallback && n_failed > 0) {
+        # Determine probe ID column: use probe_id_key if provided, otherwise try common names
+        probe_col <- NULL
+        if (!is.null(probe_id_key) && probe_id_key %in% names(x)) {
+            probe_col <- probe_id_key
+        } else if ("X" %in% names(x)) {
+            probe_col <- "X"
+        } else if (".probe_id_fallback" %in% names(x)) {
+            # We renamed empty column to this name earlier
+            probe_col <- ".probe_id_fallback"
+        } else if ("probe.id" %in% names(x)) {
+            probe_col <- "probe.id"
+        } else if (length(names(x)) > 0 && names(x)[1] != "GeneName" && !is.null(names(x)[1]) && nchar(names(x)[1]) > 0) {
+            # Try the first column if it's not the gene name column and has a valid name
+            probe_col <- names(x)[1]
+        }
+        
+        if (!is.null(probe_col) && probe_col %in% names(x)) {
+            failed_idx <- is.na(x$GeneID)
+            failed_genes <- x[failed_idx, ]
+            
+            # Extract probe IDs and clean them (remove "_at" suffix like Tomiko's pipeline)
+            probe_ids <- gsub("_at$", "", as.character(failed_genes[[probe_col]]))
+            
+            # Check which probe IDs are valid Entrez IDs in the db_gene_list
+            valid_probe_ids <- probe_ids %in% db_gene_list
+            
+            if (any(valid_probe_ids)) {
+                # Use probe ID as Entrez ID for genes that have valid probe IDs in CMap
+                x$GeneID[failed_idx][valid_probe_ids] <- probe_ids[valid_probe_ids]
+                n_recovered <- sum(valid_probe_ids)
+                cat(sprintf("  Fallback: recovered %d/%d genes using probe IDs as Entrez IDs\n", 
+                            n_recovered, n_failed))
+            }
+        }
+    }
+    track["fallback"] <- sum(!is.na(x$GeneID))
+    
+    # Drop genes that still have no mapping
     x <- x[!is.na(x$GeneID), ]
-    track["entrez"] <- nrow(x)
 
     # --- Restrict to genes present in the CMap gene universe ------------------
     x <- x[which(x$GeneID %in% db_gene_list), ]
@@ -256,6 +335,10 @@ query_score <- function(cmap_signatures, dz_genes_up, dz_genes_down) {
     dz_genes_down <- data.frame(GeneID = dz_genes_down)
 
     # Iterate over experiments (columns 2..n), compute connectivity per experiment
+    n_experiments <- ncol(cmap_signatures) - 1
+    cat(sprintf("[QUERY_SCORE] Computing scores for %d experiments...\n", n_experiments))
+    flush.console()
+    
     dz_cmap_scores <- pbapply::pbsapply(
         2:ncol(cmap_signatures),
         function(exp_id) {
@@ -265,6 +348,8 @@ query_score <- function(cmap_signatures, dz_genes_up, dz_genes_down) {
         }
     )
 
+    cat(sprintf("[QUERY_SCORE] Complete! Computed %d scores\n", length(dz_cmap_scores)))
+    flush.console()
     return(dz_cmap_scores)
 }
 
@@ -274,19 +359,39 @@ query_score <- function(cmap_signatures, dz_genes_up, dz_genes_down) {
 #' @param dz_cmap_scores numeric vector of observed scores from query_score()
 #' @param subset_comparison_id string label for this query (e.g., dataset name)
 #' @param analysis_id string label for the analysis type (default: "cmap")
+#' @param pvalue_method character; "discrete" or "continuous"
+#'   "discrete" = count-based: p = (# perms >= obs) / N_perms (transparent, discrete values)
+#'   "continuous" = with Phipson & Smyth correction: p = 1/(N+1) when count=0 (recommended)
+#'   Default: "continuous" (DRpipe standard, recommended for publication)
+#' @param phipson_smyth_correction logical; apply Phipson & Smyth (2010) correction?
+#'   When TRUE and count=0, use p = 1/(N+1) instead of p=0
+#'   When FALSE, use raw p = count/N (allows p=0)
+#'   Only used when pvalue_method="continuous". Default: TRUE
 #' @return data.frame with experiment id, score, p, q, subset_comparison_id, analysis_id
 #' @export
-query <- function(rand_cmap_scores, dz_cmap_scores, subset_comparison_id, analysis_id = "cmap") {
+query <- function(rand_cmap_scores, dz_cmap_scores, subset_comparison_id, analysis_id = "cmap",
+                   pvalue_method = "continuous", phipson_smyth_correction = TRUE) {
     # --- Two-sided p-values from the empirical null (frequency method) --------
     message("COMPUTING p-values")
+    message(sprintf("  Method: %s", pvalue_method))
+    message(sprintf("  Phipson-Smyth correction: %s", phipson_smyth_correction))
+    
     p_values <- sapply(dz_cmap_scores, function(score) {
         count_extreme <- sum(abs(rand_cmap_scores) >= abs(score))
-        p_val <- count_extreme / length(rand_cmap_scores)
         
-        # CRITICAL FIX: Prevent p-values from being exactly 0
-        # Use permutation-based minimum: 1/(N+1) as per Phipson & Smyth (2010)
-        if (p_val == 0) {
-            p_val <- 1 / (length(rand_cmap_scores) + 1)
+        if (pvalue_method == "discrete") {
+            # Discrete method: p = count / N (allows p=0, transparent)
+            p_val <- count_extreme / length(rand_cmap_scores)
+        } else if (pvalue_method == "continuous") {
+            # Continuous method: standard p-value calculation
+            p_val <- count_extreme / length(rand_cmap_scores)
+            
+            # Optionally apply Phipson & Smyth (2010) correction
+            if (phipson_smyth_correction && p_val == 0) {
+                p_val <- 1 / (length(rand_cmap_scores) + 1)
+            }
+        } else {
+            stop(sprintf("Unknown pvalue_method: %s. Must be 'discrete' or 'continuous'.", pvalue_method))
         }
         
         return(p_val)

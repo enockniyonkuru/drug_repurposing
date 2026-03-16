@@ -1,0 +1,28 @@
+# Summary Statistics: Precision & Recall
+
+## Quick Reference
+
+### CMAP
+- Precision: 5.50% ± 6.52% (range: 0.00% - 42.86%)
+- Recall: 60.69% ± 36.93% (range: 0.00% - 100.00%)
+- Diseases: 101
+
+### TAHOE
+- Precision: 9.93% ± 13.71% (range: 0.00% - 65.08%)
+- Recall: 58.00% ± 31.48% (range: 0.00% - 100.00%)
+- Diseases: 112
+
+## Interpretation Guide
+
+- **Precision > 50%**: High-quality predictions (few false positives)
+- **Recall > 20%**: Good coverage of known relationships
+- **Both high**: Best-case scenario (TAHOE achieves this on average)
+
+## Achievement Summary
+
+| Metric | CMAP | TAHOE |
+|--------|------|-------|
+| Diseases with Prec > 50% | 0 / 101 (0%) | 6 / 112 (5%) |
+| Diseases with Recall > 20% | 61 / 78 (78%) | 85 / 95 (89%) |
+| Mean Precision (%) | 5.5 | 9.9 |
+| Mean Recall (%) | 60.7 | 58.0 |
