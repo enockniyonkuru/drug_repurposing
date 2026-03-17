@@ -712,59 +712,78 @@ BRCA1,-1.8,-2.1,0.005
 ```
 drug_repurposing/
 ├── README.md                          # This file
-├── DRpipe/                            # R package
+├── DRpipe/                            # R package (core pipeline logic)
 │   ├── DESCRIPTION, NAMESPACE, LICENSE
-│   ├── README.md                      # Package documentation
+│   ├── README.md                      # Package API documentation
 │   └── R/
-│       ├── processing.R               # Core processing functions
+│       ├── processing.R               # Core data processing (clean_table, query, etc.)
 │       ├── analysis.R                 # Plotting/summary helpers
 │       ├── pipeline_processing.R      # DRP class + run_dr()
 │       ├── pipeline_analysis.R        # DRA class + analyze_runs()
 │       ├── io_config.R                # Config & IO helpers
 │       ├── cli.R                      # Command-line interface
+│       ├── chembl_validation.R        # ChEMBL known-drug validation
+│       ├── plot_sweep_legacy.R        # Legacy sweep mode plotting
 │       └── zzz-imports.R
-├── scripts/                           # Analysis scripts
-│   ├── config.yml                     # Configuration file
-│   ├── runall.R                       # Single analysis script
-│   ├── compare_profiles.R             # Comparative analysis script
+├── scripts/                           # Pipeline execution & configuration
+│   ├── README.md                      # Scripts documentation
+│   ├── config.yml                     # YAML configuration (all profiles)
+│   ├── runall.R                       # Entry point: single analysis
+│   ├── compare_profiles.R            # Entry point: comparative analysis
+│   ├── load_execution_config.R        # Config-loading helpers
+│   ├── preprocess_disease_file.R      # Disease file column standardization
 │   ├── data/                          # Input data
-│   │   ├── drug_signatures/           # Drug signature databases
-│   │   │   ├── cmap_signatures.RData  # (Download required)
+│   │   ├── drug_signatures/           # Drug signature databases (download required)
+│   │   │   ├── cmap_signatures.RData  # CMap (232 MB)
 │   │   │   ├── cmap_drug_experiments_new.csv
-│   │   │   └── cmap_valid_instances.csv
-│   │   └── disease_signatures/        # Example disease signatures
+│   │   │   ├── cmap_valid_instances.csv
+│   │   │   ├── tahoe_signatures.RData # TAHOE (2.9 GB)
+│   │   │   └── tahoe_drug_experiments_new.csv
+│   │   └── disease_signatures/        # Disease gene expression CSVs
 │   │       ├── acne_signature.csv
 │   │       ├── arthritis_signature.csv
-│   │       └── glaucoma_signature.csv
-│   └── results/                       # Output directory
-├── shiny_app/                         # Shiny application
-│   ├── app.R                          # Main app file
-│   ├── run.R                          # Helper launch script
-│   └── README.md                      # Shiny app documentation
-└── tahoe_cmap_analysis/               # TAHOE-CMAP integrated analysis
-    └── README.md                      # See directory README for details
+│   │       ├── glaucoma_signature.csv
+│   │       └── endo_disease_signatures/  # 6 endometriosis sub-signatures
+│   └── results/                       # Timestamped output directories
+├── shiny_app/                         # Interactive web application
+│   ├── README.md                      # Shiny app documentation
+│   ├── app.R                          # Main Shiny application
+│   ├── run.R                          # Launcher with dependency checks
+│   └── check_packages.R              # Package verification script
+├── tahoe_cmap_analysis/               # Large-scale TAHOE vs CMAP study
+│   ├── README.md                      # Study documentation
+│   ├── data/                          # Disease/drug signatures, known drugs
+│   ├── scripts/                       # Preprocessing, execution, analysis, visualization
+│   ├── results/                       # Per-disease-set pipeline outputs
+│   ├── validation/                    # 4-step known-drug recovery pipeline
+│   └── case_study_special/            # Autoimmune and disease-category case studies
+├── visuals/                           # Manuscript figures
+│   ├── README.md                      # Figure documentation & script mapping
+│   ├── figures/                       # Generated figures (7 categories)
+│   └── scripts/                       # 7 generation scripts (R + Python)
+└── dump/                              # Archived/deprecated files (not needed for pipeline)
+    └── README.md                      # Archive contents index
 ```
 
 ---
 
-## About the tahoe_cmap_analysis Directory
+## About the Subdirectories
 
-The `tahoe_cmap_analysis/` subdirectory contains specialized analysis work comparing drug repurposing results from CMAP and TAHOE drug signature databases across 233 CREEDS diseases.
+Each top-level directory has its own README with detailed documentation:
 
-**Key Resources:**
-- Comprehensive [tahoe_cmap_analysis README](tahoe_cmap_analysis/README.md) with advanced usage examples
-- Detailed guidance on adjusting disease and drug signature thresholds
-- Instructions for batch processing and creating valid instances
-- Example configurations for CMAP, TAHOE, and comparative analyses
-- Best practices for parameter sensitivity testing
+| Directory | Purpose | README |
+|-----------|---------|--------|
+| `DRpipe/` | Core R package (functions, classes, CLI) | [DRpipe/README.md](DRpipe/README.md) |
+| `scripts/` | Pipeline execution, configuration, input data, results | [scripts/README.md](scripts/README.md) |
+| `shiny_app/` | Interactive web application for analysis and visualization | [shiny_app/README.md](shiny_app/README.md) |
+| `tahoe_cmap_analysis/` | Large-scale TAHOE vs CMAP comparative study (233 diseases) | [tahoe_cmap_analysis/README.md](tahoe_cmap_analysis/README.md) |
+| `visuals/` | Manuscript figure generation scripts and outputs | [visuals/README.md](visuals/README.md) |
+| `dump/` | Archived/deprecated files (not needed for pipeline) | [dump/README.md](dump/README.md) |
 
-**When to Reference This Directory:**
-- You want to understand how to **tune filtering thresholds** for disease or drug signatures
-- You need to **create custom valid instances** for CMAP or TAHOE signatures
-- You want to run **batch analyses** on multiple diseases with custom parameters
-- You're interested in **method comparison** between CMAP and TAHOE databases
-
-See [tahoe_cmap_analysis/README.md](tahoe_cmap_analysis/README.md#advanced-usage) for advanced usage guides and examples.
+**Key references:**
+- For **threshold tuning**, valid instance creation, and batch processing: see [tahoe_cmap_analysis/README.md](tahoe_cmap_analysis/README.md)
+- For **reproducing manuscript figures**: see [visuals/README.md](visuals/README.md)
+- For **running your own disease**: see [scripts/README.md](scripts/README.md#run-your-own-disease)
 
 ---
 
@@ -940,13 +959,14 @@ CMAP_Acne_Strict:
 
 ## 9.5 Advanced Threshold Tuning
 
-For detailed guidance on adjusting disease and drug signature thresholds, filtering parameters, and running batch analyses with custom configurations, see the **[tahoe_cmap_analysis README](tahoe_cmap_analysis/README.md#advanced-usage)**.
+For detailed guidance on adjusting disease and drug signature thresholds, filtering parameters, and running batch analyses with custom configurations, see the **[tahoe_cmap_analysis README](tahoe_cmap_analysis/README.md)**.
 
-This advanced section includes:
+This includes:
 - **Creating valid instances** for drug signatures with correlation-based quality control
 - **Filtering disease signatures** with configurable fold-change and p-value thresholds
 - **Filtering drug signatures** with stage-by-stage quality metrics
 - **Batch processing** 233 CREEDS diseases with custom parameters
+- **Batch configuration files** with YAML templates for multi-disease runs
 
 **Quick Reference for Valid Instance Thresholds:**
 - **CMAP**: r = 0.15 (minimum correlation threshold)

@@ -640,15 +640,18 @@ install.packages(c(
   "UpSetR"
 ))
 
-# Install DRpipe (custom package)
-# Navigate to the DRpipe directory and install
-install.packages("path/to/DRpipe", repos = NULL, type = "source")
+# Install DRpipe (from the repository root)
+devtools::document("../DRpipe")
+devtools::install("../DRpipe")
+
+# Verify all packages are installed
+source("check_packages.R")
 ```
 
 ### Version Compatibility
 
 - **Shiny**: 1.7.0+
-- **R**: 4.0.0+
+- **R**: 4.2.0+
 - **Browser**: Any modern browser (Chrome, Firefox, Safari, Edge)
 - **CSV Spec**: RFC 4180 (standard CSV format)
 
@@ -656,10 +659,10 @@ install.packages("path/to/DRpipe", repos = NULL, type = "source")
 
 ```
 shiny_app/
-  app.R                 # Main application
-  run.R                 # Helper script to launch app
-  README.md             # This comprehensive documentation
-  .Rhistory            # R session history
+  app.R                 # Main Shiny application
+  run.R                 # Helper script to launch app (with dependency checks)
+  check_packages.R      # Verifies all required R packages are installed
+  README.md             # This documentation
 ```
 
 ---

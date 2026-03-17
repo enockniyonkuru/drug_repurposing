@@ -52,14 +52,15 @@ DRpipe/
 ├── NAMESPACE               # Exported functions and imports
 ├── LICENSE                 # MIT license
 ├── README.md              # This file
-├── renv.lock              # R environment lock file
 ├── R/                     # Core package functions
 │   ├── processing.R       # Data processing functions
 │   ├── analysis.R         # Analysis and visualization functions
-│   ├── pipeline_processing.R  # Processing pipeline
-│   ├── pipeline_analysis.R    # Analysis pipeline
+│   ├── pipeline_processing.R  # Processing pipeline (DRP class)
+│   ├── pipeline_analysis.R    # Analysis pipeline (DRA class)
 │   ├── io_config.R        # I/O and configuration utilities
 │   ├── cli.R              # Command line interface
+│   ├── chembl_validation.R    # ChEMBL known-drug validation
+│   ├── plot_sweep_legacy.R    # Legacy sweep mode plotting
 │   └── zzz-imports.R      # Package imports
 ├── man/                   # Function documentation (auto-generated)
 └── renv/                  # R environment management
@@ -520,7 +521,7 @@ pl_overlap(do.call(rbind, results_list))
 
 ### 10.1 System Requirements
 
-- **R** (≥ 4.1)
+- **R** (≥ 4.2)
 - **Operating System**: Windows, macOS, Linux
 - **Memory**: Minimum 8GB RAM recommended for large datasets
 - **Storage**: Sufficient space for CMap data (~2-5GB)
@@ -568,8 +569,8 @@ This package is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 ### 10.7 Version Information
 
 - **Current Version**: 0.1.0
-- **R Version Required**: ≥ 4.1
-- **Last Updated**: 2024
+- **R Version Required**: ≥ 4.2
+- **Last Updated**: 2025
 
 ---
 
