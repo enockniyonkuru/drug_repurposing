@@ -4,7 +4,7 @@
 #' Executes the full drug repurposing analysis pipeline using configuration
 #' from YAML file. Supports single and sweep modes for parameter exploration
 #' and generates comprehensive ranked drug candidate results.
-library(DRpipe)
+library(CDRPipe)
 source("load_execution_config.R")
 exec_cfg <- load_execution_config("config.yml")
 profile_to_use <- exec_cfg$runall_profile %||% "default"
@@ -24,8 +24,8 @@ io_ensure_dir(out)
 disease_path    <- cfg$paths$disease_file %||% cfg$paths$disease_dir
 disease_pattern <- if (is.null(cfg$paths$disease_file)) cfg$paths$disease_pattern else NULL
 
-# 3) Run the pipeline using DRP class to access all new parameters
-drp <- DRP$new(
+# 3) Run the pipeline using the CDRP class to access all new parameters
+drp <- CDRP$new(
   signatures_rdata = cfg$paths$signatures,
   disease_path     = disease_path,
   disease_pattern  = disease_pattern,

@@ -1,0 +1,69 @@
+# CASE STUDY V2 - SHARED GENES FILTERED
+# Using filtered drug signatures (shared genes only) and pre-selected diseases
+
+# ============================================================================
+# DISEASE CONFIGURATION
+# ============================================================================
+disease:
+  source: "90 selected diseases"
+  directory: "creeds_diseases/disease_signatures/90_subset_creeds_manual_disease_signatures_shared_genes"
+
+# ============================================================================
+# CMAP DRUG SIGNATURES CONFIGURATION
+# ============================================================================
+cmap:
+  signatures: "data/drug_signatures/cmap/cmap_signatures_shared_genes.RData"
+  metadata: "data/drug_signatures/cmap/cmap_drug_experiments_new.csv"
+  valid_instances: "data/drug_signatures/cmap/cmap_valid_instances_OG_015.csv"
+
+# ============================================================================
+# TAHOE DRUG SIGNATURES CONFIGURATION
+# ============================================================================
+tahoe:
+  signatures: "data/drug_signatures/tahoe/tahoe_signatures_shared_genes_only.RData"
+  metadata: "data/drug_signatures/tahoe/tahoe_drug_experiments_new.csv"
+
+# ============================================================================
+# GENE CONVERSION AND ANALYSIS
+# ============================================================================
+analysis:
+  gene_table: "data/gene_id_conversion_table.tsv"
+  qval_threshold: 0.05
+  # Column selection options:
+  # - Use "all" to use all logfc columns with the specified prefix
+  # - Use specific column names like "logfc_dz:459" to use only that column
+  # - Use multiple columns like ["logfc_dz:459", "logfc_dz:297"] to use specific columns
+  logfc_column_selection: "all"  # or specific columns like "logfc_dz:459"
+  use_averaging: true  # Set to false to use columns individually without averaging
+  
+  # Gene filtering options:
+  # Choose ONE filtering method:
+  # Option 1: Fixed logfc cutoff (legacy)
+  #   logfc_cutoff: 0.15
+  # Option 2: Percentile-based (RECOMMENDED)
+  #   percentile_filtering:
+  #     enabled: true
+  #     threshold: 75  # Keep top 75% of genes per disease
+  percentile_filtering:
+    enabled: true
+    threshold: 75  # Keep top 75% of genes by logFC per disease
+
+# ============================================================================
+# OUTPUT CONFIGURATION
+# ============================================================================
+output:
+  root_directory: "creeds_diseases/results/90_selected_diseases_shared_genes"
+  report_directory: "creeds_diseases/analysis/90_selected_diseases_analysis"
+  report_prefix: "case_study_v2_shared_genes"
+
+# ============================================================================
+# RUNTIME OPTIONS
+# ============================================================================
+runtime:
+  skip_existing_results: true
+  verbose: true
+  # Disease range options (1-indexed):
+  # - Leave empty or set to 1 to start from first disease
+  # - Set to specific number (e.g., 100) to start from disease 100
+  start_from_disease: 1  # Start processing from this disease number
+  end_at_disease: null     # End at this disease number (null = process all remaining)

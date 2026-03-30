@@ -1,7 +1,7 @@
 #!/usr/bin/env Rscript
 #' Preprocess Disease Signature Files
 #'
-#' Standardizes disease signature files to match DRpipe expected format.
+#' Standardizes disease signature files to match CDRPipe expected format.
 #' Renames columns (gene_symbol to SYMBOL, mean_logfc to log2FC) for
 #' compatibility with downstream analysis pipeline.
 
@@ -27,7 +27,7 @@ if (!"gene_symbol" %in% colnames(df)) {
 # Rename gene_symbol to SYMBOL and mean_logfc to log2FC
 colnames(df)[colnames(df) == "gene_symbol"] <- "SYMBOL"
 
-# Rename mean_logfc to log2FC to match DRpipe expected format
+# Rename mean_logfc to log2FC to match CDRPipe expected format
 if ("mean_logfc" %in% colnames(df)) {
   colnames(df)[colnames(df) == "mean_logfc"] <- "log2FC"
   df_out <- df[, c("SYMBOL", "log2FC")]

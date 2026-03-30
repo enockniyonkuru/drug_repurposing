@@ -1,0 +1,32 @@
+Naming Merge Plan (Signatures ↔ Hits)
+
+Columns:
+- Left: signature basename ending with _signatures
+- Right: corresponding hits basename ending with _hits
+
+Laura mappings:
+laura_endothelia_secretory_deg_signatures	laura_Endothelia_secretory_DEG_hits
+laura_smooth_muscle_secretory_deg_signatures	laura_Smooth_muscle_secretory_DEG_hits
+laura_stromal_fibroblast_secretory_signatures	laura_Stromal_fibroblast_secretory_hits
+laura_unciliated_epithelia_prolifer_signatures	laura_Unciliated_Epithelia_prolifer_hits
+laura_unciliated_epithelia_secretor_signatures	laura_Unciliated_Epithelia_secretor_hits
+laura_stromal_fibroblast_pe_signatures	laura_StroFib_PE_hits
+laura_endometrial_pe_signatures	laura_Endo_PE_hits
+
+Tomiko mappings:
+tomiko_dvc_unstratified_signatures	tomiko_drug_in_tance__un_tratified_hits
+tomiko_dvc_pesamples_signatures	tomiko_drug_in_tance__PE_hits
+tomiko_dvc_esesamples_signatures	tomiko_drug_in_tance__ESE_hits
+tomiko_dvc_msesamples_signatures	tomiko_drug_in_tance__MSE_hits
+tomiko_stages_i_ii_vs_control_signatures	tomiko_drug_in_tance__InII_hits
+tomiko_stages_iii_iv_vs_control_signatures	tomiko_drug_in_tance__IIInIV_hits
+
+CREEDS mappings:
+creeds_endometrial_cancer_signatures	[no direct hits present]
+creeds_endometriosis_of_ovary_signatures	[no direct hits present]
+creeds_endometriosis_signatures	[no direct hits present]
+
+Notes:
+- For Laura signatures with remnants like ".rds" or ".r" in filenames, standardized output should drop those extensions in the basename before appending _signatures.
+- Tomiko current CSVs in csv_output lack _hits suffix; outputs should be renamed to include _hits for consistency when copying to matched_outputs.
+- Where hits are missing (CREEDS), only signatures will be provided until corresponding hits are available.

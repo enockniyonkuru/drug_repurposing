@@ -1,0 +1,7 @@
+"signature","total_genes","retained_genes","percentile_cutoff","pct_retained"
+"tomiko_dvc_esesamples_signature",535,81,1.411,15.1
+"tomiko_dvc_msesamples_signature",1398,210,1.416,15
+"tomiko_dvc_pesamples_signature",2569,386,1.449,15
+"tomiko_dvc_unstratified_signature",1366,205,1.406,15
+"tomiko_stages_i_ii_vs_control_signature",2219,333,1.427,15
+"tomiko_stages_iii_iv_vs_control_signature",1161,175,1.417,15.1

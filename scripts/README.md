@@ -1,6 +1,6 @@
 # Scripts — Pipeline Execution & Configuration
 
-This directory contains the main entry-point scripts, configuration, input data, and output results for running the CDRpipe drug repurposing pipeline from the command line.
+This directory contains the main entry-point scripts, configuration, input data, and output results for running the CDRPipe drug repurposing pipeline from the command line.
 
 ---
 
@@ -20,8 +20,8 @@ This directory contains the main entry-point scripts, configuration, input data,
 ## Quick Start
 
 ```bash
-# 1. Ensure DRpipe is installed
-R -e 'devtools::install("../DRpipe")'
+# 1. Ensure CDRPipe is installed
+R -e 'devtools::install("../CDRPipe")'
 
 # 2. Download required data (see "Input Data" section below)
 

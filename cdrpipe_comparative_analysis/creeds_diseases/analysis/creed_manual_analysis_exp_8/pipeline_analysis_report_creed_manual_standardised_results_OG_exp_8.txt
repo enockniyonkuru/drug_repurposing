@@ -1,0 +1,29 @@
+--- Pipeline Analysis Report ---
+
+Generated: 2025-12-01 01:33:49.384610
+Source Results Folder: tahoe_cmap_analysis/results/creed_manual_standardised_results_OG_exp_8
+Output Analysis Directory: tahoe_cmap_analysis/data/analysis/creed_manual_analysis_exp_8
+
+Analyzed 233 unique diseases.
+Ran analysis for 3 q-value thresholds: [0.5, 0.1, 0.05]
+
+--- Output File Naming Pattern (per q-value) ---
+1. Summary CSV (Counts): analysis_summary_creed_manual_standardised_results_OG_exp_8_q[X].csv
+2. Drug Lists CSV:     analysis_drug_lists_creed_manual_standardised_results_OG_exp_8_q[X].csv
+3. Details JSON:       analysis_details_creed_manual_standardised_results_OG_exp_8_q[X].json
+
+--- Match Summary ---
+Disease Name Matches (from folders):
+  - Matched by name:     151
+  - Matched by synonym:  52
+  - No match found:    30
+
+--- Data Sample (Summary, q < 0.5) ---
+                disease_name  q_threshold     disease_id match_type  tahoe_hits_count  cmap_hits_count  common_hits_count  known_drugs_in_database_count  tahoe_in_known_count  cmap_in_known_count  common_in_known_count  total_in_known_count  known_drugs_available_in_cmap_count  known_drugs_available_in_tahoe_count  phase_3.0  phase_1.0  phase_2.0  phase_4.0  status_Completed  status_Recruiting  status_Unknown  status_Terminated  status_Unknown status  phase_0.5  status_Withdrawn  status_Not yet recruiting  status_Active, not recruiting  status_Enrolling by invitation  status_Suspended
+0                  urticaria          0.5    EFO_0005531       name                79             1028                  4                            527                     0                    8                      0                     8                                    9                                     4        6.0        4.0        4.0        1.0               9.0                3.0             1.0                1.0                    1.0        0.0               0.0                        0.0                            0.0                             0.0               0.0
+1    intellectual disability          0.5     HP_0001249       name               250              123                  5                             91                     0                    2                      0                     2                                    4                                     1        1.0        0.0        2.0        0.0               2.0                1.0             0.0                0.0                    0.0        0.0               0.0                        0.0                            0.0                             0.0               0.0
+2          mental depression          0.5  MONDO_0002050    synonym               185              520                  8                           2252                     1                   29                      0                    30                                   69                                    13       26.0       11.0       18.0       13.0              31.0                6.0             0.0               25.0                    6.0        5.0               4.0                        1.0                            0.0                             0.0               0.0
+3            cervical cancer          0.5  MONDO_0002974       name               205              181                  7                           1023                    13                    3                      0                    16                                   15                                    23       19.0        9.0       17.0        0.0              16.0                6.0             0.0                5.0                    5.0        0.0               5.0                        4.0                            4.0                             0.0               0.0
+4  colorectal adenocarcinoma          0.5    EFO_0000365       name               282               88                  4                            743                    16                    1                      0                    17                                   12                                    19        4.0       13.0       21.0        0.0              14.0                3.0             0.0                5.0                    3.0        0.0               3.0                        0.0                           10.0                             0.0               0.0
+
+--- End of Report ---

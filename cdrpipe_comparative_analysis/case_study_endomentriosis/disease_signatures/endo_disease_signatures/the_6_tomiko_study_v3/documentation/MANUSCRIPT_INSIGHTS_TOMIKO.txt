@@ -1,0 +1,147 @@
+
+================================================================================
+TOMIKO ENDOMETRIOSIS STUDY v3: MANUSCRIPT INSIGHTS
+================================================================================
+Analysis Date: December 19, 2025
+
+EXECUTIVE SUMMARY
+-----------------
+This analysis compares drug repurposing candidates identified by three approaches:
+1. NEW CMAP: Updated CMAP analysis using CDRPipe
+2. NEW TAHOE: TAHOE-based analysis using CDRPipe  
+3. OLD Studies: Original Tomiko et al. published results
+
+================================================================================
+KEY FINDING 1: DRAMATIC DIFFERENCE IN HIT VOLUME
+================================================================================
+
+Total unique drugs identified:
+- NEW CMAP:    1,154 drugs
+- NEW TAHOE:   73 drugs
+- OLD Studies: 299 drugs
+
+**Key Insight:** CMAP identifies ~16x more drug candidates 
+than TAHOE in this endometriosis dataset. This is OPPOSITE to the autoimmune study 
+findings where TAHOE outperformed CMAP in recovery rates.
+
+**Manuscript Text:**
+> "In the Tomiko endometriosis study, CMAP identified substantially more drug 
+> candidates (1,154) compared to TAHOE (73), representing a 
+> 15.8-fold difference. This contrasts with autoimmune 
+> diseases where TAHOE showed superior known drug recovery rates."
+
+================================================================================
+KEY FINDING 2: HIGH OVERLAP WITH ORIGINAL STUDY
+================================================================================
+
+Overlap with OLD (original) studies:
+- NEW CMAP ∩ OLD: 299 drugs (100.0% of OLD)
+- NEW TAHOE ∩ OLD: 4 drugs (1.3% of OLD)
+- All three methods: 4 drugs
+
+**Key Insight:** The new CMAP analysis recovers 100.0% of 
+the original published findings, validating reproducibility.
+
+**Manuscript Text:**
+> "The updated CMAP analysis demonstrated high concordance with the original 
+> Tomiko et al. findings, recovering 100.0% (299/299) 
+> of previously identified drug candidates, confirming the reproducibility of 
+> computational drug repurposing approaches."
+
+================================================================================
+KEY FINDING 3: NOVEL DISCOVERIES
+================================================================================
+
+Unique/Novel discoveries:
+- Only NEW CMAP (not in TAHOE or OLD): 852 drugs (69.8%)
+- Only NEW TAHOE (not in CMAP or OLD): 66 drugs (5.4%)
+- Only OLD (not found by new methods): 0 drugs (0.0%)
+
+**Key Insight:** 852 novel drug candidates were identified exclusively by 
+the new CMAP analysis, representing potential new therapeutic leads for endometriosis.
+
+**Manuscript Text:**
+> "Beyond reproducing known findings, the updated analysis identified 852 
+> novel drug candidates (69.8% of total unique drugs) not found in the 
+> original study or by TAHOE, expanding the pool of potential therapeutic leads 
+> for endometriosis."
+
+================================================================================
+KEY FINDING 4: EXPERIMENT-SPECIFIC PATTERNS
+================================================================================
+
+Drug hits by experimental comparison:
+- tomiko_dvc_unstratified: CMAP=989, TAHOE=47
+- tomiko_dvc_msesamples: CMAP=1,012, TAHOE=53
+- tomiko_dvc_pesamples: CMAP=1,096, TAHOE=48
+- tomiko_stages_i_ii_vs_control: CMAP=1,074, TAHOE=0
+- tomiko_stages_iii_iv_vs_control: CMAP=962, TAHOE=51
+
+**Key Insight:** CMAP consistently outperforms TAHOE across all experimental 
+comparisons in endometriosis, with TAHOE identifying only 6.3% as 
+many candidates.
+
+================================================================================
+KEY FINDING 5: METHOD COMPLEMENTARITY
+================================================================================
+
+Venn diagram breakdown:
+- Only NEW CMAP: 852 (69.8%)
+- Only NEW TAHOE: 66 (5.4%)
+- Only OLD Studies: 0 (0.0%)
+- CMAP + TAHOE (not OLD): 3 (0.2%)
+- CMAP + OLD (not TAHOE): 295 (24.2%)
+- TAHOE + OLD (not CMAP): 0 (0.0%)
+- All three methods: 4 (0.3%)
+- TOTAL UNIQUE: 1,220
+
+**Key Insight:** Despite fewer hits, TAHOE identifies 66 unique candidates 
+not found by either CMAP method, suggesting complementary value.
+
+**Manuscript Text:**
+> "While CMAP dominated in total candidate identification, TAHOE contributed 
+> 66 unique candidates (5.4%) not detected by either CMAP analysis, 
+> demonstrating the complementary value of multi-method approaches in drug 
+> repurposing."
+
+================================================================================
+KEY FINDING 6: DISEASE-SPECIFIC METHOD PERFORMANCE
+================================================================================
+
+**CRITICAL OBSERVATION:**
+This endometriosis study shows CMAP > TAHOE in hit volume, while the autoimmune 
+study showed TAHOE > CMAP in known drug recovery. This suggests:
+
+1. Different disease types may benefit from different computational approaches
+2. CMAP may be more suitable for gynecological/hormonal conditions
+3. TAHOE may be more suitable for immune-related conditions
+4. Method selection should be disease-specific
+
+**Manuscript Text:**
+> "Interestingly, the relative performance of CMAP and TAHOE varies by disease 
+> context. In endometriosis, CMAP identified 15.8-fold more candidates 
+> than TAHOE, whereas in autoimmune diseases, TAHOE showed superior known drug 
+> recovery rates (76.6% vs 17.8%). This disease-dependent performance suggests 
+> that optimal method selection may require consideration of the underlying 
+> disease biology."
+
+================================================================================
+FIGURES GENERATED
+================================================================================
+
+1. figure1_upset_plot.png/pdf - UpSet plot showing all overlaps
+2. figure2_overlap_bars.png/pdf - Bar chart of overlap categories
+3. figure3_method_comparison.png/pdf - 3-panel method comparison
+4. figure4_experiment_comparison.png/pdf - Experiment-level CMAP vs TAHOE
+
+================================================================================
+RECOMMENDED TABLES FOR MANUSCRIPT
+================================================================================
+
+Table 1: Drug Hit Summary by Method
+Table 2: Overlap Analysis (7 categories)
+Table 3: Experiment-Level Comparison
+
+All CSV files have been generated for these tables.
+
+================================================================================

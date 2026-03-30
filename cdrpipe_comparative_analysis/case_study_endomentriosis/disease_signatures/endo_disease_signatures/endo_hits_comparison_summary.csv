@@ -1,0 +1,17 @@
+signature,only_cmap,only_tahoe,both_cmap_tahoe,only_old,cmap_and_old,all_three,tahoe_and_old,in_cmap,in_tahoe,in_old,cmap_and_tahoe,cmap_and_old_studies,tahoe_and_old_studies,tahoe_cmap_old
+creeds_endometrial_cancer,624,154,10,0,0,0,0,634,164,0,10,0,0,0
+creeds_endometriosis,22,49,0,0,0,0,0,22,49,0,0,0,0,0
+laura_endometrial_pe,0,0,0,1,0,0,0,0,0,1,0,0,0,0
+laura_endothelia_secretory_deg.rds,6,23,0,112,2,0,0,8,23,114,0,2,0,0
+laura_smooth_muscle_secretory_deg.r,57,140,0,8,3,0,0,60,140,11,0,3,0,0
+laura_stromal_fibroblast_pe,0,0,0,15,0,0,0,0,0,15,0,0,0,0
+laura_stromal_fibroblast_proliferat,534,65,3,0,0,0,0,537,68,0,3,0,0,0
+laura_stromal_fibroblast_secretory_,418,42,0,2,23,0,0,441,42,25,0,23,0,0
+laura_unciliated_epithelia_prolifer,288,182,5,7,34,1,0,328,188,42,6,35,1,1
+laura_unciliated_epithelia_secretor,229,57,0,4,17,0,0,246,57,21,0,17,0,0
+tomiko_dvc_esesamples,347,262,8,169,49,5,13,409,288,236,13,54,18,5
+tomiko_dvc_msesamples,642,310,24,150,113,13,13,792,360,289,37,126,26,13
+tomiko_dvc_pesamples,689,283,23,122,139,12,10,863,328,283,35,151,22,12
+tomiko_dvc_unstratified,642,312,20,140,117,12,13,791,357,282,32,129,25,12
+tomiko_stages_i_ii_vs_control,672,306,23,117,136,11,11,842,351,275,34,147,22,11
+tomiko_stages_iii_iv_vs_control,589,316,18,157,103,9,15,719,358,284,27,112,24,9

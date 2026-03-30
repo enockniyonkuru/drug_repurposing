@@ -1,0 +1,62 @@
+DISEASE CATEGORIZATION SUMMARY
+==============================
+Total Diseases: 90
+
+CATEGORY BREAKDOWN:
+===================
+
+1. Cancer Diseases: 31 (34.4%)
+   - Hematological: 6
+   - Breast: 2
+   - Gastrointestinal: 11
+   - Lung: 3
+   - Gynecological: 4
+   - Brain/CNS: 2
+   - Other: 3
+
+2. Autoimmune & Inflammatory: 16 (17.8%)
+   - Rheumatic: 7
+   - IBD: 4
+   - Skin: 3
+   - Other: 2
+
+3. Neurological & Psychiatric: 12 (13.3%)
+   - Neurodegenerative: 3
+   - Neuromuscular: 3
+   - Psychiatric: 6
+
+4. Cardiovascular: 5 (5.6%)
+
+5. Respiratory: 6 (6.7%)
+
+6. Metabolic & Endocrine: 6 (6.7%)
+   - Diabetes: 2
+   - Liver: 2
+   - Other: 2
+
+7. Infectious Diseases: 3 (3.3%)
+   - Viral: 2
+   - Bacterial: 1
+
+8. Hematological (Non-Cancer): 2 (2.2%)
+
+9. Other: 9 (10.0%)
+   - Genetic: 1
+   - Ophthalmologic: 2
+   - Gynecological: 1
+   - Dermatologic: 1
+   - Urological: 1
+   - Substance-Related: 1
+
+FILES CREATED:
+==============
+- cancer_diseases.txt
+- autoimmune_inflammatory_diseases.txt
+- neurological_psychiatric_diseases.txt
+- cardiovascular_diseases.txt
+- respiratory_diseases.txt
+- metabolic_endocrine_diseases.txt
+- infectious_diseases.txt
+- hematological_diseases.txt
+- other_diseases.txt
+- disease_category_summary.txt (this file)

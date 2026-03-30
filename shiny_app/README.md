@@ -1,6 +1,6 @@
 # Drug Repurposing Shiny App
 
-Interactive web application for the DRpipe drug repurposing analysis pipeline. This app provides a user-friendly graphical interface to run drug repurposing analyses without writing code.
+Interactive web application for the CDRPipe drug repurposing analysis pipeline. This app provides a user-friendly graphical interface to run drug repurposing analyses without writing code.
 
 ## Table of Contents
 
@@ -20,7 +20,7 @@ Interactive web application for the DRpipe drug repurposing analysis pipeline. T
 
 ## Overview
 
-The Shiny app offers an interactive way to run the DRpipe pipeline through a web interface using disease gene expression signatures and drug signature databases (CMap and TAHOE). Instead of editing configuration files and running R scripts, you can:
+The Shiny app offers an interactive way to run the CDRPipe pipeline through a web interface using disease gene expression signatures and drug signature databases (CMap and TAHOE). Instead of editing configuration files and running R scripts, you can:
 
 - Upload disease gene expression data through a web form
 - Configure analysis parameters using interactive controls
@@ -33,7 +33,7 @@ The Shiny app offers an interactive way to run the DRpipe pipeline through a web
 **When to use the Shiny app:**
 - You prefer a graphical interface over command-line tools
 - You want to quickly test different parameters
-- You're new to R or the DRpipe pipeline
+- You're new to R or the CDRPipe pipeline
 - You need to demonstrate results to collaborators
 
 **When to use the command-line pipeline:**
@@ -620,7 +620,7 @@ Core functionality:
 - shinyjs
 - pheatmap
 - UpSetR
-- DRpipe (custom package)
+- CDRPipe (custom package)
 
 ### Installation
 
@@ -640,9 +640,9 @@ install.packages(c(
   "UpSetR"
 ))
 
-# Install DRpipe (from the repository root)
-devtools::document("../DRpipe")
-devtools::install("../DRpipe")
+# Install CDRPipe (from the repository root)
+devtools::document("../CDRPipe")
+devtools::install("../CDRPipe")
 
 # Verify all packages are installed
 source("check_packages.R")

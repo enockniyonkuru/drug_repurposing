@@ -1,0 +1,20 @@
+disease_name,disease_id,match_type,q_threshold,tahoe_hits_count,cmap_hits_count,common_hits_count,known_drugs_in_database_count,known_drugs_available_in_cmap_count,known_drugs_available_in_tahoe_count,tahoe_in_known_count,cmap_in_known_count,common_in_known_count,total_in_known_count
+laura endothelia secretory deg.rds,0,no_match,0.5,23,8,0,0,0,0,0,0,0,0
+tomiko stages i ii vs control,0,no_match,0.5,351,841,34,0,0,0,0,0,0,0
+laura ciliated epithelia secretory ,0,no_match,0.5,0,0,0,0,0,0,0,0,0,0
+tomiko dvc msesamples,0,no_match,0.5,360,792,37,0,0,0,0,0,0,0
+creeds endometriosis,0,no_match,0.5,49,22,0,0,0,0,0,0,0,0
+laura stromal fibroblast proliferat,0,no_match,0.5,68,537,3,0,0,0,0,0,0,0
+creeds endometriosis of ovary,0,no_match,0.5,0,0,0,0,0,0,0,0,0,0
+tomiko dvc pesamples,0,no_match,0.5,328,862,35,0,0,0,0,0,0,0
+laura smooth muscle secretory deg.r,0,no_match,0.5,140,60,0,0,0,0,0,0,0,0
+laura endothelia proliferative deg.,0,no_match,0.5,0,0,0,0,0,0,0,0,0,0
+laura stromal fibroblast secretory ,0,no_match,0.5,42,440,0,0,0,0,0,0,0,0
+laura ciliated epithelia proliferat,0,no_match,0.5,0,0,0,0,0,0,0,0,0,0
+tomiko stages iii iv vs control,0,no_match,0.5,358,718,27,0,0,0,0,0,0,0
+creeds endometrial cancer,0,no_match,0.5,164,633,10,0,0,0,0,0,0,0
+tomiko dvc esesamples,0,no_match,0.5,288,409,13,0,0,0,0,0,0,0
+laura unciliated epithelia secretor,0,no_match,0.5,57,246,0,0,0,0,0,0,0,0
+laura smooth muscle proliferative d,0,no_match,0.5,0,0,0,0,0,0,0,0,0,0
+laura unciliated epithelia prolifer,0,no_match,0.5,188,328,6,0,0,0,0,0,0,0
+tomiko dvc unstratified,0,no_match,0.5,357,790,32,0,0,0,0,0,0,0

@@ -1,0 +1,71 @@
+FIGURE CAPTIONS FOR AUTOIMMUNE DISEASE DRUG REPURPOSING STUDY
+==============================================================
+
+FIGURE 1: Comprehensive Analysis of CMAP and TAHOE Drug Repurposing Performance
+--------------------------------------------------------------------------------
+Comparative analysis of two computational drug repurposing methods across 20 autoimmune diseases. 
+(A) Grouped bar chart comparing known drug recovery rates between CMAP (blue) and TAHOE (red) for 
+each disease, with dashed lines indicating method averages. (B) Paired slope chart where each line 
+represents one disease, illustrating the change in recovery rate from CMAP to TAHOE (green lines 
+indicate TAHOE superiority; red lines indicate CMAP superiority). (C) Complementarity analysis 
+showing the distribution of recovered known drugs: CMAP-only (blue), both methods (purple), 
+and TAHOE-only (red), demonstrating minimal overlap between approaches. (D) Box plot comparison 
+of recovery rate distributions with individual disease data points overlaid 
+(Wilcoxon signed-rank test p = 0.0002). (E) Scatter plot showing the relationship between 
+total drug hits and known drug recovery rate for both methods. (F) Horizontal bar chart of 
+the top 10 diseases ranked by total unique drug repurposing candidates.
+
+
+FIGURE 2: Recovery Rate Heatmap Comparing CMAP and TAHOE Across Autoimmune Diseases
+------------------------------------------------------------------------------------
+Heatmap visualization of known drug recovery rates (%) for CMAP and TAHOE methods across 20 
+autoimmune diseases. Diseases are ordered by TAHOE recovery rate (highest to lowest). 
+Color intensity represents recovery rate from 0% (red) to 100% (green). Values are annotated 
+within each cell. TAHOE demonstrates consistently higher recovery rates across the majority 
+of diseases, with 9 diseases achieving 100% recovery. Notable exceptions include type 1 diabetes 
+mellitus and arthritis, where CMAP showed superior performance.
+
+
+FIGURE 3: Summary of Drug Repurposing Method Comparison in Autoimmune Diseases
+-------------------------------------------------------------------------------
+Publication-ready summary of key findings. (A) Box and strip plot comparing known drug 
+recovery rates between CMAP and TAHOE, demonstrating significantly higher performance for 
+TAHOE (Wilcoxon p < 0.001, Cohen's d = 2.35, large effect size). Individual disease data 
+points are shown with jitter for visualization. (B) Stacked horizontal bar showing the 
+complementarity of the two methods: of 170 total known drugs recovered, 54 (31.8%) were 
+identified exclusively by CMAP, 110 (64.7%) exclusively by TAHOE, and only 6 (3.5%) by both methods. 
+(C) Diseases achieving 100% recovery rate with TAHOE (9 of 20 diseases), ordered by the number of 
+known drugs available in the TAHOE database. (D) Summary statistics table comparing key performance 
+metrics between CMAP and TAHOE methods.
+
+
+FIGURE 4: Disease-Specific Performance Profiles for Selected Autoimmune Conditions
+-----------------------------------------------------------------------------------
+Radar charts depicting multi-dimensional performance profiles for six representative autoimmune 
+diseases: Sjögren's syndrome, rheumatoid arthritis, type 1 diabetes mellitus, systemic lupus 
+erythematosus, multiple sclerosis, and Crohn's disease. Each chart compares CMAP (blue) and 
+TAHOE (red) across four normalized metrics: recovery rate, number of drug hits, known drugs 
+available in the database, and total database size. These profiles reveal disease-specific 
+patterns where TAHOE generally demonstrates broader coverage, with the exception of type 1 diabetes 
+mellitus where CMAP shows superior recovery rate performance. Percentage values in subtitles indicate 
+the actual recovery rates for each method.
+
+
+==============================================================
+SUPPLEMENTARY INFORMATION
+==============================================================
+
+Statistical Methods:
+- Wilcoxon signed-rank test used for paired non-parametric comparison
+- Cohen's d calculated for effect size estimation
+- All recovery rates calculated as: (drugs recovered / known drugs available) × 100
+
+Abbreviations:
+- CMAP: Connectivity Map
+- TAHOE: [Full name of TAHOE method]
+- MS: Multiple Sclerosis
+
+Data Source:
+- 20 autoimmune diseases analyzed
+- Known drug validation against clinical trial and approved drug databases
+- Analysis date: December 19, 2025

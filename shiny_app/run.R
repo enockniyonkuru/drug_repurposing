@@ -17,19 +17,19 @@ required_packages <- c(
   "plotly",
   "tidyverse",
   "yaml",
-  "DRpipe"
+  "CDRPipe"
 )
 
 # Function to check and install packages
 install_if_missing <- function(packages) {
   for (pkg in packages) {
-    if (pkg == "DRpipe") {
-      # Check if DRpipe is installed
-      if (!requireNamespace("DRpipe", quietly = TRUE)) {
-        cat("ERROR: DRpipe package not found!\n")
-        cat("Please install DRpipe first:\n")
-        cat("  devtools::install('../DRpipe')\n\n")
-        stop("DRpipe package is required but not installed.")
+    if (pkg == "CDRPipe") {
+      # Check if CDRPipe is installed
+      if (!requireNamespace("CDRPipe", quietly = TRUE)) {
+        cat("ERROR: CDRPipe package not found!\n")
+        cat("Please install CDRPipe first:\n")
+        cat("  devtools::install('../CDRPipe')\n\n")
+        stop("CDRPipe package is required but not installed.")
       }
     } else {
       # Check CRAN packages
@@ -61,7 +61,7 @@ suppressPackageStartupMessages({
   library(plotly)
   library(tidyverse)
   library(yaml)
-  library(DRpipe)
+  library(CDRPipe)
 })
 cat("Libraries loaded successfully.\n\n")
 

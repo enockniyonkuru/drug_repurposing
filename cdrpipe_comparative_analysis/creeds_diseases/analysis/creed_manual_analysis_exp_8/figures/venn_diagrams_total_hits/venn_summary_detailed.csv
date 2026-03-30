@@ -1,0 +1,11 @@
+Disease,TAHOE_Total,CMAP_Total,Common,TAHOE_Only,CMAP_Only,Union_Total,Overlap_Percent
+obesity,184,918,16,168,902,1086,1.47
+cervical cancer,179,117,4,175,113,292,1.37
+mental depression,184,15,1,183,14,198,0.51
+osteoarthritis,78,541,3,75,538,616,0.49
+colorectal adenocarcinoma,276,21,1,275,20,296,0.34
+urticaria,76,841,3,73,838,914,0.33
+intellectual disability,24,19,0,24,19,43,0
+muscular dystrophy,61,1,0,61,1,62,0
+malignant pleural mesothelioma,202,12,0,202,12,214,0
+glioblastoma multiforme,237,27,0,237,27,264,0

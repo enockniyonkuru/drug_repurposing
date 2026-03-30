@@ -1,0 +1,346 @@
+================================================================================
+VENN DIAGRAM GENERATION - FILE MANIFEST
+================================================================================
+Generated: 2024-12-05
+Total Files: 240
+
+Location: /Users/enockniyonkuru/Desktop/drug_repurposing/tahoe_cmap_analysis/data/analysis/creed_manual_analysis_exp_8/figures/venn_diagrams_total_hits/
+
+================================================================================
+ANALYSIS & SUMMARY FILES (6 files)
+================================================================================
+
+1. README.md
+   - Comprehensive documentation of Venn diagrams
+   - Usage instructions and interpretation guide
+   - Key insights and insights about platform comparison
+
+2. venn_summary_statistics.csv
+   - Summary statistics for first 10 diseases
+   - Columns: Disease, TAHOE_Total, CMAP_Total, Common, TAHOE_Only, CMAP_Only, Union_Total
+
+3. venn_summary_detailed.csv
+   - Enhanced statistics sorted by overlap percentage
+   - Includes Overlap_Percent for ranking by agreement
+
+4. summary_statistics.png
+   - Aggregate bar chart comparing platforms
+   - Shows TAHOE, CMAP, and Common hits side-by-side
+
+5. 01_tahoe_vs_cmap_scatter.png
+   - Scatter plot: TAHOE hits vs CMAP hits
+   - Color-coded by overlap percentage (red=low, green=high)
+
+6. 02_overlap_distribution.png
+   - Histogram of overlap percentages
+   - Shows distribution of platform agreement across diseases
+
+7. 03_top_10_unique_drugs.png
+   - Stacked bar chart of top 10 diseases by unique drug count
+   - Breakdown: TAHOE Only | Common | CMAP Only
+
+================================================================================
+INDIVIDUAL VENN DIAGRAMS (234 files)
+================================================================================
+
+Each diagram shows:
+- Circle size proportional to total hit count
+- Overlap area showing common drugs between platforms
+- Percentage and count labels for each region
+- Disease name as title
+
+File naming: venn_<disease_name>.png
+
+Complete list of diseases (234 total):
+- Acute Lung Injury
+- Acute T Cell Leukemia
+- Acute Myeloid Leukemia
+- Acute Myocardial Infarction
+- Acne
+- Actinic Keratosis
+- Adenocarcinoma
+- Adenosquamous Cell Lung Carcinoma
+- Adrenoleukodystrophy
+- Alcohol Abuse
+- Alcoholic Hepatitis
+- Allergic Asthma
+- Allergic Contact Dermatitis
+- Alpha 1-Antitrypsin Deficiency
+- Alzheimer's Disease
+- Amyotrophic Lateral Sclerosis (including ALS Type 10)
+- Anaplasmosis
+- Anaplastic Thyroid Carcinoma
+- Anemia
+- Ankylosing Spondylitis
+- Anterior Horn Cell Disease
+- Aplastic Anemia
+- Appendicitis
+- Arthritis
+- Arthropathy
+- Asthma
+- Astrocytoma
+- Atherosclerosis
+- Atopic Dermatitis
+- Autism Spectrum Disorder
+- Autistic Disorder
+- Autoimmune Thrombocytopenic Purpura
+- Bacterial Infectious Disease
+- Barrett's Esophagus
+- Bipolar Disorder
+- Breast Adenocarcinoma
+- Breast Cancer
+- Bronchopulmonary Dysplasia
+- Carcinoma in Situ (Large Intestine)
+- Cardiomyopathy (Cellular Phase, Dilated, Peripartum, Viral)
+- Cefixime Allergy
+- Cerebral Palsy
+- Cervical Cancer
+- Childhood Type Dermatomyositis
+- Chronic Granulomatous Disease
+- Chronic Lymphocytic Leukemia
+- Chronic Myeloid Leukemia
+- Chronic Obstructive Pulmonary Disease
+- Cleft Lip
+- Colitis
+- Colon Adenoma
+- Colon Cancer
+- Colorectal Adenocarcinoma
+- Colorectal Cancer
+- Crohn's Disease
+- Cystic Fibrosis
+- Cystitis
+- Dental Cavity
+- Dengue Disease
+- Dengue Hemorrhagic Fever
+- Dermatomyositis
+- Diabetes Mellitus (Type 1 and Type 2)
+- Diabetic Nephropathy
+- Diamond-Blackfan Anemia
+- Dilated Cardiomyopathy
+- Discoid Lupus Erythematosus
+- Down Syndrome
+- Ductal Carcinoma in Situ
+- Duchenne Muscular Dystrophy
+- Dystonia
+- Ebola Hemorrhagic Fever
+- Eczema
+- Endometrial Cancer
+- Endometriosis (including of Ovary)
+- Epidermolysis Bullosa Simplex
+- Epilepsy Syndrome
+- Epithelial Proliferation
+- Esophagus Adenocarcinoma
+- Esophagus Squamous Cell Carcinoma
+- Facioscapulohumeral Muscular Dystrophy
+- Familial Combined Hyperlipidemia
+- Familial Hypercholesterolemia
+- Fragile X Syndrome
+- Gastroesophageal Reflux Disease
+- Gastrointestinal Stromal Tumor
+- Gefitinib Toxicity
+- Glaucoma (Primary Open Angle)
+- Glioblastoma Multiforme
+- Head and Neck Squamous Cell Carcinoma
+- Helicobacter Pylori Infection
+- Hemorrhagic Thrombocythemia
+- Hepatitis C
+- Hepatitis C-Related Hepatocellular Carcinoma
+- Hepatocellular Carcinoma
+- Hereditary Gingival Fibromatosis
+- HIV Encephalitis
+- HIV Infectious Disease
+- Hypoxia
+- Idiopathic Interstitial Pneumonia
+- Idiopathic Pulmonary Fibrosis
+- Inclusion Body Myositis
+- Infection by Aspergillus Fumigatus
+- Inflammatory Bowel Disease
+- Influenza
+- Intellectual Disability
+- Interstitial Cystitis
+- Intestinal Metaplasia
+- Intracranial Aneurysm
+- Invasive Ductal Carcinoma
+- Ischemic Stroke
+- JRA (Juvenile Rheumatoid Arthritis)
+- Large Cell Neuroendocrine Carcinoma
+- Large Granular Lymphocytic Leukemia
+- Leukemia (Chronic T-Cell)
+- Lewy Body Dementia
+- Liver Cirrhosis
+- Lung Adenocarcinoma
+- Lung Injury
+- Lung Large Cell Carcinoma
+- Lung Small Cell Carcinoma
+- Lung Squamous Cell Carcinoma
+- Lung Transplant Rejection
+- Lupus Erythematosus
+- Macular Degeneration
+- Malignant Pleural Mesothelioma
+- Marfan Syndrome
+- MDS (Myelodysplastic Syndrome)
+- MELAS Syndrome
+- Melanoma (including In Situ)
+- Meningococcal Infection
+- Mental Depression
+- Monoclonal Gammopathy of Uncertain Significance
+- Morbid Obesity
+- Multiple Myeloma
+- Multiple Sclerosis (including Relapsing-Remitting)
+- Muscular Dystrophy
+- Myelodysplastic Syndrome
+- Myocardial Infarction
+- Myotonic Dystrophy Type 1
+- NASH (Nonalcoholic Steatohepatitis)
+- Nasopharynx Carcinoma
+- Nephroblastoma
+- Nephrosclerosis
+- Neuroendocrine Carcinoma
+- Nicotine Addiction/Dependence
+- Nonspecific Interstitial Pneumonia
+- Obesity
+- Osteolysis
+- Osteoarthritis
+- Osteoporosis
+- Ovarian Cancer
+- Ovarian Serous Carcinoma
+- Overexertion
+- Pancreatic Cancer
+- Pancreatic Ductal Adenocarcinoma
+- Pancreatic Intraductal Papillary-Mucinous Adenoma
+- Pancreatic Invasive Intraductal Papillary-Mucinous Carcinoma
+- Pancreatic Non-Invasive Intraductal Papillary-Mucinous Carcinoma
+- Papillary Thyroid Carcinoma
+- Parasitic Protozoa Infectious Disease
+- Parkinson's Disease
+- Peripartum Cardiomyopathy
+- Polycystic Ovary Syndrome
+- Polymyositis
+- Pompe Disease (Infantile-Onset Form)
+- Post-Traumatic Stress Disorder
+- Pre-Eclampsia
+- Precursor B Lymphoblastic Lymphoma/Leukemia
+- Premature Aging
+- Primary Open Angle Glaucoma
+- Prolactinoma
+- Prostate Cancer
+- Pseudomonas Infection
+- Psoriasis (including Vulgaris, Psoriatic Arthritis)
+- Pulmonary Fibrosis
+- Pulmonary Hypertension
+- Pulmonary Sarcoidosis
+- Renal Cell Carcinoma
+- Rett Syndrome
+- Rheumatoid Arthritis
+- Rhinovirus Infection
+- Rotavirus Infection
+- Salivary Gland Adenoid Cystic Carcinoma
+- Sarcoidosis
+- Schizophrenia
+- Scleroderma
+- Senescence
+- Serous Cystadenocarcinoma
+- Severe Acute Respiratory Syndrome
+- Setleis Syndrome
+- Sickle Cell Anemia
+- Simian Acquired Immune Deficiency Syndrome
+- Skin Squamous Cell Carcinoma
+- Sjogren's Syndrome
+- Smoldering Myeloma
+- Sporadic Breast Cancer
+- Squamous Cell Carcinoma of Mouth
+- Stomach Cancer
+- Swine Influenza
+- Systemic Lupus Erythematosus
+- Tendinitis
+- Teratospermia
+- Testicular Cancer
+- Testis Seminoma
+- Tuberculosis
+- Turner Syndrome
+- Ulcerative Colitis
+- Urticaria
+- Urothelial Carcinoma in Situ
+- Uterine Fibroid
+- Venezuelan Equine Encephalitis
+- Vulvar Intraepithelial Tumor
+- Waldenstrom Macroglobulinemia
+- West Nile Fever
+- Williams-Beuren Syndrome
+
+================================================================================
+DATA SOURCE
+================================================================================
+
+Input File: analysis_drug_lists_creed_manual_standardised_results_OG_exp_8_q0.05.csv
+Columns Used:
+  - disease_name: Name of the disease
+  - tahoe_hits_list: Full list of TAHOE drug hits
+  - cmap_hits_list: Full list of CMAP drug hits
+
+Data Notes:
+  - Q-threshold: 0.05
+  - Uses complete hit lists (not filtered to top 30)
+  - Includes both name matches and synonym matches
+
+================================================================================
+INTERPRETATION GUIDE
+================================================================================
+
+VENN DIAGRAM REGIONS:
+
+1. Left Circle Only (TAHOE Only)
+   - Drugs identified by TAHOE but not CMAP
+   - Indicates TAHOE-specific findings
+   
+2. Right Circle Only (CMAP Only)
+   - Drugs identified by CMAP but not TAHOE
+   - Indicates CMAP-specific findings
+
+3. Overlap (Common)
+   - Drugs identified by both platforms
+   - Highest confidence candidates (validated by both)
+
+CIRCLE SIZE:
+   - Larger circles = more drug hits from that platform
+   - Proportional scaling helps visualize platform differences
+
+OVERLAP PERCENTAGE:
+   - Calculated as: (Common / Union) × 100
+   - Low overlap (< 5%): Platforms differ significantly
+   - High overlap (> 20%): Platforms largely agree
+
+================================================================================
+TECHNICAL SPECIFICATIONS
+================================================================================
+
+Generation Date: 2024-12-05
+R Version: 4.5.1
+Key Libraries:
+  - tidyverse (2.0.0)
+  - VennDiagram
+  - ggplot2 (4.0.1)
+
+Image Specifications:
+  - Format: PNG
+  - Resolution: 120 DPI
+  - Dimensions: 700 × 600 pixels
+  - Colors: TAHOE (Blue #4285F4), CMAP (Red #EA4335)
+  - Transparency: 60% alpha
+
+CSV Specifications:
+  - Format: UTF-8 encoded
+  - Delimiter: Comma (,)
+  - Encoding: Standard
+
+================================================================================
+VERSION & CHANGELOG
+================================================================================
+
+Version: 1.0 (2024-12-05)
+- Initial generation of all 234 Venn diagrams
+- Complete statistics and analysis
+- Comprehensive visualizations
+- Full documentation
+
+================================================================================

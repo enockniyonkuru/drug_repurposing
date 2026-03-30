@@ -100,11 +100,11 @@ default:
     # Use Phipson & Smyth (2010) correction for p-value calculation
     # true = prevents p-value = 0, uses p = 1/(N+1) instead (recommended for publication)
     # false = allows p-value = 0 when observed score is more extreme than all permutations
-    # Note: DRpipe default is true; set to false to match original methodology
+    # Note: CDRPipe default is true; set to false to match original methodology
     phipson_smyth_correction: true
     
     # ---- P-Value Calculation Method ----
-    # "continuous" = smooth p-value estimation (DRpipe default, statistically stronger)
+    # "continuous" = smooth p-value estimation (CDRPipe default, statistically stronger)
     # "discrete" = permutation count method: p = (# perms >= observed) / n_permutations
     #            (transparent but produces discrete p-values with limited permutation counts)
     # Note: With 1000 permutations, "discrete" method creates discrete p-values (0, 0.001, 0.002, ...)

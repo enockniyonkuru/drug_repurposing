@@ -1,0 +1,18 @@
+# Local environments
+venv/
+
+# Generated run outputs
+**/results/
+**/batch_run_log_*.txt
+**/batch_debug_*.log
+**/batch_run_summary_*.csv
+**/*_batch_report_*.txt
+**/*_batch_summary_*.csv
+
+# Large signature artifacts not intended for version control
+data/drug_signatures/**/*.RData
+data/drug_signatures/**/*.rds
+data/drug_signatures/**/*.parquet
+
+# OS/editor noise
+.DS_Store

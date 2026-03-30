@@ -7,7 +7,7 @@
 #'
 
 library(shiny)
-library(DRpipe)
+library(CDRPipe)
 library(shinydashboard)
 library(fresh)
 library(shinyWidgets)
@@ -39,7 +39,7 @@ my_theme <- fresh::create_theme(
 
 # UI Definition
 ui <- dashboardPage(
-  dashboardHeader(title = "CDRpipe"),
+  dashboardHeader(title = "CDRPipe"),
   
   dashboardSidebar(
     sidebarMenu(id = "sidebar",
@@ -489,7 +489,7 @@ ui <- dashboardPage(
         fluidRow(
           column(12,
             div(class = "home-hero",
-              div(class = "home-title", "🔬 Computational Drug Repurposing Pipeline (CDRpipe)"),
+              div(class = "home-title", "🔬 Computational Drug Repurposing Pipeline (CDRPipe)"),
               div(class = "home-subtitle", "Identify existing drugs for new therapeutic applications")
             )
           )
@@ -1721,7 +1721,7 @@ server <- function(input, output, session) {
             "../scripts/data/drug_signatures/cmap_drug_experiments_new.csv"
           }
           
-          # IMPORTANT: If drug_valid is NULL in config, pass NULL to DRP
+          # IMPORTANT: If drug_valid is NULL in config, pass NULL to CDRP
           # Otherwise, use the specified path
           selected_valid <- if (!is.null(profile_config$paths$drug_valid)) {
             if (is.na(profile_config$paths$drug_valid) || profile_config$paths$drug_valid == "") {
@@ -1805,7 +1805,7 @@ server <- function(input, output, session) {
           sweep_params
         )
         
-        drp <- do.call(DRP$new, drp_args)
+        drp <- do.call(CDRP$new, drp_args)
         
         values$analysisLog <- paste0(values$analysisLog, "Loading CMap...\n")
         incProgress(0.2)
@@ -1832,9 +1832,9 @@ server <- function(input, output, session) {
           incProgress(0.2)
         }
         
-        # Store the DRP object to access sweep results
+        # Store the CDRP object to access sweep results
         # Expose a couple of backward-compatible fields expected by the Shiny UI
-        # The DRP class uses `dz_signature` and `cmap_signatures`; some UI
+        # The CDRP class uses `dz_signature` and `cmap_signatures`; some UI
         # code expects `disease_sig` and `cmap_sig`. Add aliases here so the
         # heatmap preparation code can find them.
         if (!is.null(drp)) {
@@ -1957,7 +1957,7 @@ server <- function(input, output, session) {
             values$selected_drug_signature
           }
           
-          # Build DRP arguments including sweep parameters if present
+          # Build CDRP arguments including sweep parameters if present
           # Use metadata paths from profile
           profile_meta_path <- if (!is.null(profile_config$paths$drug_meta)) {
             meta_path <- profile_config$paths$drug_meta
@@ -1971,7 +1971,7 @@ server <- function(input, output, session) {
           }
           
           # IMPORTANT: Respect drug_valid setting from profile
-          # If drug_valid is NULL or empty string in config, pass NULL to DRP
+          # If drug_valid is NULL or empty string in config, pass NULL to CDRP
           profile_valid_path <- if (!is.null(profile_config$paths$drug_valid)) {
             if (is.na(profile_config$paths$drug_valid) || profile_config$paths$drug_valid == "") {
               NULL
@@ -2061,7 +2061,7 @@ server <- function(input, output, session) {
             }
           }
           
-          drp <- do.call(DRP$new, drp_args)
+          drp <- do.call(CDRP$new, drp_args)
           
           drp$load_cmap()$load_disease()$clean_signature()
           
@@ -2420,7 +2420,7 @@ server <- function(input, output, session) {
              yaxis = list(title = ""))
   })
   
-  # Profile overlap (at least 2) - using DRpipe's pl_overlap function
+  # Profile overlap (at least 2) - using CDRPipe's pl_overlap function
   output$comparisonOverlapAtLeast2 <- renderPlot({
     req(values$comparison_results)
     
@@ -2434,8 +2434,8 @@ server <- function(input, output, session) {
         df
       }))
       
-      # Use DRpipe's prepare_overlap function
-      mat <- DRpipe::prepare_overlap(combined, at_least2 = TRUE)
+      # Use CDRPipe's prepare_overlap function
+      mat <- CDRPipe::prepare_overlap(combined, at_least2 = TRUE)
       
       if (nrow(mat) == 0) {
         plot(1, 1, type = "n", axes = FALSE, xlab = "", ylab = "")
@@ -2460,7 +2460,7 @@ server <- function(input, output, session) {
     })
   })
   
-  # Profile UpSet plot - using DRpipe's pl_upset function
+  # Profile UpSet plot - using CDRPipe's pl_upset function
   output$comparisonUpset <- renderPlot({
     req(values$comparison_results)
     
@@ -2474,8 +2474,8 @@ server <- function(input, output, session) {
         df
       }))
       
-      # Use DRpipe's prepare_upset_drug function
-      drugs_list <- DRpipe::prepare_upset_drug(combined)
+      # Use CDRPipe's prepare_upset_drug function
+      drugs_list <- CDRPipe::prepare_upset_drug(combined)
       
       if (length(drugs_list) == 0) {
         plot(1, 1, type = "n", axes = FALSE, xlab = "", ylab = "")
@@ -2627,8 +2627,8 @@ server <- function(input, output, session) {
         stringsAsFactors = FALSE
       )
       
-      # Use DRpipe's prepare_heatmap function with cmap_exp for drug name mapping
-      heatmap_data <- DRpipe::prepare_heatmap(
+      # Use CDRPipe's prepare_heatmap function with cmap_exp for drug name mapping
+      heatmap_data <- CDRPipe::prepare_heatmap(
         top_drugs_subset,
         dz_sig = values$drp_object$disease_sig,
         cmap_sig = values$drp_object$cmap_sig,

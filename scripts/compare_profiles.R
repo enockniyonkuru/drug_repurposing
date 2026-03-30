@@ -5,7 +5,7 @@
 #' Runs the pipeline with different parameters and performs cross-profile
 #' analysis to evaluate impact of parameter variations on results.
 
-suppressPackageStartupMessages(library(DRpipe))
+suppressPackageStartupMessages(library(CDRPipe))
 suppressPackageStartupMessages(library(dplyr))
 suppressPackageStartupMessages(library(gplots))
 suppressPackageStartupMessages(library(reshape2))
@@ -37,8 +37,8 @@ run_profile <- function(profile_name, config_file) {
   out <- file.path(root, paste0(profile_name, "_", ts))
   io_ensure_dir(out)
 
-  # Run pipeline using DRP class for full parameter support
-  drp <- DRP$new(
+  # Run pipeline using the CDRP class for full parameter support
+  drp <- CDRP$new(
     signatures_rdata = cfg$paths$signatures,
     disease_path     = cfg$paths$disease_file %||% cfg$paths$disease_dir,
     disease_pattern  = if (is.null(cfg$paths$disease_file)) cfg$paths$disease_pattern else NULL,

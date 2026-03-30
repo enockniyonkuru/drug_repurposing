@@ -1,4 +1,4 @@
-# Computational Drug Repurposing Pipeline (CDRpipe)
+# Computational Drug Repurposing Pipeline (CDRPipe)
 
 A comprehensive R package and Shiny application for drug repurposing analysis using disease gene expression signatures and drug signature databases (Connectivity Map/CMap and TAHOE) to identify potential therapeutic compounds.
 
@@ -26,7 +26,7 @@ This pipeline identifies existing drugs that could be repurposed for new therape
 
 ## 1. What This Repository Does
 
-**DRpipe** is a drug repurposing analysis pipeline that helps researchers identify existing drugs that could be repurposed for new therapeutic applications. The pipeline:
+**CDRPipe** is a drug repurposing analysis pipeline that helps researchers identify existing drugs that could be repurposed for new therapeutic applications. The pipeline:
 
 - **Analyzes disease gene expression signatures** to identify up-regulated and down-regulated genes
 - **Compares disease signatures against drug signature databases** (Connectivity Map/CMap and TAHOE) of drug-induced gene expression profiles
@@ -94,7 +94,7 @@ Compare drug repurposing results across multiple parameter configurations or dat
 
 You can interact with this repository in two ways, depending on your preferences and needs:
 
-### 3.1 R Package (DRpipe)
+### 3.1 R Package (CDRPipe)
 
 **Best for:**
 - Batch processing multiple datasets
@@ -164,8 +164,8 @@ You can interact with this repository in two ways, depending on your preferences
 
 3. **Install the R package**
    ```r
-   devtools::document("DRpipe")
-   devtools::install("DRpipe")
+   devtools::document("CDRPipe")
+   devtools::install("CDRPipe")
    ```
 
 4. **Choose your interface:**
@@ -334,7 +334,7 @@ For CMap, you should see:
 - R ≥ 4.2
 - RStudio (recommended) or VS Code with R extension
 
-**R Packages (auto-installed with DRpipe):**
+**R Packages (auto-installed with CDRPipe):**
 - `R6`, `dplyr`, `config`, `docopt`, `qvalue`, `pbapply`
 
 **Optional (for visualizations):**
@@ -352,20 +352,27 @@ git clone https://github.com/enockniyonkuru/drug_repurposing.git
 cd drug_repurposing
 ```
 
-#### Step 2: Install DRpipe Package
+#### Step 2: Install CDRPipe Package
 ```r
 # Install devtools if needed
 install.packages("devtools", repos = "https://cloud.r-project.org")
 
-# Build documentation and install DRpipe
-devtools::document("DRpipe")
-devtools::install("DRpipe")
+# Build documentation and install CDRPipe
+devtools::document("CDRPipe")
+devtools::install("CDRPipe")
 ```
 
 #### Step 3: Verify Installation
 ```r
-library(DRpipe)
-?run_dr  # Should display help documentation
+library(CDRPipe)
+?run_cdrpipe  # Should display help documentation
+```
+
+Migration note: the package is now branded as `CDRPipe`. Legacy `DRpipe` names are kept only as backward-compatible aliases inside the package API.
+
+Quick quality check:
+```bash
+Rscript scripts/ci/check_cdrpipe.R
 ```
 
 ---
@@ -712,14 +719,14 @@ BRCA1,-1.8,-2.1,0.005
 ```
 drug_repurposing/
 ├── README.md                          # This file
-├── DRpipe/                            # R package (core pipeline logic)
+├── CDRPipe/                            # R package (core pipeline logic)
 │   ├── DESCRIPTION, NAMESPACE, LICENSE
 │   ├── README.md                      # Package API documentation
 │   └── R/
 │       ├── processing.R               # Core data processing (clean_table, query, etc.)
 │       ├── analysis.R                 # Plotting/summary helpers
-│       ├── pipeline_processing.R      # DRP class + run_dr()
-│       ├── pipeline_analysis.R        # DRA class + analyze_runs()
+│       ├── pipeline_processing.R      # CDRP class + run_cdrpipe()
+│       ├── pipeline_analysis.R        # CDRA class + analyze_cdrpipe_runs()
 │       ├── io_config.R                # Config & IO helpers
 │       ├── cli.R                      # Command-line interface
 │       ├── chembl_validation.R        # ChEMBL known-drug validation
@@ -773,7 +780,7 @@ Each top-level directory has its own README with detailed documentation:
 
 | Directory | Purpose | README |
 |-----------|---------|--------|
-| `DRpipe/` | Core R package (functions, classes, CLI) | [DRpipe/README.md](DRpipe/README.md) |
+| `CDRPipe/` | Core R package (functions, classes, CLI) | [CDRPipe/README.md](CDRPipe/README.md) |
 | `scripts/` | Pipeline execution, configuration, input data, results | [scripts/README.md](scripts/README.md) |
 | `shiny_app/` | Interactive web application for analysis and visualization | [shiny_app/README.md](shiny_app/README.md) |
 | `tahoe_cmap_analysis/` | Large-scale TAHOE vs CMAP comparative study (233 diseases) | [tahoe_cmap_analysis/README.md](tahoe_cmap_analysis/README.md) |
@@ -1049,8 +1056,8 @@ These thresholds determine which drug signatures meet quality criteria based on 
 
 ```r
 # Test package installation
-library(DRpipe)
-?run_dr  # Should display help
+library(CDRPipe)
+?run_cdrpipe  # Should display help
 
 # Test data file
 test_load <- try(load("scripts/data/cmap_signatures.RData"), silent = TRUE)
