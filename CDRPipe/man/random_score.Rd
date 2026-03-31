@@ -4,7 +4,14 @@
 \alias{random_score}
 \title{Generate a null distribution of reversal scores using random genes}
 \usage{
-random_score(cmap_signatures, n_up, n_down, N_PERMUTATIONS = 1e+05, seed = 123)
+random_score(
+  cmap_signatures,
+  n_up,
+  n_down,
+  N_PERMUTATIONS = 1e+05,
+  seed = 123,
+  ncores = 1L
+)
 }
 \arguments{
 \item{cmap_signatures}{matrix/data.frame with first column = Entrez IDs,
@@ -17,6 +24,9 @@ subsequent columns = ranked values per experiment}
 \item{N_PERMUTATIONS}{integer; number of random iterations (default 1e5)}
 
 \item{seed}{integer for RNG seed (default 123)}
+
+\item{ncores}{integer; optional worker count for Unix-like systems. Values
+greater than 1 enable parallel scoring in non-Windows environments.}
 }
 \value{
 numeric vector of random (null) connectivity scores

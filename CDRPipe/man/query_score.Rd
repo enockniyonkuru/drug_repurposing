@@ -4,7 +4,7 @@
 \alias{query_score}
 \title{Compute reversal scores across all CMap drug profiles for one disease signature}
 \usage{
-query_score(cmap_signatures, dz_genes_up, dz_genes_down)
+query_score(cmap_signatures, dz_genes_up, dz_genes_down, ncores = 1L)
 }
 \arguments{
 \item{cmap_signatures}{matrix/data.frame with first column = Entrez IDs,
@@ -13,6 +13,9 @@ subsequent columns = ranked values per experiment}
 \item{dz_genes_up}{vector of Entrez IDs for up-regulated genes}
 
 \item{dz_genes_down}{vector of Entrez IDs for down-regulated genes}
+
+\item{ncores}{integer; optional worker count for Unix-like systems. Values
+greater than 1 enable parallel scoring in non-Windows environments.}
 }
 \value{
 numeric vector of connectivity scores (one per experiment)
