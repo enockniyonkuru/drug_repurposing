@@ -31,7 +31,7 @@ library(stringr)
 # ============================================================================
 # 1. MOA DATABASE - Manually curated for common drugs in exp 8
 # ============================================================================
-# Note: In a production system, this would come from Open Targets or ChEMBL
+# Note: In a production system, this would come from an external target/mechanism source
 # Format: drug_name -> mechanism_of_action (can be multiple, separated by ";")
 
 moa_database <- tribble(
