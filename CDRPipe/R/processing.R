@@ -7,6 +7,7 @@
 # --- Dependencies via roxygen imports (populates NAMESPACE) -------------------
 #' @name cdrpipe-processing-imports
 #' @keywords internal
+#' @noRd
 #' @importFrom stats p.adjust
 #' @importFrom utils flush.console
 #' @importFrom dplyr select all_of
@@ -14,6 +15,48 @@
 #' @importFrom pbapply pbsapply
 #' @importFrom qvalue qvalue
 NULL
+
+cdrpipe_normalize_ncores <- function(ncores = 1L) {
+    if (is.null(ncores) || length(ncores) == 0 || is.na(ncores[[1]])) {
+        return(1L)
+    }
+
+    ncores <- suppressWarnings(as.integer(ncores[[1]]))
+    if (is.na(ncores) || ncores < 1L) {
+        return(1L)
+    }
+
+    ncores
+}
+
+cdrpipe_pb_type <- function() {
+    if (interactive()) "timer" else "txt"
+}
+
+cdrpipe_pbsapply <- function(X, FUN, ..., simplify = TRUE, USE.NAMES = TRUE, ncores = 1L) {
+    old_pboptions <- pbapply::pboptions(
+        type = cdrpipe_pb_type(),
+        char = "=",
+        style = 3,
+        txt.width = 50
+    )
+    on.exit(pbapply::pboptions(old_pboptions), add = TRUE)
+
+    cl <- NULL
+    ncores <- cdrpipe_normalize_ncores(ncores)
+    if (ncores > 1L && .Platform$OS.type != "windows") {
+        cl <- ncores
+    }
+
+    pbapply::pbsapply(
+        X,
+        FUN,
+        ...,
+        simplify = simplify,
+        USE.NAMES = USE.NAMES,
+        cl = cl
+    )
+}
 
 #' Clean and map a DEG table to Entrez IDs
 #'
@@ -297,36 +340,68 @@ cmap_score <- function(sig_up, sig_down, drug_signature, scale = FALSE) {
 #' @param n_down integer; number of down-regulated disease genes
 #' @param N_PERMUTATIONS integer; number of random iterations (default 1e5)
 #' @param seed integer for RNG seed (default 123)
+#' @param ncores integer; optional worker count for Unix-like systems. Values
+#'   greater than 1 enable parallel scoring in non-Windows environments.
 #' @return numeric vector of random (null) connectivity scores
 #' @export
 random_score <- function(cmap_signatures, n_up, n_down,
                          N_PERMUTATIONS = 1e5,
-                         seed = 123) {
+                         seed = 123,
+                         ncores = 1L) {
     set.seed(seed)
+    ncores <- cdrpipe_normalize_ncores(ncores)
+    using_parallel <- ncores > 1L && .Platform$OS.type != "windows"
+    core_label <- if (using_parallel) sprintf(" using %d cores", ncores) else ""
 
-    # Sample experiment columns (2..ncol) with replacement for each permutation
-    rand_cmap_scores <- pbapply::pbsapply(
-        sample(2:ncol(cmap_signatures), N_PERMUTATIONS, replace = TRUE),
-        function(exp_id) {
-            # Build a minimal drug signature: (ids, rank)
-            cmap_exp_signature <- subset(cmap_signatures, select = c(1, exp_id))
-            colnames(cmap_exp_signature) <- c("ids", "rank")
+    cat(sprintf("[RANDOM_SCORE] Computing %d null scores%s...\n", N_PERMUTATIONS, core_label))
+    flush.console()
 
-            # Randomly sample |n_up + n_down| genes from the universe
-            random_input_signature_genes <- sample(cmap_signatures$V1, (n_up + n_down))
+    if (using_parallel) {
+        exp_ids <- sample(2:ncol(cmap_signatures), N_PERMUTATIONS, replace = TRUE)
+        perm_seeds <- sample.int(.Machine$integer.max, N_PERMUTATIONS)
 
-            # Split the random sample into "up" then "down" gene sets
-            rand_dz_gene_up   <- data.frame(GeneID = random_input_signature_genes[1:n_up])
-            rand_dz_gene_down <- data.frame(GeneID = random_input_signature_genes[(n_up + 1):length(random_input_signature_genes)])
+        rand_cmap_scores <- cdrpipe_pbsapply(
+            seq_len(N_PERMUTATIONS),
+            function(i) {
+                set.seed(perm_seeds[[i]])
+                exp_id <- exp_ids[[i]]
 
-            # Compute connectivity (null) score for this random split
-            cmap_score(rand_dz_gene_up, rand_dz_gene_down, cmap_exp_signature)
-        },
-        simplify = FALSE
-    )
+                cmap_exp_signature <- subset(cmap_signatures, select = c(1, exp_id))
+                colnames(cmap_exp_signature) <- c("ids", "rank")
 
-    # Flatten list of length N_PERMUTATIONS into a numeric vector
-    return(unlist(rand_cmap_scores))
+                random_input_signature_genes <- sample(cmap_signatures$V1, (n_up + n_down))
+                rand_dz_gene_up <- data.frame(GeneID = random_input_signature_genes[1:n_up])
+                rand_dz_gene_down <- data.frame(GeneID = random_input_signature_genes[(n_up + 1):length(random_input_signature_genes)])
+
+                cmap_score(rand_dz_gene_up, rand_dz_gene_down, cmap_exp_signature)
+            },
+            simplify = TRUE,
+            USE.NAMES = FALSE,
+            ncores = ncores
+        )
+    } else {
+        rand_cmap_scores <- cdrpipe_pbsapply(
+            sample(2:ncol(cmap_signatures), N_PERMUTATIONS, replace = TRUE),
+            function(exp_id) {
+                cmap_exp_signature <- subset(cmap_signatures, select = c(1, exp_id))
+                colnames(cmap_exp_signature) <- c("ids", "rank")
+
+                random_input_signature_genes <- sample(cmap_signatures$V1, (n_up + n_down))
+                rand_dz_gene_up <- data.frame(GeneID = random_input_signature_genes[1:n_up])
+                rand_dz_gene_down <- data.frame(GeneID = random_input_signature_genes[(n_up + 1):length(random_input_signature_genes)])
+
+                cmap_score(rand_dz_gene_up, rand_dz_gene_down, cmap_exp_signature)
+            },
+            simplify = TRUE,
+            USE.NAMES = FALSE,
+            ncores = 1L
+        )
+    }
+
+    cat(sprintf("[RANDOM_SCORE] Complete! Computed %d null scores\n", length(rand_cmap_scores)))
+    flush.console()
+
+    return(as.numeric(rand_cmap_scores))
 }
 
 #' Compute reversal scores across all CMap drug profiles for one disease signature
@@ -335,25 +410,32 @@ random_score <- function(cmap_signatures, n_up, n_down,
 #'        subsequent columns = ranked values per experiment
 #' @param dz_genes_up vector of Entrez IDs for up-regulated genes
 #' @param dz_genes_down vector of Entrez IDs for down-regulated genes
+#' @param ncores integer; optional worker count for Unix-like systems. Values
+#'   greater than 1 enable parallel scoring in non-Windows environments.
 #' @return numeric vector of connectivity scores (one per experiment)
 #' @export
-query_score <- function(cmap_signatures, dz_genes_up, dz_genes_down) {
+query_score <- function(cmap_signatures, dz_genes_up, dz_genes_down, ncores = 1L) {
     # Convert input vectors to (GeneID) data.frames expected by cmap_score()
     dz_genes_up   <- data.frame(GeneID = dz_genes_up)
     dz_genes_down <- data.frame(GeneID = dz_genes_down)
+    ncores <- cdrpipe_normalize_ncores(ncores)
+    using_parallel <- ncores > 1L && .Platform$OS.type != "windows"
 
     # Iterate over experiments (columns 2..n), compute connectivity per experiment
     n_experiments <- ncol(cmap_signatures) - 1
-    cat(sprintf("[QUERY_SCORE] Computing scores for %d experiments...\n", n_experiments))
+    core_label <- if (using_parallel) sprintf(" using %d cores", ncores) else ""
+    cat(sprintf("[QUERY_SCORE] Computing scores for %d experiments%s...\n", n_experiments, core_label))
     flush.console()
     
-    dz_cmap_scores <- pbapply::pbsapply(
+    dz_cmap_scores <- cdrpipe_pbsapply(
         2:ncol(cmap_signatures),
         function(exp_id) {
             cmap_exp_signature <- subset(cmap_signatures, select = c(1, exp_id))
             colnames(cmap_exp_signature) <- c("ids", "rank")
             cmap_score(dz_genes_up, dz_genes_down, cmap_exp_signature)
-        }
+        },
+        USE.NAMES = FALSE,
+        ncores = ncores
     )
 
     cat(sprintf("[QUERY_SCORE] Complete! Computed %d scores\n", length(dz_cmap_scores)))
@@ -370,7 +452,7 @@ query_score <- function(cmap_signatures, dz_genes_up, dz_genes_down) {
 #' @param pvalue_method character; "discrete" or "continuous"
 #'   "discrete" = count-based: p = (# perms >= obs) / N_perms (transparent, discrete values)
 #'   "continuous" = with Phipson & Smyth correction: p = 1/(N+1) when count=0 (recommended)
-#'   Default: "continuous" (CDRPipe standard, recommended for publication)
+#'   Default: "continuous" (package standard, recommended for publication)
 #' @param phipson_smyth_correction logical; apply Phipson & Smyth (2010) correction?
 #'   When TRUE and count=0, use p = 1/(N+1) instead of p=0
 #'   When FALSE, use raw p = count/N (allows p=0)

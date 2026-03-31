@@ -1,0 +1,22 @@
+#!/usr/bin/env Rscript
+
+script_arg <- grep("^--file=", commandArgs(FALSE), value = TRUE)
+script_path <- if (length(script_arg)) {
+  normalizePath(sub("^--file=", "", script_arg[[1]]), winslash = "/", mustWork = FALSE)
+} else {
+  normalizePath(commandArgs(TRUE)[[1]], winslash = "/", mustWork = FALSE)
+}
+
+package_dir <- dirname(dirname(script_path))
+library_dir <- dirname(package_dir)
+.libPaths(unique(c(library_dir, .libPaths())))
+
+if (!requireNamespace("CDRPipe", quietly = TRUE)) {
+  stop(
+    "Unable to locate the CDRPipe package. Reinstall the package or run this wrapper ",
+    "from an installed CDRPipe library.",
+    call. = FALSE
+  )
+}
+
+getExportedValue("CDRPipe", "dr_cli")()

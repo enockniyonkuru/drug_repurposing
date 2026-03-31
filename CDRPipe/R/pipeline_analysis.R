@@ -1,4 +1,4 @@
-#' CDRA: CDRPipe Analysis Class
+#' DRA: Drug Repurposing Analysis Class
 #'
 #' R6 class for post-processing and analyzing completed pipeline runs. Loads
 #' results, filters valid instances, annotates drugs, and generates plots and
@@ -12,6 +12,7 @@ DRA <- R6::R6Class(
     cmap_meta_path  = NULL,
     cmap_valid_path = NULL,
     cmap_signatures_path = NULL,
+    pattern       = "_results\\.RData$",
     q_thresh      = 0.05,
     reversal_only = TRUE,
     verbose       = TRUE,
@@ -24,6 +25,7 @@ DRA <- R6::R6Class(
                           cmap_meta_path = NULL,
                           cmap_valid_path = NULL,
                           cmap_signatures_path = NULL,
+                          pattern = "_results\\.RData$",
                           q_thresh = 0.05,
                           reversal_only = TRUE,
                           verbose = TRUE) {
@@ -32,13 +34,14 @@ DRA <- R6::R6Class(
       self$cmap_meta_path <- io_resolve_path(cmap_meta_path)
       self$cmap_valid_path <- io_resolve_path(cmap_valid_path)
       self$cmap_signatures_path <- io_resolve_path(cmap_signatures_path)
+      self$pattern      <- pattern
       self$q_thresh     <- q_thresh
       self$reversal_only <- reversal_only
       self$verbose      <- verbose
       io_ensure_dir(self$analysis_dir)
     },
 
-    log = function(...) if (self$verbose) cat(sprintf("[CDRA] %s\n", sprintf(...))),
+    log = function(...) if (self$verbose) cat(sprintf("[DRA] %s\n", sprintf(...))),
 
     load_runs = function(pattern = "_results\\.RData$") {
       files <- list.files(self$results_dir, pattern = pattern, full.names = TRUE)
@@ -80,8 +83,8 @@ DRA <- R6::R6Class(
       invisible(self)
     },
 
-    run = function() {
-      self$load_runs()$annotate_filter()$per_run_reports()$cross_run_summaries()
+    run = function(pattern = self$pattern) {
+      self$load_runs(pattern = pattern)$annotate_filter()$per_run_reports()$cross_run_summaries()
       self$log("Done. Outputs in: %s", self$analysis_dir)
       invisible(self)
     }
@@ -255,6 +258,7 @@ summarize_across_runs <- function(drugs_list, out_dir = "scripts/results/analysi
 #' @param cmap_meta_path Path to CMAP experiment metadata CSV file
 #' @param cmap_valid_path Path to CMAP valid instances CSV file
 #' @param cmap_signatures_path Path to RData file containing CMAP signatures
+#' @param pattern Regex used to select result files within `results_dir`
 #' @param q_thresh Q-value threshold for significance filtering (default: 0.05)
 #' @param reversal_only Whether to consider only reversal scores (default: TRUE)
 #' @param verbose Whether to print progress messages (default: TRUE)
@@ -264,6 +268,7 @@ analyze_runs <- function(results_dir = "scripts/results",
                          cmap_meta_path,
                          cmap_valid_path,
                          cmap_signatures_path,
+                         pattern = "_results\\.RData$",
                          q_thresh = 0.05,
                          reversal_only = TRUE,
                          verbose = TRUE) {
@@ -272,33 +277,8 @@ analyze_runs <- function(results_dir = "scripts/results",
           cmap_meta_path = cmap_meta_path,
           cmap_valid_path = cmap_valid_path,
           cmap_signatures_path = cmap_signatures_path,
+          pattern = pattern,
           q_thresh = q_thresh,
           reversal_only = reversal_only,
-          verbose = verbose)$run()
-}
-
-#' Analyze CDRPipe runs
-#'
-#' Preferred alias for [analyze_runs()].
-#'
-#' @inheritParams analyze_runs
-#' @export
-analyze_cdrpipe_runs <- function(results_dir = "scripts/results",
-                                 analysis_dir = "scripts/results/analysis",
-                                 cmap_meta_path,
-                                 cmap_valid_path,
-                                 cmap_signatures_path,
-                                 q_thresh = 0.05,
-                                 reversal_only = TRUE,
-                                 verbose = TRUE) {
-  analyze_runs(
-    results_dir = results_dir,
-    analysis_dir = analysis_dir,
-    cmap_meta_path = cmap_meta_path,
-    cmap_valid_path = cmap_valid_path,
-    cmap_signatures_path = cmap_signatures_path,
-    q_thresh = q_thresh,
-    reversal_only = reversal_only,
-    verbose = verbose
-  )
+          verbose = verbose)$run(pattern = pattern)
 }

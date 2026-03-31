@@ -1,67 +1,3 @@
-create_toy_pipeline_inputs <- function(base_dir) {
-  signatures_path <- file.path(base_dir, "toy_signatures.RData")
-  disease_path <- file.path(base_dir, "toy_disease.csv")
-  gene_map_path <- file.path(base_dir, "gene_map.tsv")
-  meta_path <- file.path(base_dir, "drug_meta.csv")
-  valid_path <- file.path(base_dir, "drug_valid.csv")
-
-  cmap_signatures <- data.frame(
-    V1 = c("1", "2", "3", "4", "5", "6"),
-    exp_a = c(6, 5, 4, 3, 2, 1),
-    exp_b = c(1, 2, 3, 4, 5, 6),
-    exp_c = c(2, 1, 4, 3, 6, 5),
-    stringsAsFactors = FALSE
-  )
-  save(cmap_signatures, file = signatures_path)
-
-  write.csv(
-    data.frame(
-      SYMBOL = c("G1", "G2", "G3", "G4", "G5", "G6"),
-      log2FC = c(2, 1, -1.5, -2, 0.8, -0.7)
-    ),
-    disease_path,
-    row.names = FALSE
-  )
-
-  write.table(
-    data.frame(
-      Gene_name = c("G1", "G2", "G3", "G4", "G5", "G6"),
-      entrezID = c("1", "2", "3", "4", "5", "6")
-    ),
-    gene_map_path,
-    sep = "\t",
-    row.names = FALSE,
-    quote = FALSE
-  )
-
-  write.csv(
-    data.frame(
-      id = 1:3,
-      name = c("Drug A", "Drug B", "Drug C"),
-      DrugBank.ID = c("DB1", "DB2", "DB3")
-    ),
-    meta_path,
-    row.names = FALSE
-  )
-
-  write.csv(
-    data.frame(
-      id = 1:3,
-      valid = c(1, 1, 1)
-    ),
-    valid_path,
-    row.names = FALSE
-  )
-
-  list(
-    signatures = signatures_path,
-    disease = disease_path,
-    gene_map = gene_map_path,
-    meta = meta_path,
-    valid = valid_path
-  )
-}
-
 test_that("cmap_score distinguishes mimicry from reversal", {
   drug_signature <- data.frame(ids = c("1", "2", "3", "4"), rank = c(1, 2, 3, 4))
 
@@ -81,7 +17,48 @@ test_that("cmap_score distinguishes mimicry from reversal", {
   expect_lt(reversed, 0)
 })
 
-test_that("CDRP smoke test writes expected output artifacts", {
+test_that("single-mode scoring helpers support progress-aware ncores", {
+  td <- tempfile("cdrpipe-score-")
+  dir.create(td)
+  on.exit(unlink(td, recursive = TRUE), add = TRUE)
+
+  toy <- create_toy_pipeline_inputs(td)
+  sig_env <- new.env(parent = emptyenv())
+  load(toy$signatures, envir = sig_env)
+  cmap_signatures <- sig_env$cmap_signatures
+
+  dz_up <- c("1", "2")
+  dz_down <- c("5", "6")
+
+  serial_scores <- NULL
+  parallel_scores <- NULL
+  capture.output(
+    serial_scores <- query_score(cmap_signatures, dz_up, dz_down, ncores = 1),
+    type = "output"
+  )
+  capture.output(
+    parallel_scores <- query_score(cmap_signatures, dz_up, dz_down, ncores = 2),
+    type = "output"
+  )
+
+  expect_equal(serial_scores, parallel_scores)
+
+  random_parallel_a <- NULL
+  random_parallel_b <- NULL
+  capture.output(
+    random_parallel_a <- random_score(cmap_signatures, 2, 2, N_PERMUTATIONS = 12, seed = 123, ncores = 2),
+    type = "output"
+  )
+  capture.output(
+    random_parallel_b <- random_score(cmap_signatures, 2, 2, N_PERMUTATIONS = 12, seed = 123, ncores = 2),
+    type = "output"
+  )
+
+  expect_equal(length(random_parallel_a), 12)
+  expect_equal(random_parallel_a, random_parallel_b)
+})
+
+test_that("DRP smoke test writes expected output artifacts", {
   td <- tempfile("cdrpipe-smoke-")
   dir.create(td)
   on.exit(unlink(td, recursive = TRUE), add = TRUE)
@@ -89,7 +66,7 @@ test_that("CDRP smoke test writes expected output artifacts", {
   toy <- create_toy_pipeline_inputs(td)
   out_dir <- file.path(td, "out")
 
-  drp <- CDRP$new(
+  drp <- DRP$new(
     signatures_rdata = toy$signatures,
     disease_path = toy$disease,
     drug_meta_path = toy$meta,
@@ -124,4 +101,53 @@ test_that("CDRP smoke test writes expected output artifacts", {
   expect_s3_class(drp$drugs_valid, "data.frame")
   expect_gt(nrow(drp$drugs_valid), 0)
   expect_true(all(c("name", "cmap_score", "q") %in% names(drp$drugs_valid)))
+})
+
+test_that("run_dr wrapper produces expected artifacts", {
+  td <- tempfile("cdrpipe-wrapper-")
+  dir.create(td)
+  on.exit(unlink(td, recursive = TRUE), add = TRUE)
+  local_mocked_bindings(
+    gconvert = function(query, ...) {
+      data.frame(target = as.character(query), stringsAsFactors = FALSE)
+    },
+    .package = "CDRPipe"
+  )
+
+  toy <- create_toy_pipeline_inputs(td)
+  out_dir <- file.path(td, "out-wrapper")
+  disease_path <- file.path(td, "toy_disease_gene_ids.csv")
+
+  write.csv(
+    data.frame(
+      GeneID = c("1", "2", "3", "4", "5", "6"),
+      logFC = c(2, 1, -1.5, -2, 0.8, -0.7)
+    ),
+    disease_path,
+    row.names = FALSE
+  )
+
+  expect_no_error(
+    capture.output(
+      run_dr(
+        signatures_rdata = toy$signatures,
+        disease_path = disease_path,
+        drug_meta_path = toy$meta,
+        drug_valid_path = toy$valid,
+        out_dir = out_dir,
+        gene_key = "GeneID",
+        logfc_cols_pref = "logFC",
+        logfc_cutoff = 0.5,
+        q_thresh = 1,
+        seed = 123,
+        verbose = FALSE,
+        make_plots = FALSE
+      )
+    )
+  )
+
+  expect_true(file.exists(file.path(out_dir, "toy_disease_gene_ids_results.RData")))
+  expect_true(
+    any(grepl("_hits_logFC_0\\.5_q<1\\.00\\.csv$", list.files(out_dir)))
+  )
 })

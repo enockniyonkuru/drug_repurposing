@@ -1,27 +1,20 @@
-#' Command-Line Interface
-#'
-#' Provides the CDRPipe CLI entry point for running drug repurposing pipeline and analysis
-#' from the command line. Supports configuration via YAML files and enables
-#' batch processing with various output options.
-#'
-#' @export
-cdrpipe_cli <- function() {
-  if (!requireNamespace("docopt", quietly = TRUE)) {
-    stop("Please install 'docopt' to use the CLI: install.packages('docopt')")
-  }
+dr_cli_version <- function() {
+  sprintf("DRPipe CLI %s", utils::packageVersion("CDRPipe"))
+}
 
-  doc <- "
+dr_cli_usage <- function() {
+  "
 Drug Repurposing CLI
 
 Usage:
-  cdrpipe run      [--config=<path>] [--profile=<name>] [--make-plots] [--verbose] [--print-config]
-  cdrpipe analyze  [--config=<path>] [--profile=<name>] [--results-dir=<path>] [--analysis-dir=<path>] [--pattern=<regex>] [--verbose] [--print-config]
-  cdrpipe help
-  cdrpipe (-h | --help)
-  cdrpipe --version
+  drpipe run      [--config=<path>] [--profile=<name>] [--make-plots] [--verbose] [--print-config]
+  drpipe analyze  [--config=<path>] [--profile=<name>] [--results-dir=<path>] [--analysis-dir=<path>] [--pattern=<regex>] [--verbose] [--print-config]
+  drpipe help
+  drpipe (-h | --help)
+  drpipe --version
 
 Options:
-  --config=<path>       Path to config.yml (defaults: inst/config.yml or scripts/config.yml)
+  --config=<path>       Path to config.yml (uses DRPIPE_CONFIG or scripts/config.yml if omitted)
   --profile=<name>      Config profile name [default: default]
   --make-plots          Generate standard plots for 'run' [default: false]
   --results-dir=<path>  Directory containing *_results.RData [default: scripts/results]
@@ -49,8 +42,23 @@ Config schema (YAML):
     reversal_only:   true
     seed:            123
 "
+}
 
-  args <- docopt::docopt(doc, version = "CDRPipe CLI 0.2.0")
+#' Command-Line Interface
+#'
+#' Provides the DRPipe CLI entry point for running drug repurposing pipeline and analysis
+#' from the command line. Supports configuration via YAML files and enables
+#' batch processing with various output options.
+#'
+#' @export
+dr_cli <- function() {
+  if (!requireNamespace("docopt", quietly = TRUE)) {
+    stop("Please install 'docopt' to use the CLI: install.packages('docopt')")
+  }
+
+  doc <- dr_cli_usage()
+
+  args <- docopt::docopt(doc, version = dr_cli_version())
 
   # Helper for null-coalescing without masking other definitions
   or_null <- function(x, y) if (is.null(x)) y else x
@@ -138,30 +146,17 @@ Config schema (YAML):
       cmap_meta_path       = cfg$paths$cmap_meta,
       cmap_valid_path      = cfg$paths$cmap_valid,
       cmap_signatures_path = cfg$paths$signatures,
+      pattern              = pattern,
       q_thresh             = cfg$params$q_thresh %||% 0.05,
       reversal_only        = isTRUE(cfg$params$reversal_only %||% TRUE),
       verbose              = isTRUE(args$verbose)
     ))
-
-    # Note: file selection by pattern happens inside DRA$load_runs (default pattern),
-    # but if you want to enforce here, you could pass pattern through analyze_runs/DRA.
     return(invisible(TRUE))
   }
 
   # Fallback: show usage
   cat(doc, "\n")
   invisible(TRUE)
-}
-
-#' Legacy CLI alias for older scripts
-#'
-#' `dr_cli()` is kept for backward compatibility. New documentation and scripts
-#' should use [cdrpipe_cli()] instead.
-#'
-#' @return Invisibly returns `TRUE` after the selected command completes.
-#' @export
-dr_cli <- function() {
-  cdrpipe_cli()
 }
 
 # Keep a small null-coalesce helper visible for this file

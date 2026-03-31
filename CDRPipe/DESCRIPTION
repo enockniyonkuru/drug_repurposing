@@ -1,7 +1,7 @@
 Package: CDRPipe
 Type: Package
 Title: CDRPipe Utilities for Drug Repurposing, Scoring, and Visualization
-Version: 0.1.0
+Version: 0.2.1
 Authors@R: c(
     person(given = "Xinyu", family = "Tang", role = "aut", email = "Xinyu.Tang@ucsf.edu"),
     person(given = "Enock", family = "Niyonkuru", role = c("aut", "cre"), email = "enock.niyonkuru@ucsf.edu"),
@@ -12,6 +12,8 @@ Description: Provides functions to clean disease signatures, compute reversal
     summarize candidate drug hits across datasets. Includes pipeline
     orchestration, command-line interface, and reproducible configuration
     management.
+URL: https://github.com/enockniyonkuru/drug_repurposing/tree/main/CDRPipe
+BugReports: https://github.com/enockniyonkuru/drug_repurposing/issues
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: false
@@ -33,10 +35,6 @@ Imports:
     tibble,
     gprofiler2
 Suggests:
-    DBI,
-    readr,
-    RMySQL,
-    RSQLite,
     testthat (>= 3.0.0),
     writexl,
     knitr,

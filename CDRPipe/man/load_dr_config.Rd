@@ -7,7 +7,7 @@
 load_dr_config(profile = "default", config_file = NULL)
 }
 \arguments{
-\item{profile}{A config profile (e.g., "default", "production"). If NULL, uses env var \code{CDRPIPE_PROFILE} or \code{"default"}.}
+\item{profile}{A config profile (e.g., "default", "production"). If NULL, uses env var \code{DRPIPE_PROFILE} or \code{"default"}.}
 
 \item{config_file}{Optional path to a YAML config file}
 }

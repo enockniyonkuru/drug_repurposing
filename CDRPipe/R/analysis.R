@@ -6,6 +6,7 @@
 #'
 #' @name cdrpipe-analysis-imports
 #' @keywords internal
+#' @noRd
 #' @importFrom dplyr %>% everything filter group_by pull select slice ungroup
 #' @importFrom graphics barplot
 #' @importFrom utils head
@@ -275,7 +276,8 @@ pl_overlap <- function(x, at_least2 = FALSE,
                        save = "combined_PE_hits_heatmap.jpg", path = dir.out.img) {
     mat <- prepare_overlap(x, at_least2 = at_least2)
     if (nrow(mat) != 0) {
-        jpeg(paste0(path, save), width = width, height = height, units = units, res = res)
+        fp <- file.path(path, save)
+        jpeg(fp, width = width, height = height, units = units, res = res)
         pheatmap(t(mat[, 2:ncol(mat)]),
                  color         = colorRampPalette(c("grey", "red3"))(100),
                  border_color  = "grey60",
@@ -286,7 +288,9 @@ pl_overlap <- function(x, at_least2 = FALSE,
                  cluster_rows  = FALSE,
                  legend        = FALSE)
         dev.off()
+        return(invisible(fp))
     }
+    invisible(NULL)
 }
 
 #' Build a drugs-per-dataset list for UpSet plots
@@ -320,11 +324,13 @@ prepare_upset_drug <- function(x) {
 pl_upset <- function(x, title = "",
                      width = 6, height = 3, units = "in", res = 600,
                      save = "upset.jpg", path = dir.out.img) {
-    jpeg(paste0(path, save), width = width, height = height, units = units, res = res)
+    fp <- file.path(path, save)
+    jpeg(fp, width = width, height = height, units = units, res = res)
     p <- upset(fromList(x), nsets = 10, order.by = "freq")
     print(p)
     grid.text(title, x = 0.65, y = 0.95, gp = gpar(fontsize = 12))
     dev.off()
+    invisible(fp)
 }
 
 # ---- Assemble per-drug CMap scores across datasets ---------------------------
@@ -429,10 +435,11 @@ pl_cmap_score <- function(cmap_score, qval = NULL, annot_col_col = NULL, annot_c
     # Handle simple case where we just have a data frame of drugs
     if (is.data.frame(cmap_score) && "cmap_score" %in% names(cmap_score)) {
         # Simple bar plot for single dataset
+        out_path <- if (!is.null(path)) file.path(path, save) else save
         if (!is.null(path)) {
-            jpeg(file.path(path), width = width, height = height, units = units, res = res)
+            jpeg(out_path, width = width, height = height, units = units, res = res)
         } else {
-            jpeg(save, width = width, height = height, units = units, res = res)
+            jpeg(out_path, width = width, height = height, units = units, res = res)
         }
         
         # Filter out rows with NA in the name column before selecting top drugs
@@ -448,7 +455,7 @@ pl_cmap_score <- function(cmap_score, qval = NULL, annot_col_col = NULL, annot_c
                 xlab = "CMap Score",
                 col = "steelblue")
         dev.off()
-        return(invisible(save))
+        return(invisible(out_path))
     }
     
     # Original complex heatmap code for matrix input

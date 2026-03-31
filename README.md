@@ -107,9 +107,16 @@ You can interact with this repository in two ways, depending on your preferences
 
 | Functionality | How to Access |
 |--------------|---------------|
-| **Single Analysis - Single Cutoff** | `source("scripts/runall.R")` with `mode: "single"` in config |
-| **Single Analysis - Sweep Mode** | `source("scripts/runall.R")` with `mode: "sweep"` in config |
-| **Comparative Analysis** | `source("scripts/compare_profiles.R")` with multiple profiles |
+| **Single Analysis - Single Cutoff** | `Rscript scripts/runall.R` using `execution.runall_profile` |
+| **Single Analysis - Sweep Mode** | `Rscript scripts/runall.R` with `mode: "sweep"` in the selected profile |
+| **Comparative Analysis** | `Rscript scripts/compare_profiles.R` using `execution.compare_profiles` |
+
+**Primary package entry points:**
+- `DRP$new(...)`
+- `DRA$new(...)`
+- `run_dr(...)`
+- `load_dr_config(...)`
+- `dr_cli()`
 
 **Environments:**
 - **RStudio**: Interactive development environment (recommended for beginners)
@@ -164,12 +171,11 @@ You can interact with this repository in two ways, depending on your preferences
 
 3. **Install the R package**
    ```r
-   devtools::document("CDRPipe")
    devtools::install("CDRPipe")
    ```
 
 4. **Choose your interface:**
-   - **R Package**: Edit `scripts/config.yml` and run `source("scripts/runall.R")`
+   - **R Package**: Edit `scripts/config.yml` and run `Rscript scripts/runall.R`
    - **Shiny App**: Launch with `shiny::runApp("shiny_app")`
 
 5. **View results** in `scripts/results/` directory
@@ -182,15 +188,9 @@ You can interact with this repository in two ways, depending on your preferences
 
 **For R Package:**
 ```r
-# 1. Open RStudio
-# 2. Set working directory: Session > Set Working Directory > Choose Directory
-#    Navigate to: drug_repurposing/scripts
-# 3. Verify location
-getwd()  # Should show: .../drug_repurposing/scripts
-
-# 4. Run analysis
-source("runall.R")  # For single analysis
-source("compare_profiles.R")  # For comparative analysis
+# Open the repository project, then run from the repo root
+source("scripts/runall.R")           # Single profile selected in scripts/config.yml
+source("scripts/compare_profiles.R") # Multi-profile comparison from scripts/config.yml
 ```
 
 **For Shiny App:**
@@ -208,16 +208,8 @@ shiny::runApp()
 
 **For R Package:**
 ```r
-# 1. Open VS Code with R extension installed
-# 2. Open terminal in VS Code (Terminal > New Terminal)
-# 3. Navigate to scripts directory
-cd /path/to/drug_repurposing/scripts
-
-# 4. Launch R
-R
-
-# 5. Run analysis
-source("runall.R")
+# Open the repository root with the R extension, then run:
+source("scripts/runall.R")
 ```
 
 **For Shiny App:**
@@ -233,14 +225,13 @@ shiny::runApp()
 
 **For R Package:**
 ```bash
-# Navigate to scripts directory
-cd /path/to/drug_repurposing/scripts
+# From the repository root
 
 # Run single analysis
-Rscript runall.R
+Rscript scripts/runall.R
 
 # Run comparative analysis
-Rscript compare_profiles.R
+Rscript scripts/compare_profiles.R
 ```
 
 **For Shiny App:**
@@ -272,7 +263,7 @@ scripts/
 │   │   ├── cmap_valid_instances.csv      # Optional (41 KB)
 │   │   ├── tahoe_signatures.RData        # Optional (2.9 GB)
 │   │   ├── tahoe_drug_experiments_new.csv # Required if using TAHOE (4.1 MB)
-│   │   └── tahoe_valid_instances.csv     # Optional
+│   │   └── tahoe_valid_instances_OG_035.csv # Optional
 │   ├── disease_signatures/
 │   │   ├── your_disease_1.csv            # Your disease data files
 │   │   └── your_disease_2.csv            # Place here
@@ -289,7 +280,7 @@ scripts/
 **For TAHOE Analysis (2 required + 1 optional):**
 1. **tahoe_signatures.RData** (2.9 GB) - REQUIRED - TAHOE reference signatures database
 2. **tahoe_drug_experiments_new.csv** (4.1 MB) - REQUIRED - TAHOE experiment metadata
-3. **tahoe_valid_instances.csv** (optional) - Optional - Curated list of valid TAHOE instances
+3. **tahoe_valid_instances_OG_035.csv** (optional) - Optional - Curated list of valid TAHOE instances
 
 #### Disease Signature Files
 
@@ -357,18 +348,22 @@ cd drug_repurposing
 # Install devtools if needed
 install.packages("devtools", repos = "https://cloud.r-project.org")
 
-# Build documentation and install CDRPipe
-devtools::document("CDRPipe")
+# Install from the local checkout
 devtools::install("CDRPipe")
 ```
 
 #### Step 3: Verify Installation
 ```r
 library(CDRPipe)
-?run_cdrpipe  # Should display help documentation
+?run_dr  # Should display help documentation
 ```
 
-Migration note: the package is now branded as `CDRPipe`. Legacy `DRpipe` names are kept only as backward-compatible aliases inside the package API.
+Current package interfaces:
+- `DRP$new(...)`
+- `DRA$new(...)`
+- `run_dr(...)`
+- `load_dr_config(...)`
+- `dr_cli()`
 
 Quick quality check:
 ```bash
@@ -381,66 +376,62 @@ Rscript scripts/ci/check_cdrpipe.R
 
 ### 6.1 Single Analysis - Single Cutoff
 
-**Use Case:** Standard analysis with one fold-change threshold
+**Use Case:** Standard analysis with one selected profile from `scripts/config.yml`.
 
-#### Configuration (`scripts/config.yml`)
+Typical workflow:
+
+```bash
+Rscript scripts/runall.R
+```
+
+`runall.R`:
+- reads `execution.runall_profile`
+- resolves paths relative to `scripts/config.yml`
+- creates a timestamped output folder under `scripts/results/`
+- runs the selected `DRP` profile
+- writes plots, result tables, `config_effective.yml`, and `sessionInfo.txt`
+
+Representative profile:
 
 ```yaml
 execution:
-  runall_profile: "MyAnalysis_SingleCutoff"
+  runall_profile: "CMAP_Acne_Standard"
 
-MyAnalysis_SingleCutoff:
+CMAP_Acne_Standard:
   paths:
     signatures: "data/drug_signatures/cmap_signatures.RData"
-    disease_file: "data/disease_signatures/my_disease_data.csv"
+    disease_file: "data/disease_signatures/acne_signature.csv"
     drug_meta: "data/drug_signatures/cmap_drug_experiments_new.csv"
     drug_valid: "data/drug_signatures/cmap_valid_instances.csv"
     out_dir: "results"
   params:
-    gene_key: "SYMBOL"
-    logfc_cols_pref: "log2FC"
-    logfc_cutoff: 1.0
-    pval_key: null
-    pval_cutoff: 0.05
+    gene_key: "gene_symbol"
+    logfc_cols_pref: "logfc_dz"
+    logfc_cutoff: 0.055
     q_thresh: 0.05
     reversal_only: true
-    seed: 123
+    n_permutations: 100000
     mode: "single"
-    combine_log2fc: "average"
 ```
 
-#### Running the Analysis
+Representative output:
 
-**In RStudio:**
-```r
-setwd("/path/to/drug_repurposing/scripts")
-source("runall.R")
-```
-
-**In Terminal:**
-```bash
-cd scripts
-Rscript runall.R
-```
-
-#### Output Structure
-```
-results/MyAnalysis_SingleCutoff_20250107-183045/
-├── MyAnalysis_SingleCutoff_results.RData           # Complete results
-├── MyAnalysis_SingleCutoff_hits_q0.05.csv          # Significant drug hits
+```text
+scripts/results/CMAP_Acne_Standard_20260330-184636/
+├── acne_signature_results.RData
+├── acne_signature_hits_logFC_0.055_q<0.05.csv
 ├── img/
-│   ├── MyAnalysis_SingleCutoff_hist_revsc.jpg      # Score distribution
-│   └── MyAnalysis_SingleCutoff_cmap_score.jpg      # Top drugs
-└── sessionInfo.txt                                  # Session details
+│   ├── cmap_score.jpg
+│   └── acne_signature_heatmap_cmap_hits.jpg
+├── config_effective.yml
+└── sessionInfo.txt
 ```
 
 ---
 
 ### 6.2 Single Analysis - Sweep Mode
 
-**Use Case:** Test multiple fold-change thresholds to find robust drug candidates
-
-#### Configuration
+**Use Case:** Test multiple fold-change thresholds to identify robust hits across cutoffs.
 
 ```yaml
 execution:
@@ -471,27 +462,13 @@ MyAnalysis_SweepMode:
     combine_log2fc: "average"
 ```
 
-#### Running the Analysis
+Run it with the same entrypoint:
 
-```r
-setwd("/path/to/drug_repurposing/scripts")
-source("runall.R")  # Uses sweep profile from config
+```bash
+Rscript scripts/runall.R
 ```
 
-#### Output Structure
-```
-results/MyAnalysis_SweepMode_20250107-183045/
-├── cutoff_0.5/                        # Individual cutoff results
-│   └── MyAnalysis_hits_cutoff_0.5.csv
-├── cutoff_1.0/
-├── cutoff_1.5/
-├── aggregate/                         # Final robust results
-│   ├── robust_hits.csv               # Drugs passing robust filtering
-│   └── cutoff_summary.csv            # Summary per cutoff
-└── MyAnalysis_results.RData
-```
-
-#### Key Parameters Explained
+Key sweep parameters:
 
 | Parameter | Description | Typical Value |
 |-----------|-------------|---------------|
@@ -505,81 +482,54 @@ results/MyAnalysis_SweepMode_20250107-183045/
 
 ### 6.3 Comparative Analysis
 
-**Use Case:** Compare results across multiple configurations
-
-#### Two Common Scenarios
-
-**Scenario 1: Parameter Sensitivity (Same Data, Different Parameters)**
+**Use Case:** Compare results across multiple profiles listed in `execution.compare_profiles`.
 
 ```yaml
 execution:
-  compare_profiles: ["Lenient", "Standard", "Strict"]
-
-Lenient:
-  paths:
-    disease_file: "data/my_data.csv"  # Same file
-  params:
-    logfc_cutoff: 0.5                 # Different cutoff
-
-Standard:
-  paths:
-    disease_file: "data/my_data.csv"  # Same file
-  params:
-    logfc_cutoff: 1.0                 # Different cutoff
-
-Strict:
-  paths:
-    disease_file: "data/my_data.csv"  # Same file
-  params:
-    logfc_cutoff: 1.5                 # Different cutoff
+  compare_profiles: ["CMAP_Acne_Lenient", "CMAP_Acne_Standard", "CMAP_Acne_Strict"]
 ```
 
-**Scenario 2: Cross-Dataset Comparison (Different Data, Same Parameters)**
+Run from the repository root:
 
-```yaml
-execution:
-  compare_profiles: ["Dataset1", "Dataset2", "Dataset3"]
-
-Dataset1:
-  paths:
-    disease_file: "data/dataset1.csv"  # Different file
-  params:
-    logfc_cutoff: 1.0                  # Same parameters
-
-Dataset2:
-  paths:
-    disease_file: "data/dataset2.csv"  # Different file
-  params:
-    logfc_cutoff: 1.0                  # Same parameters
-```
-
-#### Running Comparative Analysis
-
-```r
-setwd("/path/to/drug_repurposing/scripts")
-source("compare_profiles.R")
-```
-
-**Or from terminal:**
 ```bash
-cd scripts
-Rscript compare_profiles.R
+Rscript scripts/compare_profiles.R
 ```
 
-#### Output Structure
-```
-results/profile_comparison_20250107-183045/
-├── lenient_hits.csv                    # Individual profile results
-├── standard_hits.csv
-├── strict_hits.csv
-├── combined_profile_hits.csv           # All results combined
-├── profile_summary_stats.csv           # Summary statistics
+Representative output:
+
+```text
+scripts/results/profile_comparison/<YYYYMMDD-HHMMSS>/
+├── <profile>_hits.csv
+├── combined_profile_hits.csv
+├── profile_summary_stats.csv
+├── profile_comparison_report.md
 └── img/
     ├── profile_comparison_score_dist.jpg
     ├── profile_overlap_heatmap.jpg
     ├── profile_overlap_atleast2.jpg
     └── profile_upset.jpg
 ```
+
+### 6.4 Parallelization And Permutations
+
+Single-mode runs now support `params$ncores` for the heavy scoring steps:
+- `random_score()`
+- `query_score()`
+
+Example:
+
+```yaml
+TAHOE_Acne_Standard_Smoke:
+  params:
+    ncores: 4
+    n_permutations: 1000
+```
+
+Guidance:
+- Use `n_permutations: 100000` for final analyses and publication-quality runs.
+- Lower counts such as `1000` or `10000` are useful for faster validation runs.
+- Lower permutation counts reduce runtime, but they also reduce p-value resolution.
+- `ncores` is most helpful for large profiles such as TAHOE.
 
 ---
 
@@ -725,11 +675,10 @@ drug_repurposing/
 │   └── R/
 │       ├── processing.R               # Core data processing (clean_table, query, etc.)
 │       ├── analysis.R                 # Plotting/summary helpers
-│       ├── pipeline_processing.R      # CDRP class + run_cdrpipe()
-│       ├── pipeline_analysis.R        # CDRA class + analyze_cdrpipe_runs()
+│       ├── pipeline_processing.R      # DRP class + run_dr()
+│       ├── pipeline_analysis.R        # DRA class + analyze_runs()
 │       ├── io_config.R                # Config & IO helpers
 │       ├── cli.R                      # Command-line interface
-│       ├── chembl_validation.R        # ChEMBL known-drug validation
 │       ├── plot_sweep_legacy.R        # Legacy sweep mode plotting
 │       └── zzz-imports.R
 ├── scripts/                           # Pipeline execution & configuration
@@ -750,7 +699,6 @@ drug_repurposing/
 │   │       ├── acne_signature.csv
 │   │       ├── arthritis_signature.csv
 │   │       ├── glaucoma_signature.csv
-│   │       └── endo_disease_signatures/  # 6 endometriosis sub-signatures
 │   └── results/                       # Timestamped output directories
 ├── shiny_app/                         # Interactive web application
 │   ├── README.md                      # Shiny app documentation
@@ -790,7 +738,7 @@ Each top-level directory has its own README with detailed documentation:
 **Key references:**
 - For **threshold tuning**, valid instance creation, and batch processing: see [tahoe_cmap_analysis/README.md](tahoe_cmap_analysis/README.md)
 - For **reproducing manuscript figures**: see [visuals/README.md](visuals/README.md)
-- For **running your own disease**: see [scripts/README.md](scripts/README.md#run-your-own-disease)
+- For **running your own disease**: see [scripts/README.md](scripts/README.md)
 
 ---
 
@@ -827,6 +775,8 @@ MyProfileName:                         # ← Profile identifier (you choose this
 | `pval_cutoff` | numeric | 0.01 - 0.1 | P-value threshold |
 | `q_thresh` | numeric | 0.01 - 0.1 | FDR threshold for drug significance |
 | `reversal_only` | boolean | true/false | Keep only reversal drugs |
+| `n_permutations` | integer | 1000, 10000, 100000 | Permutation count for null-score testing |
+| `ncores` | integer/null | 2, 4, 8, null | Optional worker count for single-mode scoring |
 | `mode` | string | "single", "sweep" | Analysis mode |
 
 ---
@@ -863,12 +813,16 @@ default:
   params:
     gene_key: "gene_symbol"
     logfc_cols_pref: "logfc_dz"
-    logfc_cutoff: 0.05
+    logfc_cutoff: null
+    percentile_filtering:
+      enabled: true
+      threshold: 25
     pval_key: null
     pval_cutoff: 0.05
     q_thresh: 0.05
     reversal_only: true
     seed: 123
+    n_permutations: 100000
     mode: "single"
     combine_log2fc: "average"
 
@@ -883,7 +837,7 @@ CMAP_Acne_Standard:
   params:
     gene_key: "gene_symbol"
     logfc_cols_pref: "logfc_dz"
-    logfc_cutoff: 0.051
+    logfc_cutoff: 0.055
     pval_key: null
     pval_cutoff: 0.05
     q_thresh: 0.05
@@ -897,20 +851,48 @@ TAHOE_Acne_Standard:
     signatures: "data/drug_signatures/tahoe_signatures.RData"
     disease_file: "data/disease_signatures/acne_signature.csv"
     drug_meta: "data/drug_signatures/tahoe_drug_experiments_new.csv"
-    drug_valid: "data/drug_signatures/tahoe_valid_instances.csv"
+    drug_valid: null
     out_dir: "results"
   params:
     gene_key: "gene_symbol"
     logfc_cols_pref: "logfc_dz"
-    logfc_cutoff: 1.0
+    logfc_cutoff: null
+    percentile_filtering:
+      enabled: true
+      threshold: 50
     pval_key: null
     pval_cutoff: 0.05
     q_thresh: 0.05
     reversal_only: true
     seed: 123
+    n_permutations: 100000
     mode: "single"
 
-> **Note on TAHOE Valid Instances:** When using TAHOE, the recommended valid instance threshold is `r = 0.35` (correlation-based quality control), compared to CMAP's `r = 0.15`. For detailed guidance on creating and tuning valid instances, drug signature filtering, and advanced parameter optimization, see the [tahoe_cmap_analysis Advanced Usage guide](tahoe_cmap_analysis/README.md#advanced-usage).
+# TAHOE verification profile with faster runtime
+TAHOE_Acne_Standard_Smoke:
+  paths:
+    signatures: "data/drug_signatures/tahoe_signatures.RData"
+    disease_file: "data/disease_signatures/acne_signature.csv"
+    drug_meta: "data/drug_signatures/tahoe_drug_experiments_new.csv"
+    drug_valid: null
+    out_dir: "results"
+  params:
+    gene_key: "gene_symbol"
+    logfc_cols_pref: "logfc_dz"
+    logfc_cutoff: null
+    percentile_filtering:
+      enabled: true
+      threshold: 50
+    pval_key: null
+    pval_cutoff: 0.05
+    q_thresh: 0.05
+    reversal_only: true
+    seed: 123
+    n_permutations: 1000
+    ncores: 4
+    mode: "single"
+
+> **Note on TAHOE Valid Instances:** The public Tahoe profiles currently run without a `drug_valid` filter. If you want an additional Tahoe valid-instance filter, `tahoe_valid_instances_OG_035.csv` is available locally and can be added back to a custom profile.
 
 # Parameter sensitivity analysis profiles for Acne
 CMAP_Acne_Lenient:
@@ -939,7 +921,7 @@ CMAP_Acne_Standard:
   params:
     gene_key: "gene_symbol"
     logfc_cols_pref: "logfc_dz"
-    logfc_cutoff: 0.051
+    logfc_cutoff: 0.055
     q_thresh: 0.05
     reversal_only: true
     seed: 123
@@ -955,7 +937,7 @@ CMAP_Acne_Strict:
   params:
     gene_key: "gene_symbol"
     logfc_cols_pref: "logfc_dz"
-    logfc_cutoff: 0.07
+    logfc_cutoff: 0.066
     q_thresh: 0.05
     reversal_only: true
     seed: 123
@@ -1016,7 +998,7 @@ These thresholds determine which drug signatures meet quality criteria based on 
 **TAHOE Reference Files:**
 - **tahoe_signatures.RData**: Matrix with genes as rows, experiments as columns. Required for TAHOE analyses.
 - **tahoe_drug_experiments_new.csv**: Experiment metadata containing drug names, cell lines, and experimental conditions.
-- **tahoe_valid_instances.csv**: Curated valid instances with DrugBank IDs and validation flags (optional).
+- **tahoe_valid_instances_OG_035.csv**: Curated valid instances with DrugBank IDs and validation flags (optional).
 
 ---
 
@@ -1025,13 +1007,19 @@ These thresholds determine which drug signatures meet quality criteria based on 
 ### 11.1 Common Issues
 
 **"Cannot find config.yml"**
-- **Solution**: Ensure working directory is `scripts/`
-- **Check**: `getwd()` should show `.../drug_repurposing/scripts`
-- **Fix**: `setwd("path/to/drug_repurposing/scripts")`
+- **Check**: Run from the repository root with `Rscript scripts/runall.R` or `Rscript scripts/compare_profiles.R`
+- **Note**: The scripts now resolve their own location, so `setwd("scripts")` is usually not necessary
+- **Fix**: Verify that `scripts/config.yml` exists and that you did not rename the `scripts/` directory
 
 **"Disease file not found"**
-- **Solution**: Verify path in `disease_file:` is relative to `scripts/`
-- **Check**: `file.exists("data/your_file.csv")`
+- **Solution**: Verify path in `disease_file:` is relative to `scripts/config.yml`
+- **Check**: `file.exists("scripts/data/your_file.csv")`
+
+**"Tahoe run is extremely slow"**
+- **Cause**: Tahoe has a much larger experiment matrix than CMAP
+- **Recommendation**: Use `TAHOE_Acne_Standard_Smoke` or temporarily lower `n_permutations`
+- **For final runs**: Prefer `n_permutations: 100000`
+- **For faster validation**: Use `n_permutations: 1000` or `10000`, and set `ncores` when available
 
 **"Gene column not found" or "No genes matched"**
 - **Solution**: Verify `gene_key` matches your actual column name
@@ -1057,7 +1045,7 @@ These thresholds determine which drug signatures meet quality criteria based on 
 ```r
 # Test package installation
 library(CDRPipe)
-?run_cdrpipe  # Should display help
+?run_dr  # Should display help
 
 # Test data file
 test_load <- try(load("scripts/data/cmap_signatures.RData"), silent = TRUE)
@@ -1068,8 +1056,8 @@ if (inherits(test_load, "try-error")) {
 }
 
 # Verify working directory
-getwd()  # Should end with: .../drug_repurposing/scripts
-file.exists("config.yml")  # Should return TRUE
+getwd()  # Often the repository root
+file.exists("scripts/config.yml")  # Should return TRUE from the repo root
 ```
 
 ---
@@ -1080,6 +1068,8 @@ file.exists("config.yml")  # Should return TRUE
 
 - **Enock Niyonkuru** - *Author, Maintainer* - [enock.niyonkuru@ucsf.edu](mailto:enock.niyonkuru@ucsf.edu)
 - **Xinyu Tang** - *Author* - [Xinyu.Tang@ucsf.edu](mailto:Xinyu.Tang@ucsf.edu)
+- **Umair Khan** - *Author* - [Umair.Khan@ucsf.edu](mailto:Umair.Khan@ucsf.edu)
+- **Tomiko Oskotsky** - *Author* - [Tomiko.Oskotsky@ucsf.edu](mailto:Tomiko.Oskotsky@ucsf.edu)
 - **Marina Sirota** - *Author* - [Marina.Sirota@ucsf.edu](mailto:Marina.Sirota@ucsf.edu)
 
 ### 12.2 Citation

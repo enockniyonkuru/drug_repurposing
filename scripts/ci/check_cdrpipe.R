@@ -3,7 +3,16 @@ pkg_dir <- if (length(args) >= 1) args[[1]] else "CDRPipe"
 
 required_packages <- "testthat"
 missing_packages <- required_packages[!vapply(required_packages, requireNamespace, logical(1), quietly = TRUE)]
-optional_suggests <- c("RMySQL", "RSQLite")
+desc_path <- file.path(pkg_dir, "DESCRIPTION")
+optional_suggests <- character()
+if (file.exists(desc_path)) {
+  raw_suggests <- tryCatch(read.dcf(desc_path, fields = "Suggests")[1, 1], error = function(e) NA_character_)
+  if (!is.na(raw_suggests) && nzchar(raw_suggests)) {
+    optional_suggests <- trimws(unlist(strsplit(gsub("\\([^\\)]*\\)", "", raw_suggests), ",")))
+    optional_suggests <- optional_suggests[nzchar(optional_suggests)]
+  }
+}
+optional_suggests <- setdiff(optional_suggests, required_packages)
 missing_optional_suggests <- optional_suggests[
   !vapply(optional_suggests, requireNamespace, logical(1), quietly = TRUE)
 ]

@@ -25,7 +25,7 @@ query(
 \item{pvalue_method}{character; "discrete" or "continuous"
 "discrete" = count-based: p = (# perms >= obs) / N_perms (transparent, discrete values)
 "continuous" = with Phipson & Smyth correction: p = 1/(N+1) when count=0 (recommended)
-Default: "continuous" (CDRPipe standard, recommended for publication)}
+Default: "continuous" (package standard, recommended for publication)}
 
 \item{phipson_smyth_correction}{logical; apply Phipson & Smyth (2010) correction?
 When TRUE and count=0, use p = 1/(N+1) instead of p=0

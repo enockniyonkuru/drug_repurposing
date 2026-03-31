@@ -1,6 +1,6 @@
-# CDRPipe: Drug Repurposing Analysis R Package
+# CDRPipe: Drug Repurposing R Package
 
-**CDRPipe** is a comprehensive R package for drug repurposing analysis using disease gene expression signatures and drug signature databases (Connectivity Map/CMap and TAHOE). The package provides tools for preprocessing, scoring, filtering, and visualization to identify candidate compounds that may reverse disease-associated transcriptional changes.
+**CDRPipe** is an R package for drug repurposing analysis using disease gene expression signatures and drug perturbation databases such as Connectivity Map (CMap) and TAHOE. It provides a reproducible workflow for preprocessing signatures, computing reversal scores, filtering hits, and generating analysis outputs and plots.
 
 ## Table of Contents
 
@@ -55,11 +55,10 @@ CDRPipe/
 ├── R/                     # Core package functions
 │   ├── processing.R       # Data processing functions
 │   ├── analysis.R         # Analysis and visualization functions
-│   ├── pipeline_processing.R  # Processing pipeline (CDRP/CDRPipe class)
-│   ├── pipeline_analysis.R    # Analysis pipeline (CDRA/CDRPipe class)
+│   ├── pipeline_processing.R  # Processing pipeline (DRP class)
+│   ├── pipeline_analysis.R    # Analysis pipeline (DRA class)
 │   ├── io_config.R        # I/O and configuration utilities
 │   ├── cli.R              # Command line interface
-│   ├── chembl_validation.R    # ChEMBL known-drug validation
 │   ├── plot_sweep_legacy.R    # Legacy sweep mode plotting
 │   └── zzz-imports.R      # Package imports
 ├── man/                   # Function documentation (auto-generated)
@@ -70,53 +69,55 @@ CDRPipe/
 
 ## 2. Installation
 
-### 2.1 Install from Local Directory
+### 2.1 Install from GitHub
 
 ```r
-# Install devtools if not available
-if (!require("devtools")) install.packages("devtools")
+# Install remotes if needed
+if (!requireNamespace("remotes", quietly = TRUE)) install.packages("remotes")
 
-# Install CDRPipe from local directory
-devtools::install("path/to/CDRPipe")
+# Install the package from this repository
+remotes::install_github("enockniyonkuru/drug_repurposing", subdir = "CDRPipe")
 
-# Load the package
 library(CDRPipe)
 ```
 
-### 2.2 Install Dependencies
+### 2.2 Install from a Local Checkout
 
 ```r
-# Install required packages
-install.packages(c("dplyr", "tidyr", "tibble", "gprofiler2", "pbapply", 
-                   "qvalue", "pheatmap", "UpSetR", "grid", "gplots", 
-                   "reshape2"))
-
-# Optional packages for enhanced functionality
-install.packages(c("writexl", "yaml"))
+# Install from a local clone of the repository
+install.packages("path/to/drug_repurposing/CDRPipe", repos = NULL, type = "source")
 ```
 
-### 2.3 Development Installation
+### 2.3 Development Workflow
 
-For development purposes, you can source functions directly:
+For package development, prefer loading the package with `devtools::load_all()`
+instead of sourcing package files manually:
 
 ```r
-source("R/processing.R")
-source("R/analysis.R")
-source("R/pipeline_processing.R")
-source("R/pipeline_analysis.R")
+if (!requireNamespace("devtools", quietly = TRUE)) install.packages("devtools")
+devtools::load_all("CDRPipe")
 ```
 
-### 2.4 Naming and Compatibility
+### 2.4 Command Line Usage
 
-`CDRPipe` is now the canonical package name for documentation, installation, and user-facing scripts.
-Legacy `DRpipe` symbols are still exported as compatibility aliases, but new code should prefer:
+The package ships an executable wrapper at `exec/drpipe`. After installation,
+locate and run it with:
+
+```r
+cli <- system.file("exec", "drpipe", package = "CDRPipe")
+system2("Rscript", c(cli, "--help"))
+```
+
+### 2.5 Primary Entry Points
+
+The main exported interfaces are:
 
 - `library(CDRPipe)`
-- `CDRP$new(...)`
-- `CDRA$new(...)`
-- `run_cdrpipe(...)`
-- `load_cdr_config(...)`
-- `cdrpipe_cli()`
+- `DRP$new(...)`
+- `DRA$new(...)`
+- `run_dr(...)`
+- `load_dr_config(...)`
+- `dr_cli()`
 
 For local verification from the repository root:
 
@@ -161,8 +162,8 @@ pl_hist_revsc(list(MyDisease = results))
 ### 3.2 Complete Pipeline
 
 ```r
-# Run complete pipeline with configuration
-run_cdrpipe(
+# Run a complete single-analysis pipeline
+run_dr(
   signatures_rdata = "path/to/cmap_signatures.RData",
   disease_path = "path/to/disease_signature.csv",
   out_dir = "results",
@@ -192,12 +193,12 @@ clean_table(
 )
 ```
 
-#### `CDRP$new()` - R6 Class Constructor with Percentile Filtering Support
+#### `DRP$new()` - R6 Class Constructor with Percentile Filtering Support
 
 Creates a drug repurposing pipeline instance with optional percentile-based gene filtering.
 
 ```r
-CDRP$new(
+DRP$new(
   signatures_rdata,              # Path to drug signatures RData file
   disease_path,                  # Path to disease signature file(s)
   disease_pattern = NULL,        # File name pattern to match disease files
@@ -215,14 +216,14 @@ CDRP$new(
 1. **Fixed Cutoff** (default):
    ```r
    # Keep genes with |logFC| > 1
-   CDRP$new(..., logfc_cutoff = 1, 
+   DRP$new(..., logfc_cutoff = 1, 
      percentile_filtering = list(enabled = FALSE, threshold = NULL))
    ```
 
 2. **Percentile-Based (NEW)**:
    ```r
    # Keep top 50% of genes by |logFC|
-   CDRP$new(..., logfc_cutoff = NULL,
+   DRP$new(..., logfc_cutoff = NULL,
      percentile_filtering = list(enabled = TRUE, threshold = 50))
    ```
    - Calculates: `quantile(abs(logFC), (100-threshold)/100)`
@@ -338,10 +339,10 @@ valid_hits <- valid_instance(results, cmap_exp_valid)
 
 ```r
 # Load configuration
-cfg <- load_cdr_config(profile = "default", config_file = "config.yml")
+cfg <- load_dr_config(profile = "default", config_file = "config.yml")
 
 # Run pipeline with configuration
-run_cdrpipe(
+run_dr(
   signatures_rdata = cfg$paths$signatures,
   disease_path = cfg$paths$disease_file,
   cmap_meta_path = cfg$paths$cmap_meta,
@@ -395,6 +396,10 @@ pl_upset(upset_data)
 
 ## 7. Configuration and Pipeline
 
+The package-level configuration helper is `load_dr_config()`. It resolves
+profiles from a YAML file and supports the environment variables
+`DRPIPE_CONFIG` and `DRPIPE_PROFILE`.
+
 ### 7.1 Configuration File Format
 
 Create a YAML configuration file with CMap or TAHOE:
@@ -443,13 +448,20 @@ my_tahoe_profile:
 
 ```r
 # Complete processing pipeline
-run_dr_processing(config)
+run_dr(
+  signatures_rdata = cfg$paths$signatures,
+  disease_path = cfg$paths$disease_file,
+  out_dir = cfg$paths$out_dir
+)
 
 # Complete analysis pipeline
-analyze_cdrpipe_runs(config)
-
-# Combined pipeline
-run_cdrpipe(config_parameters...)
+analyze_runs(
+  results_dir = cfg$paths$out_dir,
+  analysis_dir = file.path(cfg$paths$out_dir, "analysis"),
+  cmap_meta_path = cfg$paths$drug_meta,
+  cmap_valid_path = cfg$paths$drug_valid,
+  cmap_signatures_path = cfg$paths$signatures
+)
 ```
 
 ---
@@ -569,9 +581,12 @@ Citation information will be added upon publication of the manuscript
 
 ### 10.4 Authors
 
-- **Enock Niyonkuru** - *Author, Maintainer* - enock.niyonkuru@ucsf.edu
-- **Xinyu Tang** - *Author* - Xinyu.Tang@ucsf.edu
-- **Marina Sirota** - *Author* - Marina.Sirota@ucsf.edu
+- **Enock Niyonkuru** - *Author, Maintainer* - [enock.niyonkuru@ucsf.edu](mailto:enock.niyonkuru@ucsf.edu)
+- **Xinyu Tang** - *Author* - [Xinyu.Tang@ucsf.edu](mailto:Xinyu.Tang@ucsf.edu)
+- **Umair Khan** - *Author* - [Umair.Khan@ucsf.edu](mailto:Umair.Khan@ucsf.edu)
+- **Tomiko Oskotsky** - *Author* - [Tomiko.Oskotsky@ucsf.edu](mailto:Tomiko.Oskotsky@ucsf.edu)
+- **Marina Sirota** - *Author* - [Marina.Sirota@ucsf.edu](mailto:Marina.Sirota@ucsf.edu)
+
 
 ### 10.5 License
 
@@ -586,9 +601,9 @@ This package is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 
 ### 10.7 Version Information
 
-- **Current Version**: 0.1.0
+- **Current Version**: 0.2.1
 - **R Version Required**: ≥ 4.2
-- **Last Updated**: 2025
+- **Last Updated**: 2026
 
 ---
 

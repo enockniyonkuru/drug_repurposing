@@ -237,7 +237,7 @@ run_pipeline <- function(sig_path, sig_name, disease_file, disease_name, batch_t
     cols_to_keep <- c("SYMBOL", "logfc_dz")
   } else if (!use_averaging && length(logfc_cols) >= 1) {
     # When not averaging, rename the first/only selected column to logfc_dz 
-    # to ensure CDRP can find it, regardless of original column name
+    # to ensure DRP can find it, regardless of original column name
     if (length(logfc_cols) == 1) {
       df$logfc_dz <- df[[logfc_cols[1]]]
       cols_to_keep <- c("SYMBOL", "logfc_dz")
@@ -277,8 +277,8 @@ run_pipeline <- function(sig_path, sig_name, disease_file, disease_name, batch_t
   out_dir <- file.path(out_root, folder_name)
   dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
   
-  # Initialize CDRP object
-  drp <- CDRP$new(
+  # Initialize DRP object
+  drp <- DRP$new(
     signatures_rdata = sig_path,
     disease_path     = disease_file,
     disease_pattern  = NULL,

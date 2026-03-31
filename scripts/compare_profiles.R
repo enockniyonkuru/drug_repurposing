@@ -13,11 +13,29 @@ suppressPackageStartupMessages(library(pheatmap))
 suppressPackageStartupMessages(library(UpSetR))
 suppressPackageStartupMessages(library(grid))
 
-# Configuration
-config_file <- "config.yml"
+find_script_dir <- function() {
+  args <- commandArgs(trailingOnly = FALSE)
+  file_arg <- grep("^--file=", args, value = TRUE)
+  if (length(file_arg) > 0) {
+    return(dirname(normalizePath(sub("^--file=", "", file_arg[[1]]), winslash = "/", mustWork = FALSE)))
+  }
+
+  frame_files <- vapply(sys.frames(), function(frame) {
+    if (is.null(frame$ofile)) NA_character_ else frame$ofile
+  }, character(1))
+  frame_files <- frame_files[!is.na(frame_files)]
+  if (length(frame_files) > 0) {
+    return(dirname(normalizePath(frame_files[[length(frame_files)]], winslash = "/", mustWork = FALSE)))
+  }
+
+  normalizePath(getwd(), winslash = "/", mustWork = FALSE)
+}
+
+script_dir <- find_script_dir()
+config_file <- file.path(script_dir, "config.yml")
 
 # Load helper function
-source("load_execution_config.R")
+source(file.path(script_dir, "load_execution_config.R"), chdir = FALSE)
 
 # Load execution configuration to get profiles to compare
 exec_cfg <- load_execution_config(config_file)
@@ -37,30 +55,7 @@ run_profile <- function(profile_name, config_file) {
   out <- file.path(root, paste0(profile_name, "_", ts))
   io_ensure_dir(out)
 
-  # Run pipeline using the CDRP class for full parameter support
-  drp <- CDRP$new(
-    signatures_rdata = cfg$paths$signatures,
-    disease_path     = cfg$paths$disease_file %||% cfg$paths$disease_dir,
-    disease_pattern  = if (is.null(cfg$paths$disease_file)) cfg$paths$disease_pattern else NULL,
-    cmap_meta_path   = cfg$paths$cmap_meta %||% NULL,
-    cmap_valid_path  = cfg$paths$cmap_valid %||% NULL,
-    drug_meta_path   = cfg$paths$drug_meta %||% NULL,
-    drug_valid_path  = cfg$paths$drug_valid %||% NULL,
-    out_dir          = out,
-    gene_key         = cfg$params$gene_key %||% "SYMBOL",
-    logfc_cols_pref  = cfg$params$logfc_cols_pref %||% "log2FC",
-    logfc_cutoff     = cfg$params$logfc_cutoff %||% 1,
-    percentile_filtering = cfg$params$percentile_filtering,
-    pval_key         = cfg$params$pval_key %||% NULL,
-    pval_cutoff      = cfg$params$pval_cutoff %||% 0.05,
-    q_thresh         = cfg$params$q_thresh %||% 0.05,
-    reversal_only    = isTRUE(cfg$params$reversal_only %||% TRUE),
-    seed             = cfg$params$seed %||% 123,
-    n_permutations   = cfg$params$n_permutations %||% 100000,
-    verbose          = TRUE,
-    make_plots       = TRUE
-  )
-  
+  drp <- new_drp_from_config(cfg, out_dir = out, verbose = TRUE)
   drp$run_all(make_plots = TRUE)
 
   return(list(profile = profile_name, output_dir = out, config = cfg))
@@ -68,8 +63,25 @@ run_profile <- function(profile_name, config_file) {
 
 # Function to load results from a profile run
 load_profile_results <- function(output_dir, profile_name) {
-  # First, try to load the filtered hits CSV files
-  hit_files <- list.files(output_dir, pattern = "hits_logFC.*\\.csv$", full.names = TRUE)
+  csv_files <- list.files(output_dir, pattern = "\\.csv$", full.names = TRUE, recursive = TRUE)
+  hit_files <- csv_files[
+    grepl("(_hits_logFC_.*\\.csv$|_hits_q<.*\\.csv$|_hits\\.csv$|robust_hits\\.csv$)", basename(csv_files))
+  ]
+
+  if (length(hit_files) > 1) {
+    hit_priority <- c(
+      "_hits_logFC_.*\\.csv$",
+      "_hits_q<.*\\.csv$",
+      "_hits\\.csv$",
+      "robust_hits\\.csv$"
+    )
+    priority_rank <- rep(length(hit_priority) + 1L, length(hit_files))
+    hit_names <- basename(hit_files)
+    for (i in seq_along(hit_priority)) {
+      priority_rank[grepl(hit_priority[[i]], hit_names)] <- i
+    }
+    hit_files <- hit_files[order(priority_rank, hit_names)]
+  }
   
   if (length(hit_files) > 0) {
     cat("Loading filtered hits from CSV:", hit_files[1], "\n")
@@ -84,12 +96,16 @@ load_profile_results <- function(output_dir, profile_name) {
       return(NULL)
     }
 
-    # Load the results
-    load(result_files[1])  # loads 'results' object
+    result_env <- new.env(parent = emptyenv())
+    load(result_files[1], envir = result_env)
+    if (!exists("results", envir = result_env, inherits = FALSE)) {
+      warning("Results object not found in ", result_files[1])
+      return(NULL)
+    }
 
     # Extract drug predictions and disease signatures
-    drugs <- results[[1]]
-    dz_signature <- results[[2]]
+    drugs <- result_env$results[[1]]
+    dz_signature <- result_env$results[[2]]
   }
 
   # Add profile identifier if not already present
@@ -122,7 +138,7 @@ for (profile in profiles_to_compare) {
 cat("\n=== Loading and Processing Results ===\n")
 
 # Set up output directories for comparison analysis
-comparison_dir <- file.path("results", "profile_comparison", format(Sys.time(), "%Y%m%d-%H%M%S"))
+comparison_dir <- file.path(script_dir, "results", "profile_comparison", format(Sys.time(), "%Y%m%d-%H%M%S"))
 io_ensure_dir(comparison_dir)
 img_dir <- file.path(comparison_dir, "img")
 io_ensure_dir(img_dir)
@@ -273,6 +289,3 @@ cat("- Visualizations: `img/` directory\n\n", file = report_file, append = TRUE)
 
 cat("Profile comparison completed successfully!\n")
 cat("Results saved to:", comparison_dir, "\n")
-
-# Helper function (define at end to avoid conflicts)
-`%||%` <- function(x, y) if (is.null(x)) y else x

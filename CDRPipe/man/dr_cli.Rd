@@ -2,14 +2,12 @@
 % Please edit documentation in R/cli.R
 \name{dr_cli}
 \alias{dr_cli}
-\title{Legacy CLI alias for older scripts}
+\title{Command-Line Interface}
 \usage{
 dr_cli()
 }
-\value{
-Invisibly returns \code{TRUE} after the selected command completes.
-}
 \description{
-\code{dr_cli()} is kept for backward compatibility. New documentation and scripts
-should use \code{\link[=cdrpipe_cli]{cdrpipe_cli()}} instead.
+Provides the DRPipe CLI entry point for running drug repurposing pipeline and analysis
+from the command line. Supports configuration via YAML files and enables
+batch processing with various output options.
 }

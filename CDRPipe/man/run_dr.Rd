@@ -61,7 +61,7 @@ filtering in place of a fixed \code{logfc_cutoff}}
 \item{make_plots}{Whether to generate plots (default: TRUE)}
 }
 \value{
-Invisibly, the \code{DRP}/\code{CDRP} object
+Invisibly, the \code{DRP} object
 }
 \description{
 Run the drug repurposing pipeline in one call

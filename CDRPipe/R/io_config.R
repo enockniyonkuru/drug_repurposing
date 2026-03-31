@@ -4,21 +4,13 @@
 #' Supports multiple resolution strategies including environment variables
 #' and package-shipped defaults.
 #'
-#' @param profile     A config profile (e.g., "default", "production"). If NULL, uses env var `CDRPIPE_PROFILE` or `"default"`.
+#' @param profile     A config profile (e.g., "default", "production"). If NULL, uses env var `DRPIPE_PROFILE` or `"default"`.
 #' @param config_file Optional path to a YAML config file
 #' @return A named list (config sections like $paths, $params)
 #' @export
 load_dr_config <- function(profile = "default", config_file = NULL) {
-  # Prefer new env vars but keep legacy fallbacks for older local setups.
-  env_cfg <- Sys.getenv("CDRPIPE_CONFIG", unset = NA_character_)
-  if (!isTRUE(nzchar(env_cfg))) {
-    env_cfg <- Sys.getenv("DRPIPE_CONFIG", unset = NA_character_)
-  }
-
-  env_profile <- Sys.getenv("CDRPIPE_PROFILE", unset = NA_character_)
-  if (!isTRUE(nzchar(env_profile))) {
-    env_profile <- Sys.getenv("DRPIPE_PROFILE", unset = NA_character_)
-  }
+  env_cfg <- Sys.getenv("DRPIPE_CONFIG", unset = NA_character_)
+  env_profile <- Sys.getenv("DRPIPE_PROFILE", unset = NA_character_)
 
   if (isTRUE(nzchar(env_profile))) profile <- env_profile
 
@@ -37,8 +29,8 @@ load_dr_config <- function(profile = "default", config_file = NULL) {
   }
 
   if (is.null(candidate) || !file.exists(candidate)) {
-    stop("Could not find a config.yml. Provide `config_file`, set CDRPIPE_CONFIG, ",
-         "or place one at inst/config.yml or scripts/config.yml.")
+    stop("Could not find a config.yml. Provide `config_file`, set DRPIPE_CONFIG, ",
+         "or place one at scripts/config.yml.")
   }
 
   # load via {config}
@@ -51,18 +43,6 @@ load_dr_config <- function(profile = "default", config_file = NULL) {
     }
   }
   cfg
-}
-
-#' Load a CDRPipe config file
-#'
-#' Preferred alias for [load_dr_config()]. Supports both `CDRPIPE_*` and
-#' legacy `DRPIPE_*` environment variables.
-#'
-#' @inheritParams load_dr_config
-#' @return A named list (config sections like `$paths`, `$params`)
-#' @export
-load_cdr_config <- function(profile = "default", config_file = NULL) {
-  load_dr_config(profile = profile, config_file = config_file)
 }
 
 #' Get the `paths` section with optional required-key checks

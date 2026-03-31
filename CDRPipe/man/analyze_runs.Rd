@@ -10,6 +10,7 @@ analyze_runs(
   cmap_meta_path,
   cmap_valid_path,
   cmap_signatures_path,
+  pattern = "_results\\\\.RData$",
   q_thresh = 0.05,
   reversal_only = TRUE,
   verbose = TRUE
@@ -25,6 +26,8 @@ analyze_runs(
 \item{cmap_valid_path}{Path to CMAP valid instances CSV file}
 
 \item{cmap_signatures_path}{Path to RData file containing CMAP signatures}
+
+\item{pattern}{Regex used to select result files within \code{results_dir}}
 
 \item{q_thresh}{Q-value threshold for significance filtering (default: 0.05)}
 

@@ -1,4 +1,4 @@
-#' CDRP: CDRPipe Pipeline Class
+#' DRP: Drug Repurposing Pipeline Class
 #'
 #' R6 class for complete drug repurposing pipeline execution. Orchestrates disease
 #' signature processing, drug comparison, statistical analysis, and result generation
@@ -223,7 +223,7 @@ DRP <- R6::R6Class(
     },
 
     # --------- helpers ---------
-    log = function(...) if (isTRUE(self$verbose)) cat(sprintf("[CDRP] %s\n", sprintf(...))),
+    log = function(...) if (isTRUE(self$verbose)) cat(sprintf("[DRP] %s\n", sprintf(...))),
 
     # --------- steps: processing ---------
     load_cmap = function() {
@@ -672,8 +672,21 @@ DRP <- R6::R6Class(
     score = function() {
       set.seed(self$seed)
       self$log("Scoring (random null + observed)")
-      self$rand_scores <- random_score(self$cmap_signatures, length(self$dz_genes_up), length(self$dz_genes_down), N_PERMUTATIONS = self$n_permutations)
-      self$obs_scores  <- query_score(self$cmap_signatures, self$dz_genes_up, self$dz_genes_down)
+      score_ncores <- cdrpipe_normalize_ncores(self$ncores)
+      self$rand_scores <- random_score(
+        self$cmap_signatures,
+        length(self$dz_genes_up),
+        length(self$dz_genes_down),
+        N_PERMUTATIONS = self$n_permutations,
+        seed = self$seed,
+        ncores = score_ncores
+      )
+      self$obs_scores <- query_score(
+        self$cmap_signatures,
+        self$dz_genes_up,
+        self$dz_genes_down,
+        ncores = score_ncores
+      )
       # Handle NULL logfc_cutoff (when using percentile filtering)
       cutoff_label <- if (is.null(self$logfc_cutoff)) "percentile" else as.character(self$logfc_cutoff)
       self$drugs <- query(
@@ -766,7 +779,8 @@ DRP <- R6::R6Class(
       if (!is.null(self$drugs_valid) && nrow(self$drugs_valid) > 0) {
         tryCatch({
           pl_cmap_score(self$drugs_valid, 
-                        path = file.path(img_dir, "cmap_score.jpg"))
+                        path = img_dir,
+                        save = "cmap_score.jpg")
           self$log("Generated CMap score plot")
         }, error = function(e) {
           self$log("Warning: Could not generate CMap score plot - %s", e$message)
@@ -835,6 +849,10 @@ DRP <- R6::R6Class(
     # --------- new methods for sweep mode ---------
     run_single = function() {
       self$log("Running single-cutoff mode")
+      score_ncores <- cdrpipe_normalize_ncores(self$ncores)
+      if (score_ncores > 1L && .Platform$OS.type != "windows") {
+        self$log("Using %d cores for single-mode scoring", score_ncores)
+      }
       
       # Handle NULL logfc_cutoff (when using percentile filtering)
       cutoff_label <- if (is.null(self$logfc_cutoff)) "percentile" else as.character(self$logfc_cutoff)
@@ -847,10 +865,13 @@ DRP <- R6::R6Class(
         self$rand_scores <- random_score(self$cmap_signatures, 
                                          length(sig_entry$up_ids), 
                                          length(sig_entry$down_ids),
-                                         N_PERMUTATIONS = self$n_permutations)
+                                         N_PERMUTATIONS = self$n_permutations,
+                                         seed = self$seed,
+                                         ncores = score_ncores)
         self$obs_scores <- query_score(self$cmap_signatures, 
                                        sig_entry$up_ids, 
-                                       sig_entry$down_ids)
+                                       sig_entry$down_ids,
+                                       ncores = score_ncores)
         self$drugs <- query(
           self$rand_scores,
           self$obs_scores,
@@ -871,10 +892,13 @@ DRP <- R6::R6Class(
           rand_scores <- random_score(self$cmap_signatures, 
                                       length(sig_entry$up_ids), 
                                       length(sig_entry$down_ids),
-                                      N_PERMUTATIONS = self$n_permutations)
+                                      N_PERMUTATIONS = self$n_permutations,
+                                      seed = self$seed,
+                                      ncores = score_ncores)
           obs_scores <- query_score(self$cmap_signatures, 
                                     sig_entry$up_ids, 
-                                    sig_entry$down_ids)
+                                    sig_entry$down_ids,
+                                    ncores = score_ncores)
           drugs <- query(
             rand_scores,
             obs_scores,
@@ -894,10 +918,13 @@ DRP <- R6::R6Class(
         self$rand_scores <- random_score(self$cmap_signatures, 
                                          length(self$dz_signature_list[[1]]$up_ids), 
                                          length(self$dz_signature_list[[1]]$down_ids),
-                                         N_PERMUTATIONS = self$n_permutations)
+                                         N_PERMUTATIONS = self$n_permutations,
+                                         seed = self$seed,
+                                         ncores = score_ncores)
         self$obs_scores <- query_score(self$cmap_signatures, 
                                        self$dz_signature_list[[1]]$up_ids, 
-                                       self$dz_signature_list[[1]]$down_ids)
+                                       self$dz_signature_list[[1]]$down_ids,
+                                       ncores = score_ncores)
       }
       
       # Annotate and filter after scoring
@@ -1465,7 +1492,8 @@ DRP <- R6::R6Class(
       # Generate CMap score plot for robust hits
       tryCatch({
         pl_cmap_score(consolidated_drugs, 
-                      save = file.path(img_dir, "cmap_score.jpg"))
+                      path = img_dir,
+                      save = "cmap_score.jpg")
         self$log("Generated sweep CMap score plot")
       }, error = function(e) {
         self$log("Warning: Could not generate sweep CMap score plot - %s", e$message)
@@ -1545,7 +1573,8 @@ DRP <- R6::R6Class(
         # Generate CMap score plot
         tryCatch({
           pl_cmap_score(consolidated_drugs, 
-                        save = file.path(img_dir, "cmap_score.jpg"))
+                        path = img_dir,
+                        save = "cmap_score.jpg")
           self$log("Generated sweep CMap score plot")
         }, error = function(e) {
           self$log("Warning: Could not generate sweep CMap score plot - %s", e$message)
@@ -1702,7 +1731,7 @@ DRP <- R6::R6Class(
 #' @param seed             Random seed for reproducibility (default: 123)
 #' @param verbose          Whether to print progress messages (default: TRUE)
 #' @param make_plots       Whether to generate plots (default: TRUE)
-#' @return Invisibly, the `DRP`/`CDRP` object
+#' @return Invisibly, the `DRP` object
 #' @export
 run_dr <- function(
   signatures_rdata,
@@ -1741,52 +1770,4 @@ run_dr <- function(
     seed             = seed,
     verbose          = verbose
   )$run_all(make_plots = make_plots)
-}
-
-#' Run the CDRPipe pipeline in one call
-#'
-#' Preferred alias for [run_dr()]. Kept separate so new scripts can use
-#' `run_cdrpipe()` while older code keeps working unchanged.
-#'
-#' @inheritParams run_dr
-#' @return Invisibly, the `DRP`/`CDRP` object
-#' @export
-run_cdrpipe <- function(
-  signatures_rdata,
-  disease_path,
-  disease_pattern = NULL,
-  cmap_meta_path = NULL,
-  cmap_valid_path = NULL,
-  drug_meta_path = NULL,
-  drug_valid_path = NULL,
-  out_dir = "scripts/results",
-  gene_key = "SYMBOL",
-  logfc_cols_pref = "log2FC",
-  logfc_cutoff = 1,
-  percentile_filtering = NULL,
-  q_thresh = 0.05,
-  reversal_only = TRUE,
-  seed = 123,
-  verbose = TRUE,
-  make_plots = TRUE
-) {
-  run_dr(
-    signatures_rdata = signatures_rdata,
-    disease_path = disease_path,
-    disease_pattern = disease_pattern,
-    cmap_meta_path = cmap_meta_path,
-    cmap_valid_path = cmap_valid_path,
-    drug_meta_path = drug_meta_path,
-    drug_valid_path = drug_valid_path,
-    out_dir = out_dir,
-    gene_key = gene_key,
-    logfc_cols_pref = logfc_cols_pref,
-    logfc_cutoff = logfc_cutoff,
-    percentile_filtering = percentile_filtering,
-    q_thresh = q_thresh,
-    reversal_only = reversal_only,
-    seed = seed,
-    verbose = verbose,
-    make_plots = make_plots
-  )
 }

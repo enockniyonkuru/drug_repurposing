@@ -16,7 +16,7 @@ write_test_config <- function(path) {
   )
 }
 
-test_that("config helpers support explicit files and CDRPIPE env vars", {
+test_that("config helpers support explicit files and DRPIPE env vars", {
   td <- tempfile("cdrpipe-config-")
   dir.create(td)
   on.exit(unlink(td, recursive = TRUE), add = TRUE)
@@ -24,19 +24,19 @@ test_that("config helpers support explicit files and CDRPIPE env vars", {
   cfg_path <- file.path(td, "config.yml")
   write_test_config(cfg_path)
 
-  old_profile <- Sys.getenv("CDRPIPE_PROFILE", unset = NA_character_)
-  old_config <- Sys.getenv("CDRPIPE_CONFIG", unset = NA_character_)
+  old_profile <- Sys.getenv("DRPIPE_PROFILE", unset = NA_character_)
+  old_config <- Sys.getenv("DRPIPE_CONFIG", unset = NA_character_)
   on.exit({
-    do.call(Sys.setenv, list(CDRPIPE_PROFILE = old_profile, CDRPIPE_CONFIG = old_config))
+    do.call(Sys.setenv, list(DRPIPE_PROFILE = old_profile, DRPIPE_CONFIG = old_config))
   }, add = TRUE)
 
-  Sys.setenv(CDRPIPE_CONFIG = cfg_path, CDRPIPE_PROFILE = "analysis")
+  Sys.setenv(DRPIPE_CONFIG = cfg_path, DRPIPE_PROFILE = "analysis")
 
-  cfg <- load_cdr_config()
+  cfg <- load_dr_config()
   expect_match(cfg$paths$signatures, "analysis_signatures\\.RData$")
   expect_equal(cfg$params$q_thresh, 0.10)
 
-  Sys.unsetenv("CDRPIPE_PROFILE")
+  Sys.unsetenv("DRPIPE_PROFILE")
   default_cfg <- load_dr_config(profile = "default", config_file = cfg_path)
   expect_match(default_cfg$paths$signatures, "toy_signatures\\.RData$")
   expect_equal(default_cfg$params$q_thresh, 0.05)
