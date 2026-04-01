@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Standardize Endometriosis Disease Signatures (Laura, Tomiko, CREEDS)
+Standardize Endometriosis Disease Signatures (Microarray, CREEDS, Single-Cell)
 
 Applies quality control filtering to disease signatures from multiple sources:
 - QC1: Mean/median sign agreement

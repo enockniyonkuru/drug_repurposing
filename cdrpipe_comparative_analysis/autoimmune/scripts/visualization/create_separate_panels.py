@@ -23,8 +23,9 @@ plt.rcParams['axes.titlesize'] = 14
 plt.rcParams['axes.labelsize'] = 12
 
 # Paths
-DATA_DIR = Path(__file__).parent
-OUTPUT_DIR = DATA_DIR / "separate_panels"
+REPO_ROOT = Path(__file__).resolve().parents[3]
+DATA_DIR = REPO_ROOT / "autoimmune" / "analysis" / "recovery_summary"
+OUTPUT_DIR = REPO_ROOT / "autoimmune" / "figures" / "separate_panels"
 OUTPUT_DIR.mkdir(exist_ok=True)
 
 def load_data():

@@ -8,7 +8,7 @@ library(ggplot2)
 sig_stats <- read.csv('endometriosis/analysis/threshold_analysis/signature_statistics.csv')
 
 # Read one signature file to understand gene-level filtering
-example_sig <- read.csv('endometriosis/data/standardized_endometriosis_signatures/tomiko_dvc_esesamples_signature.csv')
+example_sig <- read.csv('endometriosis/data/standardized_microarray/dvc_esesamples_signature.csv')
 
 cat('\n============================================================\n')
 cat('UNDERSTANDING TWO-STAGE QC FILTERING\n')
@@ -21,7 +21,7 @@ cat('  1. Statistical significance: adj.p-value < 0.05\n')
 cat('  2. Directional consistency: sign(mean) = sign(median)\n')
 cat('  3. Effect size threshold: |median_logfc| >= 0.02\n\n')
 
-cat('Example from tomiko_dvc_esesamples:\n')
+cat('Example from dvc_esesamples:\n')
 cat(sprintf('  - Total genes after QC: %d\n', nrow(example_sig)))
 cat(sprintf('  - Min gene |logFC|: %.4f\n', min(abs(example_sig$logfc_dz))))
 cat(sprintf('  - Median gene |logFC|: %.4f\n', median(abs(example_sig$logfc_dz))))

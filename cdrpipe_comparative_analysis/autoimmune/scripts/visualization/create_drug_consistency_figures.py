@@ -15,8 +15,9 @@ import warnings
 warnings.filterwarnings('ignore')
 
 # Paths
-OUTPUT_DIR = Path(__file__).parent / "drug_details"
-FIGURES_DIR = OUTPUT_DIR / "figures"
+REPO_ROOT = Path(__file__).resolve().parents[3]
+OUTPUT_DIR = REPO_ROOT / "autoimmune" / "analysis" / "per_disease_recovery"
+FIGURES_DIR = REPO_ROOT / "autoimmune" / "figures"
 FIGURES_DIR.mkdir(exist_ok=True, parents=True)
 
 # Disease files

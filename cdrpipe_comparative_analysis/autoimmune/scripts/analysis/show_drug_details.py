@@ -15,10 +15,10 @@ warnings.filterwarnings('ignore')
 # Paths
 BASE_DIR = Path(__file__).resolve().parents[3]
 # Use the all-diseases CREEDS manual results, which have hits with q<0.50
-RESULTS_DIR = BASE_DIR / "creeds_diseases" / "results" / "creeds_manual_standardized_all_diseases_results"
-KNOWN_DRUGS_FILE = BASE_DIR / "data" / "known_drugs" / "known_drug_info_data.parquet"
-OUTPUT_DIR = Path(__file__).parent / "drug_details"
-OUTPUT_DIR.mkdir(exist_ok=True)
+RESULTS_DIR = BASE_DIR / "creeds" / "results" / "manual_standardized_all_diseases_results"
+KNOWN_DRUGS_FILE = BASE_DIR / "drug_evidence" / "data" / "open_targets" / "known_drug_info_data.parquet"
+OUTPUT_DIR = BASE_DIR / "autoimmune" / "analysis" / "per_disease_recovery"
+OUTPUT_DIR.mkdir(exist_ok=True, parents=True)
 
 # Diseases of interest (matching directory names in results)
 # All 20 autoimmune diseases from Table1_Disease_Summary.csv

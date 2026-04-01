@@ -1,6 +1,0 @@
-experiment,CMAP_hits,TAHOE_hits,Both_CMAP_TAHOE,Total_unique
-tomiko_dvc_unstratified,989,47,0,1036
-tomiko_dvc_msesamples,1012,53,0,1065
-tomiko_dvc_pesamples,1096,48,0,1144
-tomiko_stages_i_ii_vs_control,1074,0,0,1074
-tomiko_stages_iii_iv_vs_control,962,51,0,1013

@@ -43,12 +43,12 @@ get_repo_root <- function() {
   for (start in unique(candidates)) {
     cur <- normalizePath(start, winslash = "/", mustWork = FALSE)
     repeat {
-      if (dir.exists(file.path(cur, "scripts")) &&
+      if (dir.exists(file.path(cur, "shared")) &&
           dir.exists(file.path(cur, "creeds"))) {
         return(cur)
       }
       nested <- file.path(cur, "cdrpipe_comparative_analysis")
-      if (dir.exists(file.path(nested, "scripts")) &&
+      if (dir.exists(file.path(nested, "shared")) &&
           dir.exists(file.path(nested, "creeds"))) {
         return(normalizePath(nested, winslash = "/", mustWork = FALSE))
       }

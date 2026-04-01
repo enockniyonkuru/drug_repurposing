@@ -1,9 +1,0 @@
-Category,Drug Count,Percentage
-Only NEW CMAP,852,69.8%
-Only NEW TAHOE,66,5.4%
-Only OLD,0,0.0%
-CMAP+TAHOE (not OLD),3,0.2%
-CMAP+OLD (not TAHOE),295,24.2%
-TAHOE+OLD (not CMAP),0,0.0%
-All Three,4,0.3%
-TOTAL UNIQUE,1220,100%

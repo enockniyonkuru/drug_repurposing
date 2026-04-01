@@ -1,26 +1,26 @@
 #!/usr/bin/env Rscript
-# Calculate exact genes retained for 6 Tomiko signatures at threshold: 80
+# Calculate exact genes retained for 6 microarray signatures at threshold: 80
 
 library(dplyr)
 
 # Disease signature directory
-disease_dir <- "endometriosis/data/tomiko_v3_signatures"
+disease_dir <- "endometriosis/data/microarray_signatures"
 
-# Tomiko signatures
-tomiko_files <- c(
-  "tomiko_dvc_esesamples_signature.csv",
-  "tomiko_dvc_msesamples_signature.csv",
-  "tomiko_dvc_pesamples_signature.csv",
-  "tomiko_dvc_unstratified_signature.csv",
-  "tomiko_stages_i_ii_vs_control_signature.csv",
-  "tomiko_stages_iii_iv_vs_control_signature.csv"
+# Microarray signatures
+microarray_files <- c(
+  "dvc_esesamples_signature.csv",
+  "dvc_msesamples_signature.csv",
+  "dvc_pesamples_signature.csv",
+  "dvc_unstratified_signature.csv",
+  "stages_i_ii_vs_control_signature.csv",
+  "stages_iii_iv_vs_control_signature.csv"
 )
 
 cat("\n=== GENES RETAINED AT THRESHOLD: 85 (TOP 15%) ===\n\n")
 
 results <- data.frame()
 
-for (file in tomiko_files) {
+for (file in microarray_files) {
   filepath <- file.path(disease_dir, file)
   
   if (!file.exists(filepath)) {
@@ -67,6 +67,6 @@ cat(sprintf("Median retention per signature: %.0f genes\n", median(results$retai
 cat("\n")
 
 # Save summary
-out_file <- "endometriosis/data/tomiko_signature_processing_workspace/genes_retained_threshold85.csv"
+out_file <- "endometriosis/dump/genes_retained_threshold85.csv"
 write.csv(results, out_file, row.names = FALSE)
 cat(sprintf("Summary saved to: %s\n", out_file))

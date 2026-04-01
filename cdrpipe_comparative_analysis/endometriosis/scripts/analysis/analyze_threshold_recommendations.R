@@ -9,7 +9,7 @@ suppressPackageStartupMessages({
 })
 
 # Configuration
-sig_dir <- "endometriosis/data/standardized_endometriosis_signatures"
+sig_dir <- "endometriosis/data/standardized_microarray"
 output_dir <- "endometriosis/analysis/threshold_analysis"
 dir.create(output_dir, showWarnings = FALSE)
 
@@ -68,8 +68,8 @@ signature_stats <- signature_stats %>%
   mutate(
     source = case_when(
       grepl("^creeds", signature) ~ "CREEDS",
-      grepl("^laura", signature) ~ "Laura",
-      grepl("^tomiko", signature) ~ "Tomiko",
+      grepl("^single_cell", signature) ~ "Single-Cell",
+      grepl("^dvc_|^stages_", signature) ~ "Microarray",
       TRUE ~ "Other"
     ),
     category = case_when(
@@ -170,8 +170,8 @@ cat("\n\n=== KEY FINDINGS ===\n\n")
 
 cat("1. Effect Size Variation by Source:\n")
 cat("   - CREEDS: Very small effect sizes (mean |logFC| ~0.02-0.04)\n")
-cat("   - Laura: Variable effect sizes (mean |logFC| ~0.14-0.88)\n")
-cat("   - Tomiko: Large effect sizes (mean |logFC| ~1.22)\n\n")
+cat("   - Single-Cell: Variable effect sizes (mean |logFC| ~0.14-0.88)\n")
+cat("   - Microarray: Large effect sizes (mean |logFC| ~1.22)\n\n")
 
 cat("2. Issues with Fixed logFC Cutoffs:\n")
 # Calculate impact
@@ -179,13 +179,13 @@ creeds_loss <- signature_stats %>%
   filter(source == "CREEDS") %>% 
   summarise(avg_loss_1.0 = mean(100 - pct_genes_gt_1.0)) %>% 
   pull(avg_loss_1.0)
-tomiko_retain <- signature_stats %>% 
-  filter(source == "Tomiko") %>% 
+microarray_retain <- signature_stats %>% 
+  filter(source == "Microarray") %>% 
   summarise(avg_retain_1.0 = mean(pct_genes_gt_1.0)) %>% 
   pull(avg_retain_1.0)
 
-cat(sprintf("   - At logFC > 1.0: CREEDS loses %.1f%% of genes, Tomiko retains %.1f%%\n", 
-            creeds_loss, tomiko_retain))
+cat(sprintf("   - At logFC > 1.0: CREEDS loses %.1f%% of genes, Microarray retains %.1f%%\n", 
+            creeds_loss, microarray_retain))
 cat("   - This creates severe bias favoring high-effect datasets\n\n")
 
 cat("3. Percentile-based Advantages:\n")
@@ -241,7 +241,7 @@ reasonable_cutoff <- signature_stats %>%
 cat(sprintf("Setting: logfc_cutoff: %.2f\n\n", reasonable_cutoff))
 cat("WARNING: This approach will:\n")
 cat("- Severely reduce CREEDS contributions (low effect sizes)\n")
-cat("- Bias results toward Tomiko signatures (high effect sizes)\n")
+cat("- Bias results toward Microarray signatures (high effect sizes)\n")
 cat("- Not recommended unless you have specific biological justification\n\n")
 
 # Create visualizations
@@ -358,7 +358,7 @@ cat("  - percentile_comparison.png: Percentile-based filtering comparison\n\n")
 
 cat("=== SUMMARY ===\n")
 cat(sprintf("Recommended configuration for %s:\n\n", 
-            "6_tomiko_endo.yml"))
+            "microarray_config.yml"))
 cat("analysis:\n")
 cat("  qval_threshold: 0.05  # Statistical significance\n")
 cat("  percentile_filtering:\n")

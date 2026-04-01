@@ -1,0 +1,123 @@
+# ENDOMETRIOSIS STRICT FILTERING Configuration
+# Custom parameters for rigorous analysis with specific filtering criteria
+# Filters:
+#   - Statistical significance: adj.P.Val < 0.05
+#   - Biological significance: |log2FoldChange| > 1.1
+#   - Random seed: 2009 (reproducible randomization)
+#   - Permutations: 1000 (for exploratory analysis)
+#   - Q-value threshold: q < 0.0001 (very stringent)
+
+# ============================================================================
+# DISEASE CONFIGURATION
+# ============================================================================
+disease:
+  source: "Endometriosis Microarray Signatures — Strict Filter"
+  directory: "endometriosis/data/microarray_strict_filtered"
+
+# ============================================================================
+# CMAP DRUG SIGNATURES CONFIGURATION
+# ============================================================================
+cmap:
+  signatures: "data/drug_signatures/cmap/cmap_signatures.RData"
+  metadata: "data/drug_signatures/cmap/cmap_drug_experiments_new.csv"
+  valid_instances: "data/drug_signatures/cmap/cmap_valid_instances_old.csv"
+
+# ============================================================================
+# TAHOE DRUG SIGNATURES CONFIGURATION
+# ============================================================================
+tahoe:
+  signatures: "data/drug_signatures/tahoe/tahoe_signatures.RData"
+  metadata: "data/drug_signatures/tahoe/tahoe_drug_experiments_new.csv"
+
+# ============================================================================
+# GENE CONVERSION AND ANALYSIS
+# ============================================================================
+analysis:
+  gene_table: "data/gene_id_conversion_table.tsv"
+  
+  # STATISTICAL SIGNIFICANCE FILTER
+  # P-value threshold for disease genes (adj.P.Val < 0.05)
+  pvalue_threshold: 0.05
+  
+  # BIOLOGICAL SIGNIFICANCE FILTER
+  # Log2 fold-change cutoff (|log2FC| > 1.1)
+  # Genes with absolute fold-change > 1.1 are considered biologically significant
+  logfc_cutoff: 1.1
+  
+  # PERMUTATION TEST PARAMETERS
+  # Random seed for reproducibility
+  # seed = 2009 ensures consistent random gene sampling across runs
+  # Different seeds will generate different null distributions
+  random_seed: 2009
+  
+  # Number of permutations for null distribution
+  # Lower value (1000) for faster exploratory analysis
+  # Note: This is less stringent than 100,000; use for screening only
+  n_permutations: 1000
+  
+  # DRUG SIGNIFICANCE THRESHOLD
+  # Q-value threshold for identifying significant drug hits
+  # q < 0.0001 is very stringent - only the strongest associations
+  # (q-value already includes FDR correction)
+  qval_threshold: 0.0001
+  
+  # REVERSAL DIRECTION FILTER
+  # Keep drugs with reversal score < 0
+  # This ensures the drug OPPOSES the disease transcriptional state
+  reversal_score_threshold: 0  # Keep scores < 0 (negative reversal)
+  
+  # Column selection options:
+  # - Use "all" to use all logfc columns with the specified prefix
+  # - Use specific column names to use only selected columns
+  logfc_column_selection: "all"
+  use_averaging: true  # Set to false to use columns individually without averaging
+  
+  # Gene filtering options (DISABLED - using strict filters above)
+  percentile_filtering:
+    enabled: false
+    threshold: null
+
+# ============================================================================
+# OUTPUT CONFIGURATION
+# ============================================================================
+output:
+  root_directory: "endometriosis/results/microarray_strict_results"
+  report_directory: "endometriosis/analysis"
+  report_prefix: "microarray_endo_strict"
+
+# ============================================================================
+# RUNTIME OPTIONS
+# ============================================================================
+runtime:
+  skip_existing_results: true
+  verbose: true
+  # Disease range options (1-indexed):
+  # - Leave empty or set to 1 to start from first disease
+  # - Set to specific number (e.g., 100) to start from disease 100
+  start_from_disease: 1  # Start processing from this disease number
+  end_at_disease: null   # End at this disease number (null = process all remaining)
+
+# ============================================================================
+# PARAMETER SUMMARY
+# ============================================================================
+# This configuration applies the following filters in sequence:
+#
+# 1. STATISTICAL SIGNIFICANCE: adj.P.Val < 0.05
+#    Keeps genes with statistically significant changes
+#
+# 2. BIOLOGICAL SIGNIFICANCE: |log2FoldChange| > 1.1
+#    Keeps genes with substantial fold-changes (more than 2.14x change)
+#
+# 3. DATABASE FILTERING: Keep genes in CMAP/TAHOE database
+#    Only disease genes present in drug signatures are used
+#
+# 4. SEED: 2009 (reproducible randomization)
+#    Same seed = same random gene sets = identical results
+#
+# 5. PERMUTATIONS: 1000 (exploratory-level accuracy)
+#    Minimum p-value = 1/1001 ≈ 0.001
+#    Note: 100,000 permutations recommended for final publication
+#
+# 6. Q-VALUE THRESHOLD: q < 0.0001 (highly stringent)
+#    Only the most significant drug hits pass this filter
+#    This is 100x stricter than typical q < 0.05

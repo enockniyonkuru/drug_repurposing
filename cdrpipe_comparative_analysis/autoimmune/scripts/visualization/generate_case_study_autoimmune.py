@@ -8,15 +8,15 @@ Creates all figures for the autoimmune case study:
   - Statistical comparison box/strip
   - Disease-specific Phase 4 recovery heatmap
 
-Outputs (to autoimmune/figures/case_study_autoimmune/):
+Outputs (to autoimmune/figures/):
   - recovery_rate_distribution_boxplot.png
   - drug_hits_vs_recovery_rate_scatter.png
   - cmap_vs_tahoe_recovery_statistical_test.png
   - phase4_recovery_heatmap.png
 
 Data sources:
-  - autoimmune/data/figure_inputs/case_study_autoimmune/20_autoimmune_results_1/20_autoimmune.xlsx
-  - autoimmune/data/figure_inputs/case_study_autoimmune/20_autoimmune_results_1/drug_details/*.csv
+  - autoimmune/analysis/recovery_summary/20_autoimmune.xlsx
+  - autoimmune/analysis/per_disease_recovery/*.csv
 """
 
 import pandas as pd
@@ -36,10 +36,10 @@ warnings.filterwarnings('ignore')
 # Paths
 # ---------------------------------------------------------------------------
 REPO_ROOT = Path(__file__).resolve().parents[3]
-DATA_ROOT = REPO_ROOT / "autoimmune" / "data" / "figure_inputs" / "case_study_autoimmune" / "20_autoimmune_results_1"
+DATA_ROOT = REPO_ROOT / "autoimmune" / "analysis" / "recovery_summary"
 DATA_FILE = DATA_ROOT / "20_autoimmune.xlsx"
-DRUG_DETAIL_DIR = DATA_ROOT / "drug_details"
-OUTPUT_DIR = REPO_ROOT / "autoimmune" / "figures" / "case_study_autoimmune"
+DRUG_DETAIL_DIR = REPO_ROOT / "autoimmune" / "analysis" / "per_disease_recovery"
+OUTPUT_DIR = REPO_ROOT / "autoimmune" / "figures"
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
 if not DATA_FILE.exists():

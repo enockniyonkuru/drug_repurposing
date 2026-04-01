@@ -127,7 +127,7 @@ def process_all_diseases(input_folder: Path, output_folder: Path):
 
 
 if __name__ == "__main__":
-    input_folder = Path("endometriosis/data/sirota_lab_signatures_raw")
-    output_folder = Path("endometriosis/figures/sirota_lab_signature_plots")
+    input_folder = Path("endometriosis/data/single_cell_signatures_raw")
+    output_folder = Path("endometriosis/figures/single_cell_signature_plots")
 
     process_all_diseases(input_folder, output_folder)

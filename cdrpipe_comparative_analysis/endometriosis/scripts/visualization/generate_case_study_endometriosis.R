@@ -5,16 +5,15 @@
 # Creates two heatmaps comparing drug reversal scores across endometriosis
 # sub-signatures for CMap and Tahoe platforms.
 #
-# Outputs (to endometriosis/figures/case_study_endometriosis/):
+# Outputs (to endometriosis/figures/):
 #   - cmap_top50_reversal_scores_heatmap.png
 #   - tahoe_top50_reversal_scores_heatmap.png
 #
-# Provenance note:
-#   - The original script expected per-signature result folders under
-#     study-specific endometriosis result folders that are not preserved here.
-#   - Those direct result folders are not preserved in this curated tree.
-#   - Surviving manuscript provenance files are documented in:
-#     endometriosis/results/case_study_heatmap_provenance/README.md
+# Data sources:
+#   - CMap: reads from endometriosis/results/microarray/cmap_hit_tables/
+#     (hit tables with name + cmap_score columns)
+#   - Tahoe: reads from endometriosis/results/microarray/tahoe_hit_tables/
+#     (must be regenerated — see README for instructions)
 # ============================================================================
 
 library(gplots)
@@ -38,12 +37,12 @@ get_repo_root <- function() {
   for (start in unique(candidates)) {
     cur <- normalizePath(start, winslash = "/", mustWork = FALSE)
     repeat {
-      if (dir.exists(file.path(cur, "scripts")) &&
+      if (dir.exists(file.path(cur, "shared")) &&
           dir.exists(file.path(cur, "creeds"))) {
         return(cur)
       }
       nested <- file.path(cur, "cdrpipe_comparative_analysis")
-      if (dir.exists(file.path(nested, "scripts")) &&
+      if (dir.exists(file.path(nested, "shared")) &&
           dir.exists(file.path(nested, "creeds"))) {
         return(normalizePath(nested, winslash = "/", mustWork = FALSE))
       }
@@ -56,8 +55,12 @@ get_repo_root <- function() {
   stop("Could not locate cdrpipe_comparative_analysis root", call. = FALSE)
 }
 repo_root <- get_repo_root()
-output_dir <- file.path(repo_root, "endometriosis", "figures", "case_study_endometriosis")
+output_dir <- file.path(repo_root, "endometriosis", "figures")
 dir.create(output_dir, showWarnings = FALSE, recursive = TRUE)
+
+# Source data directories
+cmap_source <- file.path(repo_root, "endometriosis", "results", "microarray", "cmap_hit_tables")
+tahoe_source <- file.path(repo_root, "endometriosis", "results", "microarray", "tahoe_hit_tables")
 
 # Rescale helper
 rescale <- function(x) {
@@ -65,31 +68,36 @@ rescale <- function(x) {
   -(x - max(x)) / (max(x) - min(x)) * 100
 }
 
+# Color palette (shared by both heatmaps)
+my_palette <- colorRampPalette(c("#EEEEEE", "darkorchid3", "#111111"))(n = 299)
+
+# Overlap drugs to highlight
+overlap_drugs <- c("irinotecan", "terfenadine")
+
+# Custom key-tick function
+key_tick_fn <- function() {
+  cex  <- par("cex") * par("cex.axis")
+  line <- 0; col <- par("col.axis"); font <- par("font.axis")
+  mtext("No Reversal\n Effect", side = 1, at = 0.5, adj = 0.5, line = line, cex = cex, col = col, font = font, padj = 1)
+  mtext("Maximum Reversal\n Effect", side = 3, at = 0.5, adj = 0.5, line = line, cex = cex, col = col, font = font, padj = -0.1)
+  return(list(labels = FALSE, tick = FALSE))
+}
+
 # ===========================================================================
 # CMAP TOP 50
 # ===========================================================================
 cat("\n=== Creating CMap Top 50 Heatmap ===\n")
 
-cmap_base <- file.path(repo_root, "endometriosis", "results", "endo_v4_cmap")
-tahoe_base <- file.path(repo_root, "endometriosis", "results", "endo_v5_tahoe")
-
-if (!dir.exists(cmap_base) || !dir.exists(tahoe_base)) {
-  stop(
-    paste(
-      "Original endometriosis per-signature result folders are not present in this curated tree.",
-      "See endometriosis/results/case_study_heatmap_provenance/README.md for the surviving provenance files.",
-      sep = " "
-    ),
-    call. = FALSE
-  )
+if (!dir.exists(cmap_source)) {
+  stop("CMap source data not found at: ", cmap_source, call. = FALSE)
 }
 
-ESE_cmap          <- read.csv(file.path(cmap_base, "endo_v4_ESE",          "endomentriosis_ese_disease_signature_hits_logFC_1.1_q<0.00.csv"))
-IIInIV_cmap       <- read.csv(file.path(cmap_base, "endo_v4_IIInIV",      "endomentriosis_iiiniv_disease_signature_hits_logFC_1.1_q<0.00.csv"))
-InII_cmap         <- read.csv(file.path(cmap_base, "endo_v4_InII",        "endomentriosis_inii_disease_signature_hits_logFC_1.1_q<0.00.csv"))
-MSE_cmap          <- read.csv(file.path(cmap_base, "endo_v4_MSE",         "endomentriosis_mse_disease_signature_hits_logFC_1.1_q<0.00.csv"))
-PE_cmap           <- read.csv(file.path(cmap_base, "endo_v4_PE",          "endomentriosis_pe_disease_signature_hits_logFC_1.1_q<0.00.csv"))
-unstratified_cmap <- read.csv(file.path(cmap_base, "endo_v4_Unstratified","endomentriosis_unstratified_disease_signature.csv_hits_logFC_1.1_q<0.00.csv"))
+ESE_cmap          <- read.csv(file.path(cmap_source, "cmap_hits_ESE.csv"))
+IIInIV_cmap       <- read.csv(file.path(cmap_source, "cmap_hits_IIInIV.csv"))
+InII_cmap         <- read.csv(file.path(cmap_source, "cmap_hits_InII.csv"))
+MSE_cmap          <- read.csv(file.path(cmap_source, "cmap_hits_MSE.csv"))
+PE_cmap           <- read.csv(file.path(cmap_source, "cmap_hits_PE.csv"))
+unstratified_cmap <- read.csv(file.path(cmap_source, "cmap_hits_unstratified.csv"))
 
 # Select columns
 unstratified_cmap <- dplyr::select(unstratified_cmap, name, cmap_score)
@@ -169,12 +177,31 @@ cat("  Saved cmap_top50_reversal_scores_heatmap.png\n")
 # ===========================================================================
 cat("\n=== Creating Tahoe Top 50 Heatmap ===\n")
 
-ESE_tahoe          <- read.csv(file.path(tahoe_base, "endo_tahoe_ESE",          "endomentriosis_ese_disease_signature_hits_logFC_1.1_q<0.00.csv"))
-IIInIV_tahoe       <- read.csv(file.path(tahoe_base, "endo_tahoe_IIInIV",      "endomentriosis_iiiniv_disease_signature_hits_logFC_1.1_q<0.00.csv"))
-InII_tahoe         <- read.csv(file.path(tahoe_base, "endo_tahoe_InII",        "endomentriosis_inii_disease_signature_hits_logFC_1.1_q<0.00.csv"))
-MSE_tahoe          <- read.csv(file.path(tahoe_base, "endo_tahoe_MSE",         "endomentriosis_mse_disease_signature_hits_logFC_1.1_q<0.00.csv"))
-PE_tahoe           <- read.csv(file.path(tahoe_base, "endo_tahoe_PE",          "endomentriosis_pe_disease_signature_hits_logFC_1.1_q<0.00.csv"))
-unstratified_tahoe <- read.csv(file.path(tahoe_base, "endo_tahoe_Unstratified","endomentriosis_unstratified_disease_signature.csv_hits_logFC_1.1_q<0.00.csv"))
+tahoe_files <- file.path(tahoe_source, c(
+  "tahoe_hits_ESE.csv", "tahoe_hits_IIInIV.csv", "tahoe_hits_InII.csv",
+  "tahoe_hits_MSE.csv", "tahoe_hits_PE.csv", "tahoe_hits_unstratified.csv"
+))
+
+if (!all(file.exists(tahoe_files))) {
+  cat(paste0(
+    "  SKIPPED: Tahoe hit tables not found in:\n",
+    "    ", tahoe_source, "/\n\n",
+    "  To regenerate, run CDRPipe with the strict-filter config (TAHOE only):\n",
+    "    Rscript shared/scripts/execute/run_batch_from_config.R \\\n",
+    "      --config_file endometriosis/scripts/execute/microarray_strict_config.yml\n\n",
+    "  Then copy the per-signature hit CSVs into:\n",
+    "    endometriosis/results/microarray/tahoe_hit_tables/\n",
+    "  using the naming convention: tahoe_hits_{ESE,IIInIV,InII,MSE,PE,unstratified}.csv\n",
+    "  Each file needs at minimum 'name' and 'cmap_score' columns.\n"
+  ))
+} else {
+
+ESE_tahoe          <- read.csv(file.path(tahoe_source, "tahoe_hits_ESE.csv"))
+IIInIV_tahoe       <- read.csv(file.path(tahoe_source, "tahoe_hits_IIInIV.csv"))
+InII_tahoe         <- read.csv(file.path(tahoe_source, "tahoe_hits_InII.csv"))
+MSE_tahoe          <- read.csv(file.path(tahoe_source, "tahoe_hits_MSE.csv"))
+PE_tahoe           <- read.csv(file.path(tahoe_source, "tahoe_hits_PE.csv"))
+unstratified_tahoe <- read.csv(file.path(tahoe_source, "tahoe_hits_unstratified.csv"))
 
 unstratified_tahoe <- dplyr::select(unstratified_tahoe, name, cmap_score)
 InII_tahoe         <- dplyr::select(InII_tahoe,         name, cmap_score)
@@ -231,4 +258,6 @@ mtext(paste0("Tahoe-100M: Reversal Scores for Top ", n_drugs, " Drug Candidates\
 dev.off()
 cat("  Saved tahoe_top50_reversal_scores_heatmap.png\n")
 
-cat("\nAll endometriosis top-50 heatmaps generated!\n")
+} # end tahoe else block
+
+cat("\nDone! Check endometriosis/figures/ for output.\n")
