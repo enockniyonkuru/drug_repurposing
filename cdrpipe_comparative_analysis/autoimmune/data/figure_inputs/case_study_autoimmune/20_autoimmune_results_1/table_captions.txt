@@ -1,0 +1,54 @@
+TABLE CAPTIONS FOR AUTOIMMUNE DISEASE DRUG REPURPOSING STUDY
+==============================================================
+
+TABLE 1: Disease-Level Summary of Drug Repurposing Performance
+--------------------------------------------------------------
+Caption: Comparison of CMAP and TAHOE drug repurposing methods across 20 autoimmune diseases. For each disease, the table presents the total number of known therapeutic drugs in the reference database, the number of known drugs available in each method's database, the total drug hits predicted, the number of known drugs successfully recovered, and the recovery rate (recovered/available × 100). Diseases are sorted by TAHOE recovery rate in descending order. Total Candidates represents the combined unique drug predictions from both methods. Overall Recovery Rate is calculated as total recovered drugs divided by total known drugs in the database.
+
+Abbreviations: DB, database; CMAP, Connectivity Map; TAHOE, [full name]
+
+
+TABLE 2: Summary Statistics Comparing CMAP and TAHOE Performance
+-----------------------------------------------------------------
+Caption: Aggregate performance metrics for CMAP and TAHOE methods across all 20 autoimmune diseases. Mean and median recovery rates demonstrate TAHOE's significantly superior performance (Wilcoxon signed-rank test, p < 0.001). Cohen's d = 2.35 indicates a large effect size favoring TAHOE. TAHOE achieved 100% recovery in 9 diseases compared to 0 for CMAP, while CMAP showed 0% recovery in 7 diseases compared to only 1 for TAHOE.
+
+*Wilcoxon signed-rank test for paired samples
+
+
+TABLE 3: Complementarity Analysis of Drug Recovery
+--------------------------------------------------
+Caption: Analysis of unique and overlapping drug recoveries between CMAP and TAHOE methods. Of 170 total known drugs recovered across all diseases, only 6 (3.5%) were identified by both methods, indicating high complementarity. TAHOE uniquely recovered 110 drugs (64.7%) while CMAP uniquely contributed 54 drugs (31.8%), demonstrating that both methods capture distinct drug-disease relationships. Drug Hits column shows the total number of drug predictions (including novel candidates) in each category.
+
+
+==============================================================
+RECOMMENDED TABLE PLACEMENT IN MANUSCRIPT
+==============================================================
+
+Main Text:
+- Table 2 (Summary Statistics) - Best for Results section to highlight key findings
+- Table 3 (Complementarity) - Supports the "methods are complementary" argument
+
+Supplementary Materials:
+- Table 1 (Full Disease Summary) - Comprehensive data for detailed reference
+
+Alternative: If journal allows, Table 1 could be the main table with Tables 2 & 3 as supplementary, depending on your narrative focus.
+
+
+==============================================================
+LATEX/WORD FORMATTING NOTES
+==============================================================
+
+For LaTeX users:
+- Use \begin{table*} for wide tables spanning two columns
+- Consider \small or \footnotesize for Table 1 due to many columns
+- Use booktabs package for professional formatting (\toprule, \midrule, \bottomrule)
+
+For Word users:
+- Use "AutoFit to Contents" for column widths
+- Apply table style "Grid Table 4 - Accent 1" or similar
+- Ensure 10-11pt font size for readability
+
+Column alignment recommendations:
+- Disease names: left-aligned
+- Numeric values: right-aligned or decimal-aligned
+- Percentages: right-aligned

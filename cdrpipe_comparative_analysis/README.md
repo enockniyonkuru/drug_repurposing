@@ -1,74 +1,80 @@
-# CDRPipe Comparative Analysis
+# cdrpipe comparative analysis
 
-Curated comparative drug-repurposing workflows for benchmarking CMAP and TAHOE predictions across CREEDS diseases, endometriosis sub-signatures, and autoimmune case studies.
+This directory is organized so each study can be followed from inputs to scripts to results, analysis, and final figures.
 
-This cleaned copy keeps the reusable scripts, curated disease-signature inputs, summary analysis tables, and manuscript-facing assets. Large local runtime artifacts have been removed, including:
-
-- per-disease `results/` directories
-- the bundled Python `venv/`
-- heavyweight drug-signature matrices and intermediate parquet checkpoints
-- one-off debug, repair, and test scripts
-
-`Exp8` outputs were intentionally preserved, including [Exp8_Analysis.xlsx](./creeds_diseases/analysis/Exp8_Analysis.xlsx) and the companion files in `creeds_diseases/analysis/creed_manual_analysis_exp_8/`.
-
-## What This Directory Is For
-
-Use this directory for:
-
-- preprocessing disease and drug-signature inputs
-- running comparative batch analyses from YAML configs
-- reproducing curated downstream analyses
-- regenerating publication support outputs
-
-This directory is not intended to ship all raw binary inputs or every exploratory run artifact.
-
-## Current Structure
+## Top-level layout
 
 ```text
 cdrpipe_comparative_analysis/
+├── autoimmune/
+│   ├── analysis/
+│   ├── data/
+│   ├── figures/
+│   ├── results/
+│   └── scripts/
+├── creeds/
+│   ├── analysis/
+│   ├── data/
+│   ├── figures/
+│   ├── results/
+│   └── scripts/
+├── endometriosis/
+│   ├── analysis/
+│   ├── data/
+│   ├── figures/
+│   ├── results/
+│   └── scripts/
 ├── data/
-│   ├── drug_signatures/          # Metadata kept; large signature matrices excluded
-│   ├── known_drugs/              # Compact validation references
+│   ├── drug_evidence/
+│   ├── drug_signatures/
 │   ├── gene_id_conversion_table.tsv
 │   └── shared_drugs_cmap_tahoe.csv
-├── scripts/
-│   ├── preprocessing/
-│   ├── execution/
-│   ├── analysis/
-│   ├── singularity/
-│   └── visualization/
-├── creeds_diseases/
-│   ├── disease_signatures/
-│   └── analysis/
-├── case_study_endomentriosis/
-│   ├── disease_signatures/
-│   ├── endo_disease_signatures/
-│   └── analysis/
-├── case_study_autoimmune_diseases/
-│   └── analysis/
-└── visuals/                     # Preserved as-is
+├── figures/
+│   └── platform_comparison/
+└── scripts/
+    ├── analysis/
+    ├── execute/
+    ├── extraction/
+    ├── processing/
+    └── visualization/
 ```
 
-## Quick Start
+## What lives where
 
-1. Install the core package from the repository root:
+- `autoimmune/`
+  Autoimmune case-study inputs, configs, analysis tables, and figures.
+- `creeds/`
+  The CREEDS all-diseases workflow, including raw exports, standardized signatures, batch outputs, cross-disease summaries, and CREEDS-specific figures.
+- `endometriosis/`
+  Endometriosis-specific signatures, execution configs, analysis outputs, and figures.
+- `data/`
+  Shared inputs used by more than one study. This includes platform signatures,
+  Open Targets evidence tables, and gene conversion resources.
+- `scripts/`
+  Shared extraction, processing, execution, analysis, and visualization scripts that are not owned by a single study.
+- `figures/`
+  Shared figure outputs. At the moment this folder is used for the cross-study platform comparison figures.
 
-   ```r
-   devtools::install("CDRPipe")
-   ```
+## Recommended starting points
 
-2. Restore the required large signature matrices into `data/drug_signatures/` using the filenames documented in [data/drug_signatures/README.md](data/drug_signatures/README.md).
+- CREEDS workflow:
+  [creeds/README.md](/Users/enockniyonkuru/Desktop/drug_repurposing/cdrpipe_comparative_analysis/creeds/README.md)
+- Shared execution entrypoints:
+  [scripts/execute/README_BATCH_CONFIG.md](/Users/enockniyonkuru/Desktop/drug_repurposing/cdrpipe_comparative_analysis/scripts/execute/README_BATCH_CONFIG.md)
+- Shared figure provenance:
+  [figures/figure_provenance_manifest.csv](/Users/enockniyonkuru/Desktop/drug_repurposing/cdrpipe_comparative_analysis/figures/figure_provenance_manifest.csv)
 
-3. Run a curated batch configuration:
+## Core shared inputs
 
-   ```bash
-   Rscript scripts/execution/run_batch_from_config.R \
-     --config_file scripts/execution/batch_configs/90_selected_diseases.yml
-   ```
+- [drug_signatures](/Users/enockniyonkuru/Desktop/drug_repurposing/cdrpipe_comparative_analysis/data/drug_signatures)
+- [drug_evidence](/Users/enockniyonkuru/Desktop/drug_repurposing/cdrpipe_comparative_analysis/data/drug_evidence)
+- [gene_id_conversion_table.tsv](/Users/enockniyonkuru/Desktop/drug_repurposing/cdrpipe_comparative_analysis/data/gene_id_conversion_table.tsv)
+- [shared_drugs_cmap_tahoe.csv](/Users/enockniyonkuru/Desktop/drug_repurposing/cdrpipe_comparative_analysis/data/shared_drugs_cmap_tahoe.csv)
 
 ## Notes
 
-- Batch configs are now written relative to this directory instead of a machine-specific absolute path.
-- The preserved `Exp8` analysis workbook is the canonical input for the manuscript-oriented visualization scripts under `scripts/visualization/`.
-- `visuals/` was intentionally left untouched during cleanup.
-- Several stale endometriosis comparison helpers, one-off local diagnostics, and broken scratch scripts were removed; the remaining scripts are the curated set intended for sharing.
+- Study-specific scripts now live inside the matching study folder.
+- Figure-input bundles live with the study that owns them. Shared platform
+  figures now read directly from the canonical shared data folders instead of a
+  duplicated figure-input copy.
+- Legacy scripts that no longer drive the current study figures were moved into `dump/old_tahoe_cmap_analysis_mar_30/`.

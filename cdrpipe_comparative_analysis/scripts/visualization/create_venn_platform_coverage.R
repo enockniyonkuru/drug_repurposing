@@ -25,7 +25,7 @@ dir.create(figures_dir, showWarnings = FALSE, recursive = TRUE)
 cat("Loading data...\n")
 
 # Load known drugs from Open Targets
-known_drugs <- read_parquet('data/known_drugs/known_drug_info_data.parquet')
+known_drugs <- read_parquet('data/drug_evidence/open_targets/known_drug_info_data.parquet')
 
 # Load CMap and Tahoe drug lists
 cmap_drugs <- read.csv('data/drug_signatures/cmap/cmap_drug_experiments_new.csv')
