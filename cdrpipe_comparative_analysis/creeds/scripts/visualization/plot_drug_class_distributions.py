@@ -103,21 +103,29 @@ labels_cmap = list(cmap_top.keys())
 sizes_cmap = list(cmap_top.values())
 colors_cmap = [CLASS_COLORS.get(l, '#95A5A6') for l in labels_cmap]
 
-fig1a, ax1a = plt.subplots(figsize=(14, 14))
+fig1a, ax1a = plt.subplots(figsize=(10, 10))
 wedges, texts, autotexts = ax1a.pie(
-    sizes_cmap, labels=labels_cmap, colors=colors_cmap,
-    autopct=_make_autopct(sizes_cmap), startangle=90,
-    explode=[0.05] * len(sizes_cmap),
-    wedgeprops={'linewidth': 2, 'edgecolor': 'white'},
-    textprops={'fontsize': 12, 'fontweight': 'bold'},
-    pctdistance=0.55, labeldistance=1.15,
+    sizes_cmap, labels=None, colors=colors_cmap,
+    autopct='%1.1f%%', startangle=90,
+    pctdistance=0.78,
+    wedgeprops={'linewidth': 2.5, 'edgecolor': 'white', 'width': 0.45},
+    textprops={'fontsize': 10, 'fontweight': 'bold'},
 )
 for at in autotexts:
-    at.set(fontsize=10, fontweight='bold', color='white')
-for t in texts:
-    t.set(fontsize=13, fontweight='bold')
-ax1a.set_title(f'CMAP Drug Target Class Distribution\n(n = {len(cmap_drugs)} drugs)',
-               fontsize=16, fontweight='bold', pad=25)
+    at.set(fontsize=9, fontweight='bold', color='white')
+# Draw centre circle for donut effect
+centre_circle = plt.Circle((0, 0), 0.55, fc='white')
+ax1a.add_artist(centre_circle)
+ax1a.text(0, 0.04, f'n = {len(cmap_drugs)}', ha='center', va='center',
+          fontsize=16, fontweight='bold', color='#333333')
+ax1a.text(0, -0.06, 'drugs', ha='center', va='center',
+          fontsize=11, color='#666666')
+ax1a.legend(wedges, [f'{l}  ({s})' for l, s in zip(labels_cmap, sizes_cmap)],
+            title='Target Class', loc='center left', bbox_to_anchor=(1.0, 0.5),
+            fontsize=10, title_fontsize=11, frameon=True, fancybox=True,
+            shadow=False, edgecolor='#cccccc')
+ax1a.set_title('CMAP Drug Target Class Distribution',
+               fontsize=15, fontweight='bold', pad=20)
 plt.tight_layout()
 fig1a.savefig(OUTPUT_DIR / 'cmap_drug_target_classes.png',
               dpi=300, bbox_inches='tight', facecolor='white', edgecolor='none')
@@ -139,21 +147,29 @@ labels_tahoe = list(tahoe_top.keys())
 sizes_tahoe = list(tahoe_top.values())
 colors_tahoe = [CLASS_COLORS.get(l, '#95A5A6') for l in labels_tahoe]
 
-fig1b, ax1b = plt.subplots(figsize=(14, 14))
+fig1b, ax1b = plt.subplots(figsize=(10, 10))
 wedges, texts, autotexts = ax1b.pie(
-    sizes_tahoe, labels=labels_tahoe, colors=colors_tahoe,
-    autopct=_make_autopct(sizes_tahoe), startangle=90,
-    explode=[0.05] * len(sizes_tahoe),
-    wedgeprops={'linewidth': 2, 'edgecolor': 'white'},
-    textprops={'fontsize': 12, 'fontweight': 'bold'},
-    pctdistance=0.55, labeldistance=1.15,
+    sizes_tahoe, labels=None, colors=colors_tahoe,
+    autopct='%1.1f%%', startangle=90,
+    pctdistance=0.78,
+    wedgeprops={'linewidth': 2.5, 'edgecolor': 'white', 'width': 0.45},
+    textprops={'fontsize': 10, 'fontweight': 'bold'},
 )
 for at in autotexts:
-    at.set(fontsize=10, fontweight='bold', color='white')
-for t in texts:
-    t.set(fontsize=13, fontweight='bold')
-ax1b.set_title(f'TAHOE Drug Target Class Distribution\n(n = {len(tahoe_drugs)} drugs)',
-               fontsize=16, fontweight='bold', pad=25)
+    at.set(fontsize=9, fontweight='bold', color='white')
+# Draw centre circle for donut effect
+centre_circle = plt.Circle((0, 0), 0.55, fc='white')
+ax1b.add_artist(centre_circle)
+ax1b.text(0, 0.04, f'n = {len(tahoe_drugs)}', ha='center', va='center',
+          fontsize=16, fontweight='bold', color='#333333')
+ax1b.text(0, -0.06, 'drugs', ha='center', va='center',
+          fontsize=11, color='#666666')
+ax1b.legend(wedges, [f'{l}  ({s})' for l, s in zip(labels_tahoe, sizes_tahoe)],
+            title='Target Class', loc='center left', bbox_to_anchor=(1.0, 0.5),
+            fontsize=10, title_fontsize=11, frameon=True, fancybox=True,
+            shadow=False, edgecolor='#cccccc')
+ax1b.set_title('TAHOE Drug Target Class Distribution',
+               fontsize=15, fontweight='bold', pad=20)
 plt.tight_layout()
 fig1b.savefig(OUTPUT_DIR / 'tahoe_drug_target_classes.png',
               dpi=300, bbox_inches='tight', facecolor='white', edgecolor='none')

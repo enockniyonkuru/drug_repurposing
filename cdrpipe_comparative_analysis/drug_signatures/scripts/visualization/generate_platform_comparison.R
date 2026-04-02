@@ -207,7 +207,7 @@ p0 <- ggplot(strength_data, aes(x = Strength, fill = Dataset)) +
   geom_density(alpha = 0.65, color = NA) +
   scale_fill_manual(values = c("CMAP" = COLOR_CMAP, "Tahoe" = COLOR_TAHOE)) +
   scale_y_continuous(limits = c(0, 3)) +
-  labs(title = "A: Signature Strength Distribution",
+  labs(title = "Signature Strength Distribution",
        subtitle = "Mean absolute fold change per experiment",
        x = "Mean Absolute Fold Change", y = "Density", fill = "Dataset") +
   panel_theme()
@@ -226,7 +226,7 @@ p1 <- ggplot(cellline_data, aes(x = Correlation, fill = Dataset)) +
   scale_fill_manual(values = c("CMAP" = COLOR_CMAP, "Tahoe" = COLOR_TAHOE)) +
   scale_y_continuous(limits = c(0, 3)) +
   xlim(-0.5, 1) +
-  labs(title = "B: Cell Line Consistency",
+  labs(title = "Cell Line Consistency",
        subtitle = "Same compound across different cell lines",
        x = "Correlation Coefficient", y = "Density", fill = "Dataset") +
   panel_theme()
@@ -240,7 +240,7 @@ p2 <- ggplot(dose_data, aes(x = Correlation, fill = Metric)) +
   scale_fill_manual(values = c("Dose Consistency" = COLOR_TAHOE)) +
   scale_y_continuous(limits = c(0, 3)) +
   xlim(-0.5, 1) +
-  labs(title = "C: Dose Consistency",
+  labs(title = "Dose Consistency",
        subtitle = "Same compound across different doses (Tahoe only)",
        x = "Correlation Coefficient", y = "Density", fill = "Metric") +
   panel_theme()
@@ -254,7 +254,7 @@ p3 <- ggplot(rep_data, aes(x = Correlation, fill = Metric)) +
   scale_fill_manual(values = c("Replicate Consistency" = COLOR_CMAP)) +
   scale_y_continuous(limits = c(0, 3)) +
   xlim(-0.5, 1) +
-  labs(title = "D: Replicate Consistency",
+  labs(title = "Replicate Consistency",
        subtitle = "Identical experiments run independently (CMap only)",
        x = "Correlation Coefficient", y = "Density", fill = "Metric") +
   panel_theme()
@@ -262,7 +262,7 @@ p3 <- ggplot(rep_data, aes(x = Correlation, fill = Metric)) +
 combined_stability <- ((p0 | p1) / (p2 | p3)) +
   plot_annotation(
     title = "Signature Stability and Strength: CMap vs Tahoe",
-    subtitle = "Panels A & B are directly comparable; Panels C & D show dataset-specific strengths",
+    subtitle = "Top row: CMap vs Tahoe comparison; Bottom row: dataset-specific strengths",
     theme = theme(
       plot.title = element_text(size = 18, face = "bold", hjust = 0.5),
       plot.subtitle = element_text(size = 13, color = "#333", hjust = 0.5),

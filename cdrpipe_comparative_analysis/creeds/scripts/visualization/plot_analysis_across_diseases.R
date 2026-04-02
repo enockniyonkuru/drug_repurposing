@@ -101,7 +101,7 @@ fig3a <- ggplot(recall_data, aes(x = recall_pct, fill = Pipeline, color = Pipeli
   geom_vline(xintercept = cmap_recall_mean,  color = "#F39C12", linetype = "dashed", linewidth = 1) +
   scale_fill_manual(values  = c("TAHOE" = "#5DADE2", "CMAP" = "#F39C12")) +
   scale_color_manual(values = c("TAHOE" = "#5DADE2", "CMAP" = "#F39C12")) +
-  labs(title = "A: Recall Distribution Density", x = "Recall (%)", y = "Density") +
+  labs(title = "Recall Distribution Density", x = "Recall (%)", y = "Density") +
   theme_minimal() +
   theme(
     plot.title = element_text(size = 14, face = "bold", hjust = 0),
@@ -123,7 +123,7 @@ fig3b <- ggplot(precision_data, aes(x = precision_pct, fill = Pipeline, color = 
            label = paste0("CMAP: Mean=", round(cmap_prec_mean, 1), "%, Median=", round(cmap_prec_median, 1), "%\n",
                           "TAHOE: Mean=", round(tahoe_prec_mean, 1), "%, Median=", round(tahoe_prec_median, 1), "%"),
            fontface = "bold", size = 3.5, hjust = 0.5, vjust = 1.2) +
-  labs(title = "B: Precision Distribution Density", x = "Precision (%)", y = "Density") +
+  labs(title = "Precision Distribution Density", x = "Precision (%)", y = "Density") +
   theme_minimal() +
   theme(
     plot.title = element_text(size = 14, face = "bold", hjust = 0),
@@ -145,12 +145,13 @@ scatter_data <- df %>%
   filter(!is.na(precision) | !is.na(recall))
 
 fig3c <- ggplot(scatter_data, aes(x = precision, y = recall, color = Pipeline)) +
+  geom_abline(slope = 1, intercept = 0, linetype = "dashed", color = "gray50", linewidth = 0.7) +
   geom_point(alpha = 0.6, size = 3) +
   geom_vline(xintercept = 50, linetype = "dotted", color = "gray", linewidth = 0.5) +
   geom_hline(yintercept = 50, linetype = "dotted", color = "gray", linewidth = 0.5) +
   scale_color_manual(values = c("tahoe" = "#5DADE2", "cmap" = "#F39C12")) +
   labs(
-    title = "C: Precision Vs Recall by Disease",
+    title = "Precision Vs Recall by Disease",
     subtitle = "(Each point = one disease)",
     x = "Precision (%)", y = "Recall (%)"
   ) +

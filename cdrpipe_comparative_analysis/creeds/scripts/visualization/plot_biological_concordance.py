@@ -20,6 +20,11 @@ Outputs (to creeds/figures/biological_concordance/):
   - stacked_bar_drug_targets_cmap.png
   - stacked_bar_drug_targets_tahoe.png
 
+Outputs (to creeds/figures/biological_concordance_bar_charts/):
+  - bar_disease_areas.png
+  - bar_drug_classes.png
+  - bar_top_combinations.png
+
 Data sources (relative to comparative-analysis root):
   - creeds/results/biological_concordance/all_discoveries_cmap.csv
   - creeds/results/biological_concordance/all_discoveries_tahoe.csv
@@ -400,5 +405,89 @@ plt.tight_layout()
 fig.savefig(OUTPUT_DIR / 'stacked_bar_drug_targets_tahoe.png', dpi=150, bbox_inches='tight', facecolor='white')
 plt.close(fig)
 print("  Saved stacked_bar_drug_targets_tahoe.png")
+
+# ---------------------------------------------------------------------------
+# Bar Charts – Disease Areas, Drug Classes, Top Combinations (Recovered)
+# Output to biological_concordance_bar_charts/
+# ---------------------------------------------------------------------------
+BAR_DIR = REPO_ROOT / "creeds" / "figures" / "biological_concordance_bar_charts"
+BAR_DIR.mkdir(parents=True, exist_ok=True)
+
+# Bar chart: Disease Therapeutic Areas
+print("\nBar Chart: Disease Therapeutic Areas (Recovered)")
+fig, ax = plt.subplots(figsize=(12, 8))
+disease_totals = pd.DataFrame({
+    'CMAP': ct_cmap_rec.sum(axis=1),
+    'Tahoe': ct_tahoe_rec.sum(axis=1),
+})
+x = np.arange(len(disease_totals))
+width = 0.35
+ax.barh(x - width / 2, disease_totals['CMAP'], width, label='CMAP', color=CMAP_COLOR, alpha=0.8)
+ax.barh(x + width / 2, disease_totals['Tahoe'], width, label='Tahoe', color=TAHOE_COLOR, alpha=0.8)
+ax.set_yticks(x)
+ax.set_yticklabels(disease_totals.index)
+ax.set_xlabel('Number of Drug-Disease Pairs')
+ax.set_title('Disease Therapeutic Areas: CMAP vs Tahoe (Recovered)', fontweight='bold')
+ax.legend()
+ax.invert_yaxis()
+plt.tight_layout()
+fig.savefig(BAR_DIR / 'bar_disease_areas.png', dpi=150, bbox_inches='tight', facecolor='white')
+plt.close(fig)
+print("  Saved bar_disease_areas.png")
+
+# Bar chart: Drug Target Classes
+print("Bar Chart: Drug Target Classes (Recovered)")
+fig, ax = plt.subplots(figsize=(12, 8))
+drug_totals = pd.DataFrame({
+    'CMAP': ct_cmap_rec.sum(axis=0),
+    'Tahoe': ct_tahoe_rec.sum(axis=0),
+})
+x = np.arange(len(drug_totals))
+ax.barh(x - width / 2, drug_totals['CMAP'], width, label='CMAP', color=CMAP_COLOR, alpha=0.8)
+ax.barh(x + width / 2, drug_totals['Tahoe'], width, label='Tahoe', color=TAHOE_COLOR, alpha=0.8)
+ax.set_yticks(x)
+ax.set_yticklabels(drug_totals.index)
+ax.set_xlabel('Number of Drug-Disease Pairs')
+ax.set_title('Drug Target Classes: CMap Vs Tahoe-100M (Recovered)', fontweight='bold')
+ax.legend()
+ax.invert_yaxis()
+plt.tight_layout()
+fig.savefig(BAR_DIR / 'bar_drug_classes.png', dpi=150, bbox_inches='tight', facecolor='white')
+plt.close(fig)
+print("  Saved bar_drug_classes.png")
+
+# Bar chart: Top Disease → Drug Target Class Combinations
+print("Bar Chart: Top Combinations (Recovered)")
+cmap_combos = cmap_rec_exp.groupby(['therapeutic_area', 'drug_target_class_expanded']).size().sort_values(ascending=False).head(15)
+tahoe_combos = tahoe_rec_exp.groupby(['therapeutic_area', 'drug_target_class_expanded']).size().sort_values(ascending=False).head(15)
+
+combo_data = []
+for (ta, tc), count in cmap_combos.items():
+    combo_data.append({'combo': f"{ta[:15]}\n\u2192 {tc[:15]}", 'CMAP': count, 'Tahoe': 0})
+for (ta, tc), count in tahoe_combos.items():
+    key = f"{ta[:15]}\n\u2192 {tc[:15]}"
+    found = False
+    for item in combo_data:
+        if item['combo'] == key:
+            item['Tahoe'] = count
+            found = True
+            break
+    if not found:
+        combo_data.append({'combo': key, 'CMAP': 0, 'Tahoe': count})
+
+combo_df_plot = pd.DataFrame(combo_data).head(12)
+fig, ax = plt.subplots(figsize=(14, 8))
+x = np.arange(len(combo_df_plot))
+ax.bar(x - width / 2, combo_df_plot['CMAP'], width, label='CMAP', color=CMAP_COLOR)
+ax.bar(x + width / 2, combo_df_plot['Tahoe'], width, label='Tahoe', color=TAHOE_COLOR)
+ax.set_xticks(x)
+ax.set_xticklabels(combo_df_plot['combo'], rotation=45, ha='right', fontsize=8)
+ax.set_ylabel('Count')
+ax.set_title('Top Disease Therapeutic Areas \u2192 Drug Target Class Combinations', fontweight='bold', fontsize=14)
+ax.legend(fontsize=10)
+plt.tight_layout()
+fig.savefig(BAR_DIR / 'bar_top_combinations.png', dpi=300, bbox_inches='tight')
+plt.close(fig)
+print("  Saved bar_top_combinations.png")
 
 print("\nAll biological concordance panels generated successfully!")
