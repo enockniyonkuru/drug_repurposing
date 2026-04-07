@@ -21,18 +21,15 @@ OUTPUT_DIR = BASE_DIR / "autoimmune" / "analysis" / "per_disease_recovery"
 OUTPUT_DIR.mkdir(exist_ok=True, parents=True)
 
 # Diseases of interest (matching directory names in results)
-# All 20 autoimmune diseases from Table1_Disease_Summary.csv
+# 16 of 18 autoimmune diseases — psoriasis and dermatomyositis are merged
+# entries handled by merge_disease_groups.py
 DISEASES_OF_INTEREST = [
     "inclusion_body_myositis",
     "discoid_lupus_erythematosus",
     "psoriatic_arthritis",
-    "childhood_type_dermatomyositis",
     "Sjogren's_syndrome",
-    "Psoriasis_vulgaris",
     "autoimmune_thrombocytopenic_purpura",
-    "colitis",
     "scleroderma",
-    "psoriasis",
     "inflammatory_bowel_disease",
     "ankylosing_spondylitis",
     "Crohn's_disease",
@@ -45,18 +42,19 @@ DISEASES_OF_INTEREST = [
     "arthritis"
 ]
 
+# Display name overrides for diseases where CREEDS label differs from actual condition
+DISEASE_DISPLAY_NAMES = {
+    "arthritis": "Juvenile Idiopathic Arthritis (sJIA)",
+}
+
 # Disease name mapping for Open Targets lookup
 DISEASE_NAME_MAP = {
     "inclusion_body_myositis": ["inclusion body myositis"],
     "discoid_lupus_erythematosus": ["discoid lupus"],
     "psoriatic_arthritis": ["psoriatic arthritis"],
-    "childhood_type_dermatomyositis": ["dermatomyositis"],
     "Sjogren's_syndrome": ["Sjogren", "Sjögren"],
-    "Psoriasis_vulgaris": ["psoriasis"],
     "autoimmune_thrombocytopenic_purpura": ["thrombocytopenic purpura", "ITP"],
-    "colitis": ["colitis", "inflammatory bowel disease"],
     "scleroderma": ["scleroderma", "systemic sclerosis"],
-    "psoriasis": ["psoriasis"],
     "inflammatory_bowel_disease": ["inflammatory bowel disease", "IBD"],
     "ankylosing_spondylitis": ["ankylosing spondylitis"],
     "Crohn's_disease": ["Crohn"],
@@ -66,7 +64,7 @@ DISEASE_NAME_MAP = {
     "ulcerative_colitis": ["ulcerative colitis"],
     "multiple_sclerosis": ["multiple sclerosis"],
     "type_1_diabetes_mellitus": ["type 1 diabetes", "diabetes mellitus type 1", "insulin-dependent diabetes"],
-    "arthritis": ["rheumatoid arthritis", "arthritis"]
+    "arthritis": ["systemic juvenile idiopathic arthritis", "juvenile idiopathic arthritis"]
 }
 
 
@@ -97,7 +95,8 @@ def load_hits_file(disease, method):
     """Load hits file for a disease and method."""
     # Find the directory
     # Handle both underscore and hyphen versions
-    patterns = [f"{disease}_{method}_*", f"{disease.replace('_', '-')}_{method}_*"]
+    patterns = [f"{disease}_{method}_*", f"{disease}_{method.lower()}_*",
+                 f"{disease.replace('_', '-')}_{method}_*", f"{disease.replace('_', '-')}_{method.lower()}_*"]
     matching_dirs = []
     
     for pattern in patterns:
@@ -278,8 +277,10 @@ def create_summary_table(all_results):
     for r in all_results:
         if r is None:
             continue
+        default_name = r['disease'].replace('_', ' ').title()
+        display_name = DISEASE_DISPLAY_NAMES.get(r['disease'], default_name)
         summary_data.append({
-            'Disease': r['disease'].replace('_', ' ').title(),
+            'Disease': display_name,
             'Known Drugs': r['known_total'],
             'CMAP Only': r['cmap_only'],
             'TAHOE Only': r['tahoe_only'],

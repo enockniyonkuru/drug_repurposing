@@ -27,6 +27,7 @@ import matplotlib.patches as mpatches
 from matplotlib.patches import Rectangle
 from matplotlib.colors import ListedColormap, BoundaryNorm
 import seaborn as sns
+from adjustText import adjust_text
 from pathlib import Path
 from scipy import stats
 import warnings
@@ -65,14 +66,12 @@ DISEASE_CSV_MAP = {
     'autoimmune thrombocytopenic purpura': 'autoimmune_thrombocytopenic_purpura',
     "crohn's disease": "Crohn's_disease",
     'scleroderma': 'scleroderma',
-    'arthritis': 'arthritis',
+    'juvenile idiopathic arthritis (sjia)': 'arthritis',
     'inflammatory bowel disease': 'inflammatory_bowel_disease',
     'psoriasis': 'psoriasis',
-    'psoriasis vulgaris': 'Psoriasis_vulgaris',
-    'childhood type dermatomyositis': 'childhood_type_dermatomyositis',
+    'dermatomyositis': 'dermatomyositis',
     'discoid lupus erythematosus': 'discoid_lupus_erythematosus',
     'inclusion body myositis': 'inclusion_body_myositis',
-    'colitis': 'colitis',
     'psoriatic arthritis': 'psoriatic_arthritis',
     'ankylosing spondylitis': 'ankylosing_spondylitis',
 }
@@ -140,7 +139,7 @@ def make_recovery_rate_boxplot(df):
 # ===========================================================================
 
 def make_drug_hits_vs_recovery_scatter(df):
-    fig, ax = plt.subplots(figsize=(10, 8))
+    fig, ax = plt.subplots(figsize=(14, 10))
     ax.scatter(df['cmap_hits'], df['cmap_recovery'], s=100, c=COLOR_CMAP, alpha=0.7, label='CMAP', edgecolors='black')
     ax.scatter(df['tahoe_hits'], df['tahoe_recovery'], s=100, c=COLOR_TAHOE, alpha=0.7, label='TAHOE', edgecolors='black')
     for hits_col, rec_col, color in [('cmap_hits', 'cmap_recovery', COLOR_CMAP),
@@ -150,6 +149,57 @@ def make_drug_hits_vs_recovery_scatter(df):
             z = np.polyfit(df.loc[mask, hits_col], df.loc[mask, rec_col], 1)
             xl = np.linspace(df[hits_col].min(), df[hits_col].max(), 100)
             ax.plot(xl, np.poly1d(z)(xl), '--', color=color, alpha=0.5, lw=2)
+
+    # Annotate all diseases
+    short_names = {
+        "inclusion body myositis": "IBM",
+        "discoid lupus erythematosus": "DLE",
+        "psoriatic arthritis": "PsA",
+        "dermatomyositis": "DM",
+        "sjogren's syndrome": "Sjögren's",
+        "autoimmune thrombocytopenic purpura": "ITP",
+        "scleroderma": "Scleroderma",
+        "psoriasis": "Psoriasis",
+        "inflammatory bowel disease": "IBD",
+        "ankylosing spondylitis": "Ank. spond.",
+        "crohn's disease": "Crohn's",
+        "relapsing-remitting multiple sclerosis": "RRMS",
+        "rheumatoid arthritis": "RA",
+        "systemic lupus erythematosus": "SLE",
+        "ulcerative colitis": "UC",
+        "multiple sclerosis": "MS",
+        "type 1 diabetes mellitus": "T1DM",
+        "juvenile idiopathic arthritis (sjia)": "sJIA",
+    }
+
+    # Collect all x,y coordinates (both CMAP and TAHOE dots) so adjustText avoids them
+    all_x = list(df['tahoe_hits']) + list(df['cmap_hits'])
+    all_y = list(df['tahoe_recovery']) + list(df['cmap_recovery'])
+
+    # TAHOE labels
+    tahoe_texts = []
+    for _, row in df.iterrows():
+        label = short_names.get(row['disease'].lower(), row['disease'])
+        tahoe_texts.append(ax.text(row['tahoe_hits'], row['tahoe_recovery'], label,
+                                   fontsize=8.5, fontweight='bold', color='#1B4F72'))
+
+    adjust_text(tahoe_texts, x=all_x, y=all_y, ax=ax,
+                arrowprops=dict(arrowstyle='->', color=COLOR_TAHOE, lw=0.8, alpha=0.6),
+                expand=(1.5, 1.8), force_text=(0.8, 1.0),
+                ensure_inside_axes=True)
+
+    # CMAP labels
+    cmap_texts = []
+    for _, row in df.iterrows():
+        label = short_names.get(row['disease'].lower(), row['disease'])
+        cmap_texts.append(ax.text(row['cmap_hits'], row['cmap_recovery'], label,
+                                  fontsize=8, fontstyle='italic', color='#7E5109'))
+
+    adjust_text(cmap_texts, x=all_x, y=all_y, ax=ax,
+                arrowprops=dict(arrowstyle='->', color=COLOR_CMAP, lw=0.8, alpha=0.6),
+                expand=(1.5, 1.8), force_text=(0.8, 1.0),
+                ensure_inside_axes=True)
+
     ax.set_xlabel('Total Drug Hits')
     ax.set_ylabel('Known Drug Recovery Rate (%)')
     ax.set_title('Drug Hits vs Recovery Rate', fontweight='bold')
@@ -261,7 +311,7 @@ def make_phase4_recovery_heatmap():
 
     print(f"  Disease-specific Phase 4 pairs: {phase4_count}")
 
-    ax.set_title('Drug Recovery Source and Disease-Specific Phase 4 Status\nAcross 20 Autoimmune Diseases',
+    ax.set_title('Drug Recovery Source and Disease-Specific Phase 4 Status\nAcross 18 Autoimmune Diseases',
                  fontsize=14, fontweight='bold', pad=20)
     ax.set_xlabel('Recovered Drugs (sorted by frequency)', fontsize=12, fontweight='bold')
     ax.set_ylabel('Autoimmune Diseases', fontsize=12, fontweight='bold')
@@ -280,6 +330,232 @@ def make_phase4_recovery_heatmap():
 
 
 # ===========================================================================
+# Panel: Platform Complementarity (Recovered Drugs)
+# ===========================================================================
+
+def _compute_recovered_breakdown(df):
+    """Compute per-disease CMAP-only / TAHOE-only / Both breakdown for recovered drugs."""
+    diseases = []
+    cmap_only, tahoe_only, both, totals = [], [], [], []
+
+    full_names = {
+        "inclusion body myositis": "Inclusion Body Myositis",
+        "discoid lupus erythematosus": "Discoid Lupus Erythematosus",
+        "psoriatic arthritis": "Psoriatic Arthritis",
+        "dermatomyositis": "Dermatomyositis",
+        "sjogren's syndrome": "Sjögren's Syndrome",
+        "autoimmune thrombocytopenic purpura": "Autoimmune Thrombocytopenic Purpura",
+        "scleroderma": "Scleroderma",
+        "psoriasis": "Psoriasis",
+        "inflammatory bowel disease": "Inflammatory Bowel Disease",
+        "ankylosing spondylitis": "Ankylosing Spondylitis",
+        "crohn's disease": "Crohn's Disease",
+        "relapsing-remitting multiple sclerosis": "Relapsing-Remitting Multiple Sclerosis",
+        "rheumatoid arthritis": "Rheumatoid Arthritis",
+        "systemic lupus erythematosus": "Systemic Lupus Erythematosus",
+        "ulcerative colitis": "Ulcerative Colitis",
+        "multiple sclerosis": "Multiple Sclerosis",
+        "type 1 diabetes mellitus": "Type 1 Diabetes Mellitus",
+        "juvenile idiopathic arthritis (sjia)": "Juvenile Idiopathic Arthritis (sJIA)",
+    }
+
+    for _, row in df.iterrows():
+        disease = row['disease'].lower()
+        cmap_rec = int(row.get('cmap_recovered', 0))
+        tahoe_rec = int(row.get('tahoe_recovered', 0))
+        common = int(row.get('common_recovered', 0))
+        total_rec = int(row.get('total_recovered', 0))
+
+        diseases.append(full_names.get(disease, row['disease'].title()))
+        cmap_only.append(cmap_rec - common)
+        tahoe_only.append(tahoe_rec - common)
+        both.append(common)
+        totals.append(total_rec)
+
+    order = sorted(range(len(totals)), key=lambda i: totals[i], reverse=True)
+    return (
+        [diseases[i] for i in order],
+        [cmap_only[i] for i in order],
+        [tahoe_only[i] for i in order],
+        [both[i] for i in order],
+        [totals[i] for i in order],
+    )
+
+
+def _compute_novel_breakdown(df):
+    """Compute per-disease CMAP-only / TAHOE-only / Both breakdown for novel predictions."""
+    diseases = []
+    cmap_only, tahoe_only, both, totals = [], [], [], []
+
+    full_names = {
+        "inclusion body myositis": "Inclusion Body Myositis",
+        "discoid lupus erythematosus": "Discoid Lupus Erythematosus",
+        "psoriatic arthritis": "Psoriatic Arthritis",
+        "dermatomyositis": "Dermatomyositis",
+        "sjogren's syndrome": "Sjögren's Syndrome",
+        "autoimmune thrombocytopenic purpura": "Autoimmune Thrombocytopenic Purpura",
+        "scleroderma": "Scleroderma",
+        "psoriasis": "Psoriasis",
+        "inflammatory bowel disease": "Inflammatory Bowel Disease",
+        "ankylosing spondylitis": "Ankylosing Spondylitis",
+        "crohn's disease": "Crohn's Disease",
+        "relapsing-remitting multiple sclerosis": "Relapsing-Remitting Multiple Sclerosis",
+        "rheumatoid arthritis": "Rheumatoid Arthritis",
+        "systemic lupus erythematosus": "Systemic Lupus Erythematosus",
+        "ulcerative colitis": "Ulcerative Colitis",
+        "multiple sclerosis": "Multiple Sclerosis",
+        "type 1 diabetes mellitus": "Type 1 Diabetes Mellitus",
+        "juvenile idiopathic arthritis (sjia)": "Juvenile Idiopathic Arthritis (sJIA)",
+    }
+
+    # Read raw xlsx columns for hit-level data
+    df_raw = pd.read_excel(DATA_FILE)
+    for _, row in df_raw.iterrows():
+        disease = row['disease_name'].lower()
+        cmap_hits = int(row['cmap_hits_count'])
+        tahoe_hits = int(row['tahoe_hits_count'])
+        common_hits = int(row['common_hits_count'])
+        cmap_rec = int(row['cmap_in_known_count'])
+        tahoe_rec = int(row['tahoe_in_known_count'])
+        common_rec = int(row['common_in_known_count'])
+
+        # Per-source hits
+        cmap_only_hits = cmap_hits - common_hits
+        tahoe_only_hits = tahoe_hits - common_hits
+
+        # Per-source recovered
+        cmap_only_rec = cmap_rec - common_rec
+        tahoe_only_rec = tahoe_rec - common_rec
+
+        # Per-source novel (clamp to 0 for edge cases)
+        c_novel = max(0, cmap_only_hits - cmap_only_rec)
+        t_novel = max(0, tahoe_only_hits - tahoe_only_rec)
+        b_novel = max(0, common_hits - common_rec)
+
+        total_novel = c_novel + t_novel + b_novel
+
+        diseases.append(full_names.get(disease, row['disease_name'].title()))
+        cmap_only.append(c_novel)
+        tahoe_only.append(t_novel)
+        both.append(b_novel)
+        totals.append(total_novel)
+
+    order = sorted(range(len(totals)), key=lambda i: totals[i], reverse=True)
+    return (
+        [diseases[i] for i in order],
+        [cmap_only[i] for i in order],
+        [tahoe_only[i] for i in order],
+        [both[i] for i in order],
+        [totals[i] for i in order],
+    )
+
+
+def _make_donut(g_cmap, g_tahoe, g_both, title, filename):
+    """Standalone donut chart."""
+    g_total = g_cmap + g_tahoe + g_both
+    fig, ax = plt.subplots(figsize=(8, 8))
+
+    sizes = [g_cmap, g_tahoe, g_both]
+    colors = [COLOR_CMAP, COLOR_TAHOE, COLOR_BOTH]
+    labels = [
+        f'CMAP Only\n{g_cmap} ({g_cmap/g_total*100:.1f}%)',
+        f'TAHOE Only\n{g_tahoe} ({g_tahoe/g_total*100:.1f}%)',
+        f'Both\n{g_both} ({g_both/g_total*100:.1f}%)',
+    ]
+
+    wedges, _ = ax.pie(
+        sizes, colors=colors, startangle=90,
+        wedgeprops=dict(width=0.45, edgecolor='white', linewidth=2),
+        pctdistance=0.75
+    )
+
+    ax.legend(wedges, labels, loc='lower center',
+              bbox_to_anchor=(0.5, -0.15), fontsize=12, frameon=False, ncol=1)
+    ax.text(0, 0, f'{g_total}\ndrug-disease\npairs',
+            ha='center', va='center', fontsize=16, fontweight='bold')
+    ax.set_title(title, fontsize=14, fontweight='bold', pad=15)
+
+    plt.subplots_adjust(bottom=0.22)
+    save(fig, filename)
+
+
+def _make_stacked_bar(diseases, cmap_only, tahoe_only, both, totals, title, xlabel, filename):
+    """Standalone horizontal stacked bar chart with full disease names."""
+    fig, ax = plt.subplots(figsize=(14, 10))
+
+    y_pos = np.arange(len(diseases))
+    bar_height = 0.7
+
+    ax.barh(y_pos, cmap_only, bar_height,
+            color=COLOR_CMAP, label='CMAP Only', edgecolor='white', linewidth=0.5)
+    ax.barh(y_pos, both, bar_height,
+            left=cmap_only, color=COLOR_BOTH, label='Both', edgecolor='white', linewidth=0.5)
+    left_for_tahoe = [c + b for c, b in zip(cmap_only, both)]
+    ax.barh(y_pos, tahoe_only, bar_height,
+            left=left_for_tahoe, color=COLOR_TAHOE, label='TAHOE Only', edgecolor='white', linewidth=0.5)
+
+    for i, total in enumerate(totals):
+        bar_end = cmap_only[i] + both[i] + tahoe_only[i]
+        ax.text(bar_end + 0.5, i, str(total), va='center', ha='left', fontsize=10, fontweight='bold')
+
+    ax.set_yticks(y_pos)
+    ax.set_yticklabels(diseases, fontsize=10)
+    ax.invert_yaxis()
+    ax.set_xlabel(xlabel, fontsize=12, fontweight='bold')
+    ax.set_title(title, fontsize=14, fontweight='bold', pad=15)
+    ax.legend(loc='lower right', fontsize=11, framealpha=0.9)
+    ax.set_xlim(0, max(totals) * 1.08)
+    ax.grid(axis='x', alpha=0.3)
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+
+    plt.tight_layout()
+    save(fig, filename)
+
+
+def make_complementarity_panel(df):
+    """Generate separate donut + bar charts for recovered drug-disease pairs."""
+    print("\nGenerating Platform Complementarity (Recovered) ...")
+    diseases, cmap_only, tahoe_only, both, totals = _compute_recovered_breakdown(df)
+
+    g_cmap, g_tahoe, g_both = sum(cmap_only), sum(tahoe_only), sum(both)
+    g_total = g_cmap + g_tahoe + g_both
+    print(f"  Recovered drug-disease pairs: {g_total}")
+    print(f"    CMAP-only: {g_cmap} ({g_cmap/g_total*100:.1f}%)")
+    print(f"    TAHOE-only: {g_tahoe} ({g_tahoe/g_total*100:.1f}%)")
+    print(f"    Both: {g_both} ({g_both/g_total*100:.1f}%)")
+
+    _make_donut(g_cmap, g_tahoe, g_both,
+                'Platform Overlap in\nRecovered Drug-Disease Pairs',
+                'recovered_complementarity_donut')
+    _make_stacked_bar(diseases, cmap_only, tahoe_only, both, totals,
+                      'Per-Disease Recovered Drug Sources',
+                      'Number of Recovered Drug-Disease Pairs',
+                      'recovered_complementarity_bar')
+
+
+def make_novel_complementarity_panel(df):
+    """Generate separate donut + bar charts for novel (unvalidated) predictions."""
+    print("\nGenerating Platform Complementarity (Novel Predictions) ...")
+    diseases, cmap_only, tahoe_only, both, totals = _compute_novel_breakdown(df)
+
+    g_cmap, g_tahoe, g_both = sum(cmap_only), sum(tahoe_only), sum(both)
+    g_total = g_cmap + g_tahoe + g_both
+    print(f"  Novel drug-disease pairs: {g_total}")
+    print(f"    CMAP-only: {g_cmap} ({g_cmap/g_total*100:.1f}%)")
+    print(f"    TAHOE-only: {g_tahoe} ({g_tahoe/g_total*100:.1f}%)")
+    print(f"    Both: {g_both} ({g_both/g_total*100:.1f}%)")
+
+    _make_donut(g_cmap, g_tahoe, g_both,
+                'Platform Overlap in\nNovel Drug-Disease Predictions',
+                'novel_complementarity_donut')
+    _make_stacked_bar(diseases, cmap_only, tahoe_only, both, totals,
+                      'Per-Disease Novel Drug Predictions by Source',
+                      'Number of Novel Drug-Disease Predictions',
+                      'novel_complementarity_bar')
+
+
+# ===========================================================================
 # Main
 # ===========================================================================
 
@@ -292,6 +568,8 @@ def main():
     make_drug_hits_vs_recovery_scatter(df)
     make_statistical_test(df)
     make_phase4_recovery_heatmap()
+    make_complementarity_panel(df)
+    make_novel_complementarity_panel(df)
 
     print(f"\nAll autoimmune figures saved to {OUTPUT_DIR.relative_to(REPO_ROOT)}/")
 

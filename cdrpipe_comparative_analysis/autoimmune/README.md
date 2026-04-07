@@ -1,12 +1,12 @@
 # Autoimmune Case Study
 
-**Drug Repurposing Analysis for 20 Autoimmune Diseases** – A focused case study comparing CMAP and TAHOE platforms for known drug recovery.
+**Drug Repurposing Analysis for 18 Autoimmune Diseases** – A focused case study comparing CMAP and TAHOE platforms for known drug recovery.
 
 ## Overview
 
-This case study evaluates the performance of CMAP and TAHOE drug repurposing platforms across 20 autoimmune diseases. The analysis measures each platform's ability to recover known therapeutic drugs validated in Open Targets.
+This case study evaluates the performance of CMAP and TAHOE drug repurposing platforms across 18 autoimmune diseases. The analysis measures each platform's ability to recover known therapeutic drugs validated in Open Targets.
 
-**Key Finding**: TAHOE significantly outperforms CMAP in known drug recovery (mean 76.6% vs 17.8%, p < 0.001, Cohen's d = 2.35).
+**Key Finding**: TAHOE significantly outperforms CMAP in known drug recovery (mean 76.5% vs 20.9%, p < 0.001, Cohen's d = 2.22).
 
 ## Data Source
 
@@ -18,30 +18,28 @@ The autoimmune diseases analyzed here are a **subset of the 233 CREEDS diseases*
 
 See [../creeds/README.md](../creeds/README.md) for full CREEDS workflow documentation.
 
-## 20 Autoimmune Diseases Analyzed
+## 18 Autoimmune Diseases Analyzed
 
 | Disease | Known Drugs (DB) | CMAP Recovery | TAHOE Recovery |
 |---------|------------------|---------------|----------------|
 | Rheumatoid arthritis | 2,397 | 17.8% | 64.0% |
 | Multiple sclerosis | 1,885 | 27.9% | 43.8% |
 | Type 1 diabetes mellitus | 1,788 | 25.8% | 16.7% |
-| Psoriasis | 1,473 | 4.2% | 93.3% |
 | Crohn's disease | 1,283 | 7.4% | 75.0% |
 | Ulcerative colitis | 1,192 | 12.5% | 50.0% |
 | Systemic lupus erythematosus | 1,071 | 40.0% | 60.0% |
 | Relapsing-remitting MS | 816 | 31.6% | 66.7% |
-| Psoriasis vulgaris | 658 | 16.7% | 100.0% |
 | Ankylosing spondylitis | 634 | 0.0% | 77.8% |
 | Psoriatic arthritis | 630 | 0.0% | 100.0% |
 | Autoimmune thrombocytopenic purpura | 605 | 12.5% | 100.0% |
 | Inflammatory bowel disease | 538 | 9.1% | 85.7% |
-| Arthritis | 435 | 33.3% | 0.0% |
 | Sjogren's syndrome | 304 | 66.7% | 100.0% |
 | Scleroderma | 224 | 50.0% | 100.0% |
-| Colitis | 202 | 0.0% | 100.0% |
-| Childhood type dermatomyositis | 160 | 0.0% | 100.0% |
+| Psoriasis | 150 | 75.0% | 100.0% |
 | Discoid lupus erythematosus | 84 | 0.0% | 100.0% |
 | Inclusion body myositis | 69 | 0.0% | 100.0% |
+| Juvenile idiopathic arthritis (sJIA) | 41 | 0.0% | 37.5% |
+| Dermatomyositis | 29 | 0.0% | 100.0% |
 
 ## Pipeline Overview
 
@@ -53,9 +51,9 @@ See [../creeds/README.md](../creeds/README.md) for full CREEDS workflow document
   CREEDS Results (233 diseases)
   ../creeds/results/manual_standardized_all_diseases_results/
          │
-         ▼ [Filter to 20 autoimmune diseases]
+         ▼ [Filter to 18 autoimmune diseases]
   ┌──────────────────────────────────────┐
-  │  20 Autoimmune Disease Results       │
+  │  18 Autoimmune Disease Results       │
   │  - {disease}_cmap_{date}/            │
   │  - {disease}_tahoe_{date}/           │
   └──────────────────────────────────────┘
@@ -109,7 +107,7 @@ autoimmune/
 │   │   └── Table3_Complementarity.csv
 │   └── per_disease_recovery/             # Per-disease recovered drug CSVs
 │       ├── disease_recovery_summary.csv
-│       └── {disease}_recovered_drugs.csv  (× 20 diseases)
+│       └── {disease}_recovered_drugs.csv  (× 18 diseases)
 └── figures/
     ├── recovery_rate_distribution_boxplot.png
     ├── drug_hits_vs_recovery_rate_scatter.png
@@ -126,7 +124,7 @@ autoimmune/
 | Mean Recovery Rate | 17.8% | 76.6% | p < 0.001 |
 | Median Recovery Rate | 12.5% | 89.5% | - |
 | Cohen's d Effect Size | - | 2.35 | Large effect |
-| Diseases where better | 2 | 18 | - |
+| Diseases where better | 2 | 17 | - |
 
 ### Complementarity Analysis
 

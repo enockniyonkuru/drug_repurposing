@@ -164,9 +164,9 @@ heatmap.2(matrix_cmap, main = "", labRow = row_labels_cmap,
           notecol = "black", density.info = "none", trace = "none",
           margins = c(6, 18), col = my_palette, dendrogram = "none",
           cexRow = 0.8, cexCol = 1.4,
-          lmat = rbind(c(0, 3), c(4, 1), c(0, 2)), lhei = c(1, 5, 0.8), lwid = c(0.7, 3),
+          lmat = rbind(c(0, 3), c(4, 1), c(0, 2)), lhei = c(2, 8, 1.1), lwid = c(0.4, 3),
           Colv = FALSE, Rowv = FALSE, key = TRUE, srtCol = 0, adjCol = 0.5,
-          key.title = NA, key.xlab = "", keysize = 0.15, key.xtickfun = key_tick_fn)
+          key.title = NA, key.xlab = "", keysize = 0.1, key.xtickfun = key_tick_fn)
 mtext("CMap: Reversal Scores for Top 50 Drug Candidates\nAcross All Endometriosis Signatures",
       outer = TRUE, side = 3, line = 0, cex = 1.2, font = 2)
 dev.off()
@@ -250,9 +250,9 @@ heatmap.2(matrix_tahoe, main = "", labRow = row_labels_tahoe,
           notecol = "black", density.info = "none", trace = "none",
           margins = c(6, 22), col = my_palette, dendrogram = "none",
           cexRow = 0.8, cexCol = 1.4,
-          lmat = rbind(c(0, 3), c(4, 1), c(0, 2)), lhei = c(1, 5, 0.8), lwid = c(0.7, 3),
+          lmat = rbind(c(0, 3), c(4, 1), c(0, 2)), lhei = c(1, 8, 0.8), lwid = c(0.4, 3),
           Colv = FALSE, Rowv = FALSE, key = TRUE, srtCol = 0, adjCol = 0.5,
-          key.title = NA, key.xlab = "", keysize = 0.15, key.xtickfun = key_tick_fn)
+          key.title = NA, key.xlab = "", keysize = 0.1, key.xtickfun = key_tick_fn)
 mtext(paste0("Tahoe-100M: Reversal Scores for Top ", n_drugs, " Drug Candidates\nAcross All Endometriosis Signatures"),
       outer = TRUE, side = 3, line = 0, cex = 1.2, font = 2)
 dev.off()

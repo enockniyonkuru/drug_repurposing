@@ -350,13 +350,19 @@ def main(args):
                 known_drug_name_map = build_known_drug_name_map(df_known_drugs, disease_id)
                 set_known_drug_names = set(known_drug_name_map.keys())
                 
+                # Count unique drugs by drug_id (not name variants which include brand names/synonyms)
+                unique_drug_ids = set()
+                for name, info_set in known_drug_name_map.items():
+                    for drug_id, phase, status in info_set:
+                        unique_drug_ids.add(drug_id)
+                
                 # Calculate intersections
                 set_tahoe_in_known = set_tahoe_hits.intersection(set_known_drug_names)
                 set_cmap_in_known = set_cmap_hits.intersection(set_known_drug_names)
                 set_common_in_known = set_common_hits.intersection(set_known_drug_names)
                 set_total_in_known = set_all_pipeline_hits.intersection(set_known_drug_names)
                 
-                row['known_drugs_in_database_count'] = len(set_known_drug_names)
+                row['known_drugs_in_database_count'] = len(unique_drug_ids)
                 row['tahoe_in_known_count'] = len(set_tahoe_in_known)
                 row['tahoe_in_known_list'] = list(set_tahoe_in_known)
                 row['cmap_in_known_count'] = len(set_cmap_in_known)
