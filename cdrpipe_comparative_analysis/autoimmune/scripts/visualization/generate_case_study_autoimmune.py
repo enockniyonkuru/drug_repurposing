@@ -470,12 +470,12 @@ def _make_donut(g_cmap, g_tahoe, g_both, title, filename):
     )
 
     ax.legend(wedges, labels, loc='lower center',
-              bbox_to_anchor=(0.5, -0.15), fontsize=12, frameon=False, ncol=1)
+              bbox_to_anchor=(0.5, -0.25), fontsize=12, frameon=False, ncol=1)
     ax.text(0, 0, f'{g_total}\ndrug-disease\npairs',
             ha='center', va='center', fontsize=16, fontweight='bold')
     ax.set_title(title, fontsize=14, fontweight='bold', pad=15)
 
-    plt.subplots_adjust(bottom=0.22)
+    plt.subplots_adjust(bottom=0.28)
     save(fig, filename)
 
 
