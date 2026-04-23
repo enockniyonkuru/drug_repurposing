@@ -13,23 +13,27 @@ cat("=================================================\n\n")
 required_packages <- c(
   "shiny",
   "shinydashboard",
+  "fresh",
+  "shinyWidgets",
+  "shinycssloaders",
+  "shinyjs",
   "DT",
   "plotly",
   "tidyverse",
   "yaml",
-  "DRpipe"
+  "CDRPipe"
 )
 
 # Function to check and install packages
 install_if_missing <- function(packages) {
   for (pkg in packages) {
-    if (pkg == "DRpipe") {
-      # Check if DRpipe is installed
-      if (!requireNamespace("DRpipe", quietly = TRUE)) {
-        cat("ERROR: DRpipe package not found!\n")
-        cat("Please install DRpipe first:\n")
-        cat("  devtools::install('../DRpipe')\n\n")
-        stop("DRpipe package is required but not installed.")
+    if (pkg == "CDRPipe") {
+      # Check if CDRPipe is installed
+      if (!requireNamespace("CDRPipe", quietly = TRUE)) {
+        cat("ERROR: CDRPipe package not found!\n")
+        cat("Please install CDRPipe first:\n")
+        cat("  devtools::install('../CDRPipe')\n\n")
+        stop("CDRPipe package is required but not installed.")
       }
     } else {
       # Check CRAN packages
@@ -61,13 +65,36 @@ suppressPackageStartupMessages({
   library(plotly)
   library(tidyverse)
   library(yaml)
-  library(DRpipe)
+  library(CDRPipe)
 })
 cat("Libraries loaded successfully.\n\n")
 
 # Check for required data files
 cat("Checking for required data files...\n")
-data_dir <- "../scripts/data/drug_signatures"
+# Get the directory where this script is located
+# Works with both source() and Rscript
+get_script_dir <- function() {
+  # Try different methods to get script directory
+  if (exists("ofile") && !is.null(ofile <- sys.frame(1)$ofile)) {
+    return(dirname(ofile))
+  }
+
+  # For Rscript
+  args <- commandArgs(trailingOnly = FALSE)
+  file_arg <- grep("^--file=", args, value = TRUE)
+  if (length(file_arg) > 0) {
+    return(dirname(sub("^--file=", "", file_arg)))
+  }
+
+  # Fallback to current directory
+  return(getwd())
+}
+
+app_dir <- get_script_dir()
+repo_root <- normalizePath(file.path(app_dir, ".."), winslash = "/", mustWork = FALSE)
+data_dir <- file.path(repo_root, "scripts", "data", "drug_signatures")
+disease_dir <- file.path(repo_root, "scripts", "data", "disease_signatures")
+cat(sprintf("App directory: %s\n", app_dir))
 
 # CMAP files
 cat("\n  CMAP Database:\n")
@@ -119,7 +146,6 @@ if (length(cmap_missing) > 0 || length(tahoe_missing) > 0) {
 
 # Check for example disease signature files
 cat("Checking for example disease signature files...\n")
-disease_dir <- "../scripts/data/disease_signatures"
 example_files <- c(
   "acne_signature.csv",
   "arthritis_signature.csv",
@@ -139,28 +165,6 @@ cat("\n=================================================\n")
 cat("Launching Shiny App...\n")
 cat("=================================================\n\n")
 
-# Get the directory where this script is located
-# Works with both source() and Rscript
-get_script_dir <- function() {
-  # Try different methods to get script directory
-  if (exists("ofile") && !is.null(ofile <- sys.frame(1)$ofile)) {
-    return(dirname(ofile))
-  }
-  
-  # For Rscript
-  args <- commandArgs(trailingOnly = FALSE)
-  file_arg <- grep("^--file=", args, value = TRUE)
-  if (length(file_arg) > 0) {
-    return(dirname(sub("^--file=", "", file_arg)))
-  }
-  
-  # Fallback to current directory
-  return(getwd())
-}
-
-app_dir <- get_script_dir()
-cat(sprintf("App directory: %s\n", app_dir))
-
 # Check if app.R exists
 app_file <- file.path(app_dir, "app.R")
 if (!file.exists(app_file)) {
@@ -172,7 +176,7 @@ if (!file.exists(app_file)) {
 # Launch the Shiny app
 tryCatch({
   shiny::runApp(
-    appDir = app_file,
+    appDir = app_dir,
     launch.browser = TRUE,
     host = "127.0.0.1",
     port = NULL  # Let Shiny choose an available port

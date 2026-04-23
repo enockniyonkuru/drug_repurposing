@@ -1,0 +1,7 @@
+^.*\.Rproj$
+^\.Rproj\.user$
+^renv$
+^renv\.lock$
+^\.RData$
+^\.Rhistory$
+^\.DS_Store$

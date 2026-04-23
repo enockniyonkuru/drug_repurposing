@@ -3,6 +3,7 @@
 ############################
 *.Rproj
 *.RData
+*.rds
 .Rproj.user/
 .Rhistory
 .Rapp.history
@@ -19,6 +20,15 @@
 
 # (If you generate PDFs of man pages)
 man/*.pdf
+Rplots.pdf
+
+############################
+# Large binary data formats
+############################
+*.parquet
+*.dmp
+*.dmg
+*.h5
 
 ############################
 # Rmd / Quarto / knitr
@@ -27,7 +37,6 @@ man/*.pdf
 cache/
 dump/
 manuscript/
-tahoe_cmap_analysis/dump/
 *.utf8.md
 *.knit.md
 .Rhistory
@@ -47,7 +56,6 @@ renv/library/
 renv/staging/
 packrat/lib*/
 packrat/src/
-tahoe_cmap_analysis/venv/
 
 ############################
 # Compiled code (Rcpp, etc.)
@@ -125,39 +133,23 @@ scripts/results/*
 !scripts/results/.gitkeep
 !scripts/results/README.md
 
-# Ignore tahoe_cmap_analysis results (1.5GB - too large for GitHub)
-tahoe_cmap_analysis/results/*
-!tahoe_cmap_analysis/results/.gitkeep
-!tahoe_cmap_analysis/results/README.md
+# Manuscript comparative analysis now lives in its own repository
+cdrpipe_comparative_analysis/
 
-# Ignore large annotated hits files (exceed GitHub limits)
-tahoe_cmap_analysis/data/*annotated_hits*.csv
+# Large drug signature files in scripts/
+scripts/data/drug_signatures/
 
-# Ignore large Tahoe data files (multi-GB files)
-tahoe_cmap_analysis/data/drug_signatures/tahoe/aggregated.h5
-tahoe_cmap_analysis/data/drug_signatures/tahoe/*.parquet
-tahoe_cmap_analysis/data/drug_signatures/cmap/*.RData
-tahoe_cmap_analysis/data/drug_signatures/tahoe/*.RData
-tahoe_cmap_analysis/data/filtered_tahoe/*.parquet
-tahoe_cmap_analysis/data/analysis/
-tahoe_cmap_analysis/data/disease_signatures/
-tahoe_cmap_analysis/data/drug_evidence/
-tahoe_cmap_analysis/data/processed_data/
-tahoe_cmap_analysis/data/theodoris_lab/
-tahoe_cmap_analysis/dump/
-tahoe_cmap_analysis/reports/*.txt
-tahoe_cmap_analysis/reports/*.csv
-tahoe_cmap_analysis/reports/*.md
-tahoe_cmap_analysis/reports/*.png
-tahoe_cmap_analysis/reports/comparison_plots/
-tahoe_cmap_analysis/reports/corefibroid_diagnostics/
-tahoe_cmap_analysis/scripts/__pycache__/
-tahoe_cmap_analysis/venv/
-
-
+# Large data in endo_tomiko_code
+endo_tomiko_code/code/unstratified/
+endo_tomiko_code/code/cmap data/
+endo_tomiko_code/code/generate DEG/
 
 # R package build artifacts
-DRpipe_*.tar.gz
+CDRPipe_*.tar.gz
+
+# Large drug signature validation files
+scripts/data/drug_signatures/cmap_valid_instances_OG_015.csv
+scripts/data/drug_signatures/tahoe_valid_instances_OG_035.csv
 
 ############################
 # Keep small data files

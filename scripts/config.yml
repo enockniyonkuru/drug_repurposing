@@ -6,8 +6,9 @@
 
 # Execution configuration - specify which profiles/operations to run
 execution:
-  # Profile to use for runall.R (single profile execution)
-  runall_profile: "CMAP_Acne_Sweep"
+  # Profile to use for runall.R (single profile execution).
+  # Keep this on a shipped example so a fresh checkout works out of the box.
+  runall_profile: "TAHOE_Acne_Standard"
 
   # Profiles to compare in compare_profiles.R
   compare_profiles: ["CMAP_Acne_Lenient", "CMAP_Acne_Standard", "CMAP_Acne_Strict"]
@@ -16,7 +17,7 @@ execution:
 # DEFAULT PROFILE (REQUIRED - DO NOT DELETE)
 # ============================================================================
 # This profile is required by the R config package as a technical requirement.
-# 
+#
 # IMPORTANT: Do NOT modify this default profile directly!
 # Instead, create a COPY of it with a new name for your custom analyses.
 # The default profile should always remain in the config file.
@@ -33,39 +34,39 @@ default:
     # This file contains the drug-induced gene expression signatures
     # REQUIRED: Must be downloaded separately (see README Section 3.1)
     signatures: "data/drug_signatures/cmap_signatures.RData"
-    
+
     # Path to YOUR disease gene expression signature (CSV file)
     # Must contain: gene identifiers + log2 fold-change values
     # IMPORTANT: Verify your CSV has column headers! Missing headers is a common issue.
     disease_file: "data/disease_signatures/acne_signature.csv"
-    
+
     # Path to drug experiment metadata (optional but recommended)
     # Contains drug names, cell lines, experimental conditions
     drug_meta: "data/drug_signatures/cmap_drug_experiments_new.csv"
-    
+
     # Path to drug valid instances list (optional but recommended)
     # Contains curated list of valid experiments with DrugBank IDs
     drug_valid: "data/drug_signatures/cmap_valid_instances.csv"
-    
+
     # Output directory for results (relative to scripts/ folder)
     out_dir: "results"
-    
+
   params:
     # ---- Gene Identifier Settings ----
     # Column name in YOUR disease file containing gene identifiers
     # Common values: "SYMBOL", "Gene", "gene_name", "ENSEMBL", "ENTREZ"
     # IMPORTANT: Must match the actual column name in your CSV file exactly
     gene_key: "gene_symbol"
-    
+
     # Prefix for log2 fold-change columns in YOUR disease file
     # If you have columns like "log2FC_1", "log2FC_2", use "log2FC"
     # If you have columns like "logfc_dz:459", "logfc_dz:297", use "logfc_dz"
     logfc_cols_pref: "logfc_dz"
-    
+
     # Path to gene conversion table for mapping gene symbols to Entrez IDs
     # Used when gprofiler2 is unavailable or for faster processing
     gene_conversion_table: "data/gene_id_conversion_table.tsv"
-    
+
     # ---- Gene Filtering Options ----
     # Choose ONE filtering method for each profile:
     #
@@ -77,7 +78,7 @@ default:
     #   - Arthritis data: max logfc=0.302, so 0.10 gives 32 genes
     #   - Glaucoma data: max logfc=0.282, so 0.10 gives 27 genes
     logfc_cutoff: null
-    
+
     # Option 2: Percentile-based filtering (RECOMMENDED - disease-adaptive)
     #   Keeps the top N% of genes by absolute logFC within each disease
     #   This ensures consistent gene set size relative to each disease's distribution
@@ -85,38 +86,66 @@ default:
     percentile_filtering:
       enabled: true
       threshold: 25  # Keep top 75% of genes by |logFC| per disease
-    
+
     # Column name for p-values/adjusted p-values in YOUR disease file
     # Set to null to skip p-value filtering (use fold-change only)
     # Common values: "p_val_adj", "FDR", "pvalue", "padj", or null
     pval_key: null
-    
+
     # P-value threshold for filtering genes (only used if pval_key is not null)
     # Genes with p-value <= this value are kept
     # Typical values: 0.05 (standard), 0.01 (strict), 0.1 (lenient)
     pval_cutoff: 0.05
-    
+
+    # ---- P-Value Calculation Method for Permutation Testing ----
+    # Use Phipson & Smyth (2010) correction for p-value calculation
+    # true = prevents p-value = 0, uses p = 1/(N+1) instead (recommended for publication)
+    # false = allows p-value = 0 when observed score is more extreme than all permutations
+    # Note: CDRPipe default is true; set to false to match original methodology
+    phipson_smyth_correction: true
+
+    # ---- P-Value Calculation Method ----
+    # "continuous" = smooth p-value estimation (CDRPipe default, statistically stronger)
+    # "discrete" = permutation count method: p = (# perms >= observed) / n_permutations
+    #            (transparent but produces discrete p-values with limited permutation counts)
+    # Note: With 1000 permutations, "discrete" method creates discrete p-values (0, 0.001, 0.002, ...)
+    #       This makes results sensitive to ±1 permutation boundary effects at q-value thresholds
+    pvalue_method: "continuous"
+
     # ---- Drug Significance Threshold ----
     # FDR (q-value) threshold for determining significant drug hits
     # Drugs with q-value <= this value are considered significant
     # Typical value: 0.05 (5% false discovery rate)
     q_thresh: 0.05
-    
+
     # ---- Drug Filtering ----
     # Keep only drugs that REVERSE the disease signature (negative connectivity)
     # true = keep only reversal drugs (recommended for drug repurposing)
     # false = keep all drugs (both reversal and mimicking)
     reversal_only: true
-    
+
+    # ---- Statistical Testing Parameters ----
     # Random seed for reproducibility
     # Use the same seed to get identical results across runs
+    # Different seeds will generate different random gene sets for permutation testing
+    # Set to null to use a system-generated seed (results will not be reproducible)
     seed: 123
-    
+
+    # Number of permutations for statistical significance testing
+    # Higher values = more accurate p-values but slower computation
+    # Default: 100000 (100K permutations - recommended for publication)
+    # Typical values:
+    #   1000     = fast exploratory analysis
+    #   10000    = medium (typical for initial screening)
+    #   100000   = standard (recommended for final results)
+    #   1000000  = very accurate (slow, for critical validations)
+    n_permutations: 100000
+
     # ---- Analysis Mode ----
     # "single" = standard analysis with one fold-change cutoff
     # "sweep" = test multiple cutoffs to find robust drug candidates
     mode: "single"
-    
+
     # ---- Multi-Column Handling ----
     # How to combine multiple log2FC columns (if your data has replicates)
     # "average" = take mean of all columns (recommended)
@@ -124,42 +153,42 @@ default:
     # "first" = use only the first column (ignore others)
     # For single-column data, this parameter is ignored
     combine_log2fc: "average"
-    
+
     # ---- Sweep Mode Parameters (only used when mode: "sweep") ----
     # Specific fold-change cutoffs to test, or null for auto-generation
     # Example: [0.5, 1.0, 1.5] or null
     sweep_cutoffs: null
-    
+
     # Auto-generate cutoff grid based on data distribution
     sweep_auto_grid: true
-    
+
     # Step size for auto-generated cutoffs (e.g., 0.1 means 0.5, 0.6, 0.7...)
     sweep_step: 0.05
-    
+
     # Minimum fraction of genes required at each cutoff (e.g., 0.20 = 20%)
     sweep_min_frac: 0.20
-    
+
     # Minimum absolute number of genes required at each cutoff
     sweep_min_genes: 5
-    
+
     # Stop sweep if signature becomes too small
     sweep_stop_on_small: false
-    
+
     # Rule for determining "robust" drugs across cutoffs
     # "all" = drug must be significant at ALL cutoffs
     # "k_of_n" = drug must be significant in at least k cutoffs
     robust_rule: "all"
-    
+
     # Minimum number of cutoffs required (only used if robust_rule: "k_of_n")
     # Example: robust_k: 2 means drug must appear in at least 2 cutoffs
     robust_k: null
-    
+
     # How to aggregate scores across cutoffs in sweep mode
     # "mean" = average score across cutoffs
     # "median" = median score across cutoffs (robust to outliers)
     # "weighted_mean" = weighted average (requires weights parameter)
     aggregate: "mean"
-    
+
     # Weights for weighted aggregation (only used if aggregate: "weighted_mean")
     # Example: [1, 2, 1] to weight middle cutoff more heavily
     weights: null
@@ -181,7 +210,7 @@ CMAP_Acne_Lenient:
     gene_key: "gene_symbol"
     logfc_cols_pref: "logfc_dz"
     gene_conversion_table: "data/gene_id_conversion_table.tsv"
-    logfc_cutoff: 0.033  # Lenient: ~187 genes (top 50%)
+    logfc_cutoff: 0.033
     percentile_filtering:
       enabled: false
       threshold: 25
@@ -204,7 +233,7 @@ CMAP_Acne_Standard:
     gene_key: "gene_symbol"
     logfc_cols_pref: "logfc_dz"
     gene_conversion_table: "data/gene_id_conversion_table.tsv"
-    logfc_cutoff: 0.051  # Standard: ~94 genes (top 25%)
+    logfc_cutoff: 0.055
     percentile_filtering:
       enabled: false
       threshold: 50
@@ -227,7 +256,7 @@ CMAP_Acne_Strict:
     gene_key: "gene_symbol"
     logfc_cols_pref: "logfc_dz"
     gene_conversion_table: "data/gene_id_conversion_table.tsv"
-    logfc_cutoff: 0.07  # Strict: ~56 genes
+    logfc_cutoff: 0.066
     percentile_filtering:
       enabled: false
       threshold: 50
@@ -250,15 +279,15 @@ CMAP_Acne_Sweep:
     gene_key: "gene_symbol"
     logfc_cols_pref: "logfc_dz"
     gene_conversion_table: "data/gene_id_conversion_table.tsv"
-    
+
     # Optimized for acne data (max |logFC| = 0.202)
     # Smaller step = more cutoffs with intermediate gene counts
     logfc_cutoff: 0.0
-    
+
     percentile_filtering:
       enabled: false
       threshold: 25
-    
+
     pval_key: null
     pval_cutoff: 0.05
     q_thresh: 0.05
@@ -464,6 +493,31 @@ TAHOE_Acne_Standard:
     q_thresh: 0.05
     reversal_only: true
     seed: 123
+    mode: "single"
+
+# Reduced-cost verification profile for Acne (TAHOE)
+TAHOE_Acne_Standard_Smoke:
+  paths:
+    signatures: "data/drug_signatures/tahoe_signatures.RData"
+    disease_file: "data/disease_signatures/acne_signature.csv"
+    drug_meta: "data/drug_signatures/tahoe_drug_experiments_new.csv"
+    drug_valid: null
+    out_dir: "results"
+  params:
+    gene_key: "gene_symbol"
+    logfc_cols_pref: "logfc_dz"
+    gene_conversion_table: "data/gene_id_conversion_table.tsv"
+    logfc_cutoff: null
+    percentile_filtering:
+      enabled: true
+      threshold: 50  # Keep top 50% of genes by |logFC|
+    pval_key: null
+    pval_cutoff: 0.05
+    q_thresh: 0.05
+    reversal_only: true
+    seed: 123
+    n_permutations: 1000
+    ncores: 4
     mode: "single"
 
 # Strict fold-change threshold profile for Acne (TAHOE)

@@ -7,7 +7,7 @@
 #'
 
 library(shiny)
-library(DRpipe)
+library(CDRPipe)
 library(shinydashboard)
 library(fresh)
 library(shinyWidgets)
@@ -17,6 +17,65 @@ library(plotly)
 library(tidyverse)
 library(yaml)
 library(shinyjs)
+
+locate_repo_root <- function() {
+  candidates <- unique(c(
+    normalizePath(getwd(), winslash = "/", mustWork = FALSE),
+    normalizePath(file.path(getwd(), ".."), winslash = "/", mustWork = FALSE)
+  ))
+
+  for (candidate in candidates) {
+    if (file.exists(file.path(candidate, "scripts", "config.yml")) &&
+        dir.exists(file.path(candidate, "shiny_app"))) {
+      return(candidate)
+    }
+  }
+
+  stop("Could not locate repository root from the current working directory.")
+}
+
+repo_root <- locate_repo_root()
+scripts_dir <- file.path(repo_root, "scripts")
+
+scripts_path <- function(...) {
+  normalizePath(file.path(scripts_dir, ...), winslash = "/", mustWork = FALSE)
+}
+
+resolve_scripts_path <- function(path) {
+  if (is.null(path) || !nzchar(path)) {
+    return(path)
+  }
+
+  expanded <- path.expand(path)
+  if (!grepl("^(/|[A-Za-z]:|~)", expanded)) {
+    expanded <- file.path(scripts_dir, expanded)
+  }
+
+  normalizePath(expanded, winslash = "/", mustWork = FALSE)
+}
+
+detected_cores <- local({
+  cores <- suppressWarnings(parallel::detectCores(logical = TRUE))
+  if (length(cores) == 0 || is.na(cores[[1]]) || cores[[1]] < 1) {
+    return(1L)
+  }
+  as.integer(cores[[1]])
+})
+
+recommended_cores <- max(1L, detected_cores - 1L)
+
+app_ncores_or_null <- function(ncores) {
+  if (is.null(ncores) || length(ncores) == 0 || is.na(ncores[[1]])) {
+    return(NULL)
+  }
+
+  ncores <- suppressWarnings(as.integer(ncores[[1]]))
+  if (is.na(ncores) || ncores < 2L) {
+    return(NULL)
+  }
+
+  min(ncores, detected_cores)
+}
 
 # Create modern "Scientific SaaS" theme
 my_theme <- fresh::create_theme(
@@ -39,7 +98,7 @@ my_theme <- fresh::create_theme(
 
 # UI Definition
 ui <- dashboardPage(
-  dashboardHeader(title = "CDRpipe"),
+  dashboardHeader(title = "CDRPipe"),
   
   dashboardSidebar(
     sidebarMenu(id = "sidebar",
@@ -489,7 +548,7 @@ ui <- dashboardPage(
         fluidRow(
           column(12,
             div(class = "home-hero",
-              div(class = "home-title", "🔬 Computational Drug Repurposing Pipeline (CDRpipe)"),
+              div(class = "home-title", "🔬 Computational Drug Repurposing Pipeline (CDRPipe)"),
               div(class = "home-subtitle", "Identify existing drugs for new therapeutic applications")
             )
           )
@@ -554,7 +613,7 @@ ui <- dashboardPage(
                 div(class = "workflow-number", "4"),
                 div(class = "workflow-content",
                   strong("Run Analysis:"), br(),
-                  "Execute the pipeline (7-30 minutes depending on configuration)."
+                  "Execute the pipeline. CMAP profiles are usually shorter; large TAHOE runs can take much longer."
                 )
               ),
               div(class = "workflow-step",
@@ -811,8 +870,15 @@ ui <- dashboardPage(
               collapsed = FALSE,
               h4("Expected Analysis Duration:"),
               tags$ul(
-                tags$li(strong("CMAP Analysis: "), "8-15 minutes per profile"),
-                tags$li(strong("TAHOE Analysis: "), "30-50 minutes per profile")
+                tags$li(strong("CMAP Analysis: "), "Usually minutes per profile, depending on permutation count"),
+                tags$li(strong("TAHOE Analysis: "), "Can be substantially longer because the TAHOE matrix is much larger"),
+                tags$li(strong("Fast verification option: "), "Use a smoke profile such as ", tags$code("TAHOE_Acne_Standard_Smoke"), " when available")
+              ),
+              h4("Permutation Guidance:"),
+              tags$ul(
+                tags$li(strong("Final analyses: "), tags$code("n_permutations: 100000"), " for better p-value resolution"),
+                tags$li(strong("Faster validation runs: "), "temporarily lower permutations, for example ", tags$code("1000"), " or ", tags$code("10000")),
+                tags$li(strong("Parallel scoring: "), "saved profiles can also use ", tags$code("ncores"), " to speed up large runs")
               ),
               h4("Important Requirements:"),
               tags$ul(
@@ -1026,10 +1092,10 @@ server <- function(input, output, session) {
     config_profiles = list(),
     comparison_results = list(),
     drug_signatures = list(
-      "CMAP" = "../scripts/data/drug_signatures/cmap_signatures.RData",
-      "TAHOE" = "../scripts/data/drug_signatures/tahoe_signatures.RData"
+      "CMAP" = scripts_path("data", "drug_signatures", "cmap_signatures.RData"),
+      "TAHOE" = scripts_path("data", "drug_signatures", "tahoe_signatures.RData")
     ),
-    selected_drug_signature = "../scripts/data/drug_signatures/cmap_signatures.RData",
+    selected_drug_signature = scripts_path("data", "drug_signatures", "cmap_signatures.RData"),
     # Sweep mode specific results
     drp_object = NULL,
     is_sweep_mode = FALSE,
@@ -1041,7 +1107,7 @@ server <- function(input, output, session) {
   # Load configuration profiles on startup
   observe({
     tryCatch({
-      config_path <- "../scripts/config.yml"
+      config_path <- scripts_path("config.yml")
       if (file.exists(config_path)) {
         config_data <- yaml::read_yaml(config_path)
         profile_names <- setdiff(names(config_data), c("execution", "default"))
@@ -1058,8 +1124,8 @@ server <- function(input, output, session) {
   observeEvent(input$drugSignatureChoice, {
     req(input$drugSignatureChoice)
     signature_map <- list(
-      cmap = "../scripts/data/drug_signatures/cmap_signatures.RData",
-      tahoe = "../scripts/data/drug_signatures/tahoe_signatures.RData"
+      cmap = scripts_path("data", "drug_signatures", "cmap_signatures.RData"),
+      tahoe = scripts_path("data", "drug_signatures", "tahoe_signatures.RData")
     )
     values$selected_drug_signature <- signature_map[[input$drugSignatureChoice]]
   })
@@ -1068,8 +1134,8 @@ server <- function(input, output, session) {
   observeEvent(input$compDrugSignatureChoice, {
     req(input$compDrugSignatureChoice)
     signature_map <- list(
-      cmap = "../scripts/data/drug_signatures/cmap_signatures.RData",
-      tahoe = "../scripts/data/drug_signatures/tahoe_signatures.RData"
+      cmap = scripts_path("data", "drug_signatures", "cmap_signatures.RData"),
+      tahoe = scripts_path("data", "drug_signatures", "tahoe_signatures.RData")
     )
     values$selected_drug_signature <- signature_map[[input$compDrugSignatureChoice]]
   })
@@ -1163,7 +1229,7 @@ server <- function(input, output, session) {
   # Load example data
   observeEvent(input$loadAcne, {
     tryCatch({
-      path <- "../scripts/data/disease_signatures/acne_signature.csv"
+      path <- scripts_path("data", "disease_signatures", "acne_signature.csv")
       if (file.exists(path)) {
         values$data <- read.csv(path, stringsAsFactors = FALSE, check.names = FALSE)
         showNotification("Acne data loaded!", type = "message")
@@ -1177,7 +1243,7 @@ server <- function(input, output, session) {
   
   observeEvent(input$loadArthritis, {
     tryCatch({
-      path <- "../scripts/data/disease_signatures/arthritis_signature.csv"
+      path <- scripts_path("data", "disease_signatures", "arthritis_signature.csv")
       if (file.exists(path)) {
         values$data <- read.csv(path, stringsAsFactors = FALSE, check.names = FALSE)
         showNotification("Arthritis data loaded!", type = "message")
@@ -1191,7 +1257,7 @@ server <- function(input, output, session) {
   
   observeEvent(input$loadGlaucoma, {
     tryCatch({
-      path <- "../scripts/data/disease_signatures/glaucoma_signature.csv"
+      path <- scripts_path("data", "disease_signatures", "glaucoma_signature.csv")
       if (file.exists(path)) {
         values$data <- read.csv(path, stringsAsFactors = FALSE, check.names = FALSE)
         showNotification("Glaucoma data loaded!", type = "message")
@@ -1343,7 +1409,26 @@ server <- function(input, output, session) {
                        selected = "mean")
           ),
           
-          numericInput("customSeed", "Random Seed:", value = 123, min = 1, step = 1)
+          numericInput("customSeed", "Random Seed:", value = 123, min = 1, step = 1),
+          numericInput("customPermutations", "Permutation Count:", value = 100000, min = 100, step = 100),
+          p(style = "color: #666; font-size: 12px;",
+            "Use 100000 permutations for final analyses when practical. Lower values such as 1000 or 10000 are useful for faster validation runs."),
+          shinyWidgets::materialSwitch("customEnableParallel", "Enable Parallel Scoring", value = FALSE, status = "success"),
+          conditionalPanel(
+            condition = "input.customEnableParallel",
+            p(style = "color: #666; font-size: 12px;",
+              paste0(
+                "This Shiny session detected ", detected_cores, " CPU cores. ",
+                "Recommended max for responsiveness: ", recommended_cores, "."
+              )
+            ),
+            numericInput("customCores", "CPU Cores:", value = recommended_cores, min = 1, max = detected_cores, step = 1),
+            div(
+              style = "color: #8a6d3b; background: #fcf8e3; border: 1px solid #faebcc; padding: 10px; border-radius: 6px; margin-top: 8px;",
+              strong("Warning: "),
+              "Using too many cores can slow the app down or increase memory usage, especially for large TAHOE runs."
+            )
+          )
           )
         )
       )
@@ -1450,6 +1535,25 @@ server <- function(input, output, session) {
           ),
           
           numericInput("compCustomSeed", "Random Seed:", value = 123, min = 1, step = 1),
+          numericInput("compCustomPermutations", "Permutation Count:", value = 100000, min = 100, step = 100),
+          p(style = "color: #666; font-size: 12px;",
+            "Use 100000 permutations for final analyses when practical. Lower values can make comparison runs much faster."),
+          shinyWidgets::materialSwitch("compCustomEnableParallel", "Enable Parallel Scoring", value = FALSE, status = "success"),
+          conditionalPanel(
+            condition = "input.compCustomEnableParallel",
+            p(style = "color: #666; font-size: 12px;",
+              paste0(
+                "This Shiny session detected ", detected_cores, " CPU cores. ",
+                "Recommended max for responsiveness: ", recommended_cores, "."
+              )
+            ),
+            numericInput("compCustomCores", "CPU Cores:", value = recommended_cores, min = 1, max = detected_cores, step = 1),
+            div(
+              style = "color: #8a6d3b; background: #fcf8e3; border: 1px solid #faebcc; padding: 10px; border-radius: 6px; margin-top: 8px;",
+              strong("Warning: "),
+              "Using too many cores can slow the app down or increase memory usage when several profiles are compared."
+            )
+          ),
           
           actionButton("saveComparativeProfile", "Add Profile to Comparison", 
                       class = "btn-success", icon = icon("plus"))
@@ -1499,7 +1603,11 @@ server <- function(input, output, session) {
           q_thresh = input$compCustomQThresh,
           reversal_only = input$compCustomReversalOnly,
           mode = input$compCustomMode,
-          seed = input$compCustomSeed
+          seed = input$compCustomSeed,
+          n_permutations = input$compCustomPermutations,
+          ncores = app_ncores_or_null(
+            if (isTRUE(input$compCustomEnableParallel)) input$compCustomCores else NULL
+          )
         ),
         sweep_params
       )
@@ -1542,14 +1650,8 @@ server <- function(input, output, session) {
         
         if (!is.null(profile) && !is.null(values$data)) {
           # IMPORTANT: Load the drug signature path from the profile
-          # Adjust path to be relative to shiny_app directory
           if (!is.null(profile$paths$signatures)) {
-            sig_path <- profile$paths$signatures
-            # If path doesn't start with "/" or "../", prepend "../scripts/"
-            if (!grepl("^/|^\\.\\./", sig_path)) {
-              sig_path <- file.path("../scripts", sig_path)
-            }
-            values$selected_drug_signature <- sig_path
+            values$selected_drug_signature <- resolve_scripts_path(profile$paths$signatures)
           }
           
           # Update UI inputs with profile values
@@ -1559,6 +1661,14 @@ server <- function(input, output, session) {
                          value = profile$params$logfc_cols_pref %||% "log2FC")
           updateNumericInput(session, "customLogFCCutoff", 
                             value = profile$params$logfc_cutoff %||% 1.0)
+          updateCheckboxInput(session, "customUsePercentile",
+                             value = isTRUE(profile$params$percentile_filtering$enabled %||% FALSE))
+          updateSliderInput(session, "customPercentileThreshold",
+                           value = profile$params$percentile_filtering$threshold %||% 50)
+          updateSelectInput(session, "customPvalKey",
+                           selected = profile$params$pval_key %||% "")
+          updateNumericInput(session, "customPvalCutoff",
+                            value = profile$params$pval_cutoff %||% 0.05)
           updateNumericInput(session, "customQThresh", 
                             value = profile$params$q_thresh %||% 0.05)
           updateCheckboxInput(session, "customReversalOnly", 
@@ -1567,6 +1677,12 @@ server <- function(input, output, session) {
                            selected = profile$params$mode %||% "single")
           updateNumericInput(session, "customSeed", 
                             value = profile$params$seed %||% 123)
+          updateNumericInput(session, "customPermutations",
+                            value = profile$params$n_permutations %||% 100000)
+          updateCheckboxInput(session, "customEnableParallel",
+                             value = !is.null(app_ncores_or_null(profile$params$ncores)))
+          updateNumericInput(session, "customCores",
+                            value = app_ncores_or_null(profile$params$ncores) %||% recommended_cores)
           
           # Update sweep parameters if they exist
           if (!is.null(profile$params$sweep_auto_grid)) {
@@ -1594,6 +1710,8 @@ server <- function(input, output, session) {
                              selected = profile$params$aggregate)
           }
         }
+      } else if (!is.null(input$selectedExistingProfile) && input$selectedExistingProfile == "custom") {
+        values$selected_profile_name <- "custom"
       }
     }
   })
@@ -1615,6 +1733,14 @@ server <- function(input, output, session) {
       }
       if (!is.null(input$customMode)) {
         cat("  Mode:", input$customMode, "\n")
+        if (!is.null(input$customPermutations)) {
+          cat("  Permutations:", input$customPermutations, "\n")
+        }
+        if (isTRUE(input$customEnableParallel) && !is.null(input$customCores)) {
+          cat("  CPU cores:", input$customCores, "\n")
+        } else {
+          cat("  Parallel scoring: disabled\n")
+        }
         if (input$customMode == "sweep") {
           cat("\nSweep Settings:\n")
           if (!is.null(input$customSweepAutoGrid)) {
@@ -1709,16 +1835,10 @@ server <- function(input, output, session) {
           # Use paths from the profile config
           profile_config <- values$config_profiles[[values$selected_profile_name]]
           
-          # Get paths from profile, prepending "../scripts/" if relative paths
           selected_meta <- if (!is.null(profile_config$paths$drug_meta)) {
-            meta_path <- profile_config$paths$drug_meta
-            if (!grepl("^/|^\\.\\./", meta_path)) {
-              file.path("../scripts", meta_path)
-            } else {
-              meta_path
-            }
+            resolve_scripts_path(profile_config$paths$drug_meta)
           } else {
-            "../scripts/data/drug_signatures/cmap_drug_experiments_new.csv"
+            scripts_path("data", "drug_signatures", "cmap_drug_experiments_new.csv")
           }
           
           # IMPORTANT: If drug_valid is NULL in config, pass NULL to DRP
@@ -1727,38 +1847,36 @@ server <- function(input, output, session) {
             if (is.na(profile_config$paths$drug_valid) || profile_config$paths$drug_valid == "") {
               NULL
             } else {
-              valid_path <- profile_config$paths$drug_valid
-              if (!grepl("^/|^\\.\\./", valid_path)) {
-                file.path("../scripts", valid_path)
-              } else {
-                valid_path
-              }
+              resolve_scripts_path(profile_config$paths$drug_valid)
             }
           } else {
             NULL
           }
         } else {
           # Fall back to signature-based mapping only if NOT using a profile
-          drug_meta_mapping <- list(
-            "../scripts/data/drug_signatures/cmap_signatures.RData" = "../scripts/data/drug_signatures/cmap_drug_experiments_new.csv",
-            "../scripts/data/drug_signatures/tahoe_signatures.RData" = "../scripts/data/drug_signatures/tahoe_drug_experiments_new.csv",
-            "../scripts/data/drug_rep_cmap_ranks_shared_genes_drugs.RData" = "../scripts/data/drug_signatures/cmap_drug_experiments_new.csv",
-            "../scripts/data/drug_rep_tahoe_ranks_shared_genes_drugs.RData" = "../scripts/data/drug_signatures/tahoe_drug_experiments_new.csv"
+          drug_meta_mapping <- setNames(
+            list(
+              scripts_path("data", "drug_signatures", "cmap_drug_experiments_new.csv"),
+              scripts_path("data", "drug_signatures", "tahoe_drug_experiments_new.csv"),
+              scripts_path("data", "drug_signatures", "cmap_drug_experiments_new.csv"),
+              scripts_path("data", "drug_signatures", "tahoe_drug_experiments_new.csv")
+            ),
+            c(
+              scripts_path("data", "drug_signatures", "cmap_signatures.RData"),
+              scripts_path("data", "drug_signatures", "tahoe_signatures.RData"),
+              scripts_path("data", "drug_rep_cmap_ranks_shared_genes_drugs.RData"),
+              scripts_path("data", "drug_rep_tahoe_ranks_shared_genes_drugs.RData")
+            )
           )
-          selected_meta <- drug_meta_mapping[[values$selected_drug_signature]] %||% "../scripts/data/drug_signatures/cmap_drug_experiments_new.csv"
+          selected_meta <- drug_meta_mapping[[values$selected_drug_signature]] %||% scripts_path("data", "drug_signatures", "cmap_drug_experiments_new.csv")
           selected_valid <- NULL
         }
         
         # Get gene_conversion_table from profile or use default
         gene_conversion_path <- if (profile_selected && !is.null(profile_config$params$gene_conversion_table)) {
-          conv_path <- profile_config$params$gene_conversion_table
-          if (!grepl("^/|^\\.\\./", conv_path)) {
-            file.path("../scripts", conv_path)
-          } else {
-            conv_path
-          }
+          resolve_scripts_path(profile_config$params$gene_conversion_table)
         } else {
-          "../scripts/data/gene_id_conversion_table.tsv"
+          scripts_path("data", "gene_id_conversion_table.tsv")
         }
 
         # When a profile is selected, use profile config for filtering params
@@ -1799,6 +1917,12 @@ server <- function(input, output, session) {
             q_thresh = input$customQThresh,
             reversal_only = input$customReversalOnly,
             seed = input$customSeed,
+            n_permutations = if (profile_selected) profile_config$params$n_permutations %||% 100000 else input$customPermutations,
+            ncores = if (profile_selected) app_ncores_or_null(profile_config$params$ncores) else app_ncores_or_null(if (isTRUE(input$customEnableParallel)) input$customCores else NULL),
+            pvalue_method = if (profile_selected) profile_config$params$pvalue_method %||% "continuous" else "continuous",
+            phipson_smyth_correction = if (profile_selected) {
+              if (!is.null(profile_config$params$phipson_smyth_correction)) profile_config$params$phipson_smyth_correction else TRUE
+            } else TRUE,
             mode = input$customMode,
             verbose = TRUE
           ),
@@ -1947,12 +2071,7 @@ server <- function(input, output, session) {
           
           # IMPORTANT: Use the drug signature from the profile, not the global selection
           profile_drug_signature <- if (!is.null(profile_config$paths$signatures)) {
-            sig_path <- profile_config$paths$signatures
-            # If path doesn't start with "/" or "../", prepend "../scripts/"
-            if (!grepl("^/|^\\.\\./", sig_path)) {
-              sig_path <- file.path("../scripts", sig_path)
-            }
-            sig_path
+            resolve_scripts_path(profile_config$paths$signatures)
           } else {
             values$selected_drug_signature
           }
@@ -1960,14 +2079,9 @@ server <- function(input, output, session) {
           # Build DRP arguments including sweep parameters if present
           # Use metadata paths from profile
           profile_meta_path <- if (!is.null(profile_config$paths$drug_meta)) {
-            meta_path <- profile_config$paths$drug_meta
-            if (!grepl("^/|^\\.\\./", meta_path)) {
-              file.path("../scripts", meta_path)
-            } else {
-              meta_path
-            }
+            resolve_scripts_path(profile_config$paths$drug_meta)
           } else {
-            "../scripts/data/drug_signatures/cmap_drug_experiments_new.csv"
+            scripts_path("data", "drug_signatures", "cmap_drug_experiments_new.csv")
           }
           
           # IMPORTANT: Respect drug_valid setting from profile
@@ -1976,12 +2090,7 @@ server <- function(input, output, session) {
             if (is.na(profile_config$paths$drug_valid) || profile_config$paths$drug_valid == "") {
               NULL
             } else {
-              valid_path <- profile_config$paths$drug_valid
-              if (!grepl("^/|^\\.\\./", valid_path)) {
-                file.path("../scripts", valid_path)
-              } else {
-                valid_path
-              }
+              resolve_scripts_path(profile_config$paths$drug_valid)
             }
           } else {
             NULL
@@ -1989,14 +2098,9 @@ server <- function(input, output, session) {
           
           # Get gene_conversion_table from profile config
           profile_gene_conv_path <- if (!is.null(profile_config$params$gene_conversion_table)) {
-            conv_path <- profile_config$params$gene_conversion_table
-            if (!grepl("^/|^\\.\\./", conv_path)) {
-              file.path("../scripts", conv_path)
-            } else {
-              conv_path
-            }
+            resolve_scripts_path(profile_config$params$gene_conversion_table)
           } else {
-            "../scripts/data/gene_id_conversion_table.tsv"
+            scripts_path("data", "gene_id_conversion_table.tsv")
           }
 
           # Determine logfc_cutoff: use NULL if percentile_filtering is enabled
@@ -2026,6 +2130,12 @@ server <- function(input, output, session) {
             q_thresh = profile_config$params$q_thresh %||% 0.05,
             reversal_only = isTRUE(profile_config$params$reversal_only %||% TRUE),
             seed = profile_config$params$seed %||% 123,
+            n_permutations = profile_config$params$n_permutations %||% 100000,
+            ncores = app_ncores_or_null(profile_config$params$ncores),
+            pvalue_method = profile_config$params$pvalue_method %||% "continuous",
+            phipson_smyth_correction = if (!is.null(profile_config$params$phipson_smyth_correction)) {
+              profile_config$params$phipson_smyth_correction
+            } else TRUE,
             verbose = FALSE,
             mode = profile_config$params$mode %||% "single"
           )
@@ -2420,7 +2530,7 @@ server <- function(input, output, session) {
              yaxis = list(title = ""))
   })
   
-  # Profile overlap (at least 2) - using DRpipe's pl_overlap function
+  # Profile overlap (at least 2) - using CDRPipe's pl_overlap function
   output$comparisonOverlapAtLeast2 <- renderPlot({
     req(values$comparison_results)
     
@@ -2434,8 +2544,8 @@ server <- function(input, output, session) {
         df
       }))
       
-      # Use DRpipe's prepare_overlap function
-      mat <- DRpipe::prepare_overlap(combined, at_least2 = TRUE)
+      # Use CDRPipe's prepare_overlap function
+      mat <- CDRPipe::prepare_overlap(combined, at_least2 = TRUE)
       
       if (nrow(mat) == 0) {
         plot(1, 1, type = "n", axes = FALSE, xlab = "", ylab = "")
@@ -2460,7 +2570,7 @@ server <- function(input, output, session) {
     })
   })
   
-  # Profile UpSet plot - using DRpipe's pl_upset function
+  # Profile UpSet plot - using CDRPipe's pl_upset function
   output$comparisonUpset <- renderPlot({
     req(values$comparison_results)
     
@@ -2474,8 +2584,8 @@ server <- function(input, output, session) {
         df
       }))
       
-      # Use DRpipe's prepare_upset_drug function
-      drugs_list <- DRpipe::prepare_upset_drug(combined)
+      # Use CDRPipe's prepare_upset_drug function
+      drugs_list <- CDRPipe::prepare_upset_drug(combined)
       
       if (length(drugs_list) == 0) {
         plot(1, 1, type = "n", axes = FALSE, xlab = "", ylab = "")
@@ -2627,8 +2737,8 @@ server <- function(input, output, session) {
         stringsAsFactors = FALSE
       )
       
-      # Use DRpipe's prepare_heatmap function with cmap_exp for drug name mapping
-      heatmap_data <- DRpipe::prepare_heatmap(
+      # Use CDRPipe's prepare_heatmap function with cmap_exp for drug name mapping
+      heatmap_data <- CDRPipe::prepare_heatmap(
         top_drugs_subset,
         dz_sig = values$drp_object$disease_sig,
         cmap_sig = values$drp_object$cmap_sig,
