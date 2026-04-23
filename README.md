@@ -164,8 +164,9 @@ You can interact with this repository in two ways, depending on your preferences
    ```
 
 2. **Download required data files** (see [Section 5.1](#51-required-data-files))
-   - Download `cmap_signatures.RData` from Google Drive
-   - Optionally download `tahoe_signatures.RData` for TAHOE analysis
+   - Download the required CMap files from Box: `cmap_signatures.RData` and `cmap_drug_experiments_new.csv`
+   - If using TAHOE, download `tahoe_signatures.parquet`, `convert_parquet_to_rdata.R`, and `tahoe_drug_experiments_new.csv` from Box
+   - Convert the Tahoe parquet file to `tahoe_signatures.RData` before running analyses
    - Place drug signature files in `scripts/data/drug_signatures/` directory
    - Place your disease signature files in `scripts/data/disease_signatures/` directory
 
@@ -261,7 +262,9 @@ scripts/
 │   │   ├── cmap_signatures.RData         # Required (232 MB)
 │   │   ├── cmap_drug_experiments_new.csv # Required for CMap
 │   │   ├── cmap_valid_instances.csv      # Optional (41 KB)
-│   │   ├── tahoe_signatures.RData        # Optional (2.9 GB)
+│   │   ├── convert_parquet_to_rdata.R    # Download from Box if using TAHOE
+│   │   ├── tahoe_signatures.parquet      # Download from Box if using TAHOE
+│   │   ├── tahoe_signatures.RData        # Generated locally from parquet; required for TAHOE
 │   │   ├── tahoe_drug_experiments_new.csv # Required if using TAHOE (4.1 MB)
 │   │   └── tahoe_valid_instances_OG_035.csv # Optional
 │   ├── disease_signatures/
@@ -277,10 +280,12 @@ scripts/
 2. **cmap_drug_experiments_new.csv** (831 KB) - REQUIRED - CMap experiment metadata
 3. **cmap_valid_instances.csv** (41 KB) - Optional - Curated list of valid CMap instances
 
-**For TAHOE Analysis (2 required + 1 optional):**
-1. **tahoe_signatures.RData** (2.9 GB) - REQUIRED - TAHOE reference signatures database
-2. **tahoe_drug_experiments_new.csv** (4.1 MB) - REQUIRED - TAHOE experiment metadata
-3. **tahoe_valid_instances_OG_035.csv** (optional) - Optional - Curated list of valid TAHOE instances
+**For TAHOE Analysis (3 required for setup + 1 generated output + 1 optional):**
+1. **tahoe_signatures.parquet** - REQUIRED download from Box - Source TAHOE signature matrix
+2. **convert_parquet_to_rdata.R** - REQUIRED download from Box - Helper script used to build the RData file
+3. **tahoe_drug_experiments_new.csv** (4.1 MB) - REQUIRED - TAHOE experiment metadata
+4. **tahoe_signatures.RData** (generated locally) - REQUIRED for analysis - Create this from the parquet file before running TAHOE analyses
+5. **tahoe_valid_instances_OG_035.csv** (optional) - Optional - Curated list of valid TAHOE instances
 
 #### Disease Signature Files
 
@@ -291,20 +296,47 @@ Place your disease gene expression data in `scripts/data/disease_signatures/`:
 
 #### Download Instructions
 
-🔗 **[Download Data Files from Google Drive](https://drive.google.com/drive/folders/1LvKiT0u3DGf5sW5bYVJk7scbM5rLmBx-?usp=sharing)**
+🔗 **[Download Data Files from Box](https://ucsf.box.com/s/m54ipylmdytjsqmlp7axnabvjh2q8lwl)**
 
 **Steps:**
-1. Visit the Google Drive link above
+1. Visit the Box link above
 2. Download required drug signature files:
    - For CMap: `cmap_signatures.RData` and `cmap_drug_experiments_new.csv`
-   - For TAHOE: `tahoe_signatures.RData` and `tahoe_drug_experiments_new.csv`
+   - For TAHOE: `convert_parquet_to_rdata.R`, `tahoe_signatures.parquet`, and `tahoe_drug_experiments_new.csv`
 3. Create directories if they don't exist:
    ```bash
    mkdir -p scripts/data/drug_signatures
    mkdir -p scripts/data/disease_signatures
    ```
 4. Place downloaded files in `scripts/data/drug_signatures/`
-5. Place your disease data in `scripts/data/disease_signatures/`
+5. If you are using TAHOE, convert the parquet file to an `.RData` file:
+   ```bash
+   cd scripts/data/drug_signatures
+   Rscript convert_parquet_to_rdata.R tahoe_signatures.parquet -o tahoe_signatures.RData --object-name tahoe_signatures --force
+   cd ../../..
+   ```
+6. Before proceeding with TAHOE, verify that the generated `.RData` file loads correctly.
+
+   If you run this from the repository root, use:
+   ```bash
+   Rscript -e 'e <- new.env(); load("scripts/data/drug_signatures/tahoe_signatures.RData", envir=e); obj <- get(ls(e)[1], envir=e); cat("class:", class(obj), "\n"); cat("dim:", paste(dim(obj), collapse=" x "), "\n"); print(head(obj[, 1:10]))'
+   ```
+
+   If you run it from a different working directory, update the path inside `load(...)` first.
+
+   You should see a non-`NA` preview similar to:
+   ```text
+   class: data.frame
+   dim: 22168 x 56828
+     V1    V2    V3    V4    V5    V6    V7    V8    V9   V10
+   1  1 16540  3291 18302 11965  2035  1954 17745  1875  9212
+   2  2  3587  3788 17564   628 13006 15845 10754  4091  5094
+   3  3 13572 15901 16376 14958  8502 16275 13944 16754 16163
+   4  9  5163  3092  6496  9387 12986 12516  3464 16969 17830
+   5 10 19186 18657 19118 18594 16140 18055 18364 17774 18192
+   6 12 12008 15723  2490 16261   764 12904  7980 13862  3775
+   ```
+7. Place your disease data in `scripts/data/disease_signatures/`
 
 **Verify your data directory:**
 ```bash
@@ -316,6 +348,13 @@ For CMap, you should see:
 - cmap_signatures.RData (232 MB)
 - cmap_drug_experiments_new.csv (831 KB)
 - cmap_valid_instances.csv (41 KB, optional)
+
+For TAHOE, after conversion, you should see:
+- convert_parquet_to_rdata.R
+- tahoe_signatures.parquet
+- tahoe_signatures.RData
+- tahoe_drug_experiments_new.csv
+- tahoe_valid_instances_OG_035.csv (optional)
 
 ---
 
@@ -693,7 +732,7 @@ drug_repurposing/
 │   │   │   ├── cmap_signatures.RData  # CMap (232 MB)
 │   │   │   ├── cmap_drug_experiments_new.csv
 │   │   │   ├── cmap_valid_instances.csv
-│   │   │   ├── tahoe_signatures.RData # TAHOE (2.9 GB)
+│   │   │   ├── tahoe_signatures.RData # TAHOE (generated locally from Box parquet)
 │   │   │   ├── tahoe_drug_experiments_new.csv
 │   │   │   └── tahoe_valid_instances_OG_035.csv
 │   │   └── disease_signatures/        # Disease gene expression CSVs
@@ -992,7 +1031,9 @@ These thresholds determine which drug signatures meet quality criteria based on 
 - **cmap_valid_instances.csv**: Curated valid instances with DrugBank IDs and validation flags (optional but recommended).
 
 **TAHOE Reference Files:**
-- **tahoe_signatures.RData**: Matrix with genes as rows, experiments as columns. Required for TAHOE analyses.
+- **tahoe_signatures.parquet**: Download this source file from Box when setting up TAHOE locally.
+- **convert_parquet_to_rdata.R**: Helper script from Box used to convert the Tahoe parquet file into the RData file expected by the pipeline.
+- **tahoe_signatures.RData**: Matrix with genes as rows, experiments as columns. Generate this locally from `tahoe_signatures.parquet`; it is required for TAHOE analyses.
 - **tahoe_drug_experiments_new.csv**: Experiment metadata containing drug names, cell lines, and experimental conditions.
 - **tahoe_valid_instances_OG_035.csv**: Curated valid instances with DrugBank IDs and validation flags (optional).
 
@@ -1044,9 +1085,9 @@ library(CDRPipe)
 ?run_dr  # Should display help
 
 # Test data file
-test_load <- try(load("scripts/data/cmap_signatures.RData"), silent = TRUE)
+test_load <- try(load("scripts/data/drug_signatures/cmap_signatures.RData"), silent = TRUE)
 if (inherits(test_load, "try-error")) {
-  cat("ERROR: File corrupted. Re-download from Google Drive.\n")
+  cat("ERROR: File corrupted. Re-download from Box.\n")
 } else {
   cat("SUCCESS: File loaded correctly.\n")
 }

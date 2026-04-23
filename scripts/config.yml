@@ -8,7 +8,7 @@
 execution:
   # Profile to use for runall.R (single profile execution).
   # Keep this on a shipped example so a fresh checkout works out of the box.
-  runall_profile: "CMAP_Acne_Standard"
+  runall_profile: "TAHOE_Acne_Standard"
 
   # Profiles to compare in compare_profiles.R
   compare_profiles: ["CMAP_Acne_Lenient", "CMAP_Acne_Standard", "CMAP_Acne_Strict"]
