@@ -35,6 +35,9 @@ Imports:
     tibble,
     gprofiler2
 Suggests:
+    DBI,
+    RMySQL,
+    RSQLite,
     testthat (>= 3.0.0),
     writexl,
     knitr,

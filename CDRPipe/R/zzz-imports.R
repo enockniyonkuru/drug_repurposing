@@ -6,5 +6,7 @@
 utils::globalVariables(c(
   "name","value","exp_id","subset_comparison_id","q","cmap_score","Cell",
   "dir.out","dir.out.img","cmap_signatures","cmap_experiments_valid",
-  "valid","DrugBank.ID"
+  "valid","DrugBank.ID","approval_status","black_box_warning","chembl_id",
+  "chembl_known","count","disease_normalized","drug_normalized",
+  "novelty_flag","withdrawn","your_score"
 ))

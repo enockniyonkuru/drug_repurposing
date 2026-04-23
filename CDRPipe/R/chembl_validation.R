@@ -1,14 +1,8 @@
-#' ChEMBL Disease-Drug Validation Module
-#'
-#' Extract known disease-drug pairs from ChEMBL and match against repurposing results.
-#' Validates findings for novelty and FDA/EMA approval status.
-#'
-#' @description
-#' This module provides functions to:
-#' - Load and parse ChEMBL chemreps (SMILES/InChI mappings)
-#' - Extract disease-drug indication pairs with approval metadata
-#' - Match your pipeline results against known ChEMBL pairs
-#' - Flag novel discoveries, FDA-approved candidates, withdrawn drugs, and black-box warnings
+# ChEMBL Disease-Drug Validation Module
+#
+# Extract known disease-drug pairs from ChEMBL and match against repurposing
+# results. These helpers load ChEMBL identifiers, extract indication metadata,
+# validate candidates, and summarize novelty and safety signals.
 
 # ============================================================================
 # 1. Load ChEMBL Chemreps (SMILES/InChI/InChIKey Mappings)
@@ -17,7 +11,7 @@
 #' Load ChEMBL Chemical Representations
 #'
 #' @param chemreps_path Path to chembl_36_chemreps.txt.gz (gzipped tab-separated)
-#' @param cols Column names: CHEMBL_ID, SMILES, InChI, InChIKey
+#' @param verbose Print progress messages.
 #'
 #' @return data.frame with drug structures mapped to chembl_id/molregno
 #'
@@ -32,7 +26,7 @@ load_chembl_chemreps <- function(chemreps_path, verbose = TRUE) {
   
   if (verbose) cat("Loading ChEMBL chemical representations...\n")
   
-  chemreps <- read.delim(
+  chemreps <- utils::read.delim(
     gzfile(chemreps_path),
     header = TRUE,
     sep = "\t",
@@ -61,6 +55,7 @@ load_chembl_chemreps <- function(chemreps_path, verbose = TRUE) {
 #' @param db_type "sqlite" or "mysql"
 #' @param include_withdrawn Include withdrawn drugs? Default TRUE
 #' @param min_phase Minimum MAX_PHASE to include (0-4). Default 0 (all)
+#' @param verbose Print progress messages.
 #'
 #' @return data.frame with columns:
 #'   - drug_name, chembl_id, molregno
@@ -81,7 +76,7 @@ extract_chembl_indications <- function(
 ) {
   
   if (db_type == "sqlite") {
-    if (!require("RSQLite", quietly = TRUE)) {
+    if (!requireNamespace("RSQLite", quietly = TRUE)) {
       stop("RSQLite package required. Install with: install.packages('RSQLite')")
     }
     
@@ -93,7 +88,7 @@ extract_chembl_indications <- function(
     on.exit(DBI::dbDisconnect(conn), add = TRUE)
     
   } else if (db_type == "mysql") {
-    if (!require("RMySQL", quietly = TRUE)) {
+    if (!requireNamespace("RMySQL", quietly = TRUE)) {
       stop("RMySQL package required. Install with: install.packages('RMySQL')")
     }
     # Expects db_path as "user:password@host/database"
@@ -161,6 +156,7 @@ extract_chembl_indications <- function(
 #' @param chembl_indications data.frame from extract_chembl_indications()
 #' @param chembl_chemreps data.frame from load_chembl_chemreps() (optional, for SMILES matching)
 #' @param match_method "exact_name", "fuzzy_name", or "smiles"
+#' @param verbose Print progress messages.
 #'
 #' @return data.frame with columns:
 #'   - your_drug, your_disease, your_score (if provided)
@@ -244,6 +240,7 @@ validate_candidates <- function(
 #'
 #' @param validation data.frame from validate_candidates()
 #' @param output_path Path to save CSV report (optional)
+#' @param verbose Print progress messages.
 #'
 #' @return List with summary stats and optionally saves CSV
 #'
@@ -285,7 +282,7 @@ summarize_validation <- function(validation, output_path = NULL, verbose = TRUE)
   }
   
   if (!is.null(output_path)) {
-    readr::write_csv(validation, output_path)
+    utils::write.csv(validation, output_path, row.names = FALSE)
     if (verbose) cat(sprintf("\nValidation table saved to: %s\n", output_path))
   }
   
@@ -317,6 +314,8 @@ summarize_validation <- function(validation, output_path = NULL, verbose = TRUE)
 #' @param output_path Path for output SQLite database
 #' @param verbose Print progress
 #'
+#' @return Invisibly returns the SQLite output path.
+#'
 #' @export
 build_chembl_sqlite <- function(
   mysql_user,
@@ -326,11 +325,11 @@ build_chembl_sqlite <- function(
   verbose = TRUE
 ) {
   
-  if (!require("RMySQL", quietly = TRUE)) {
+  if (!requireNamespace("RMySQL", quietly = TRUE)) {
     stop("RMySQL required. Install: install.packages('RMySQL')")
   }
   
-  if (!require("RSQLite", quietly = TRUE)) {
+  if (!requireNamespace("RSQLite", quietly = TRUE)) {
     stop("RSQLite required. Install: install.packages('RSQLite')")
   }
   
