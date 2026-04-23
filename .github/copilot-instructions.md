@@ -60,9 +60,10 @@ drug_repurposing/
 │   ├── runall.R                # Single-profile execution
 │   ├── compare_profiles.R      # Multi-profile comparison
 │   └── data/                   # Input data files
-├── shiny_app/                  # Interactive web application
-└── cdrpipe_comparative_analysis/  # Case studies & comparative analyses
+└── shiny_app/                  # Interactive web application
 ```
+
+Manuscript-specific comparative analyses and case studies now live in the separate `cdrpipe-comparative-analysis` repository: https://github.com/enockniyonkuru/cdrpipe-comparative-analysis
 
 ## Architecture
 

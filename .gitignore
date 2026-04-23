@@ -37,7 +37,6 @@ Rplots.pdf
 cache/
 dump/
 manuscript/
-cdrpipe_comparative_analysis/dump/
 *.utf8.md
 *.knit.md
 .Rhistory
@@ -57,7 +56,6 @@ renv/library/
 renv/staging/
 packrat/lib*/
 packrat/src/
-cdrpipe_comparative_analysis/venv/
 
 ############################
 # Compiled code (Rcpp, etc.)
@@ -135,39 +133,8 @@ scripts/results/*
 !scripts/results/.gitkeep
 !scripts/results/README.md
 
-# Ignore cdrpipe_comparative_analysis results (large generated outputs)
-cdrpipe_comparative_analysis/results/*
-!cdrpipe_comparative_analysis/results/.gitkeep
-!cdrpipe_comparative_analysis/results/README.md
-
-# Ignore large annotated hits files (exceed GitHub limits)
-cdrpipe_comparative_analysis/data/*annotated_hits*.csv
-
-# Ignore large Tahoe data files (multi-GB files)
-cdrpipe_comparative_analysis/data/drug_signatures/tahoe/aggregated.h5
-cdrpipe_comparative_analysis/data/drug_signatures/tahoe/*.parquet
-cdrpipe_comparative_analysis/data/drug_signatures/cmap/*.RData
-cdrpipe_comparative_analysis/data/drug_signatures/cmap/*.csv
-cdrpipe_comparative_analysis/data/drug_signatures/cmap/*.rds
-cdrpipe_comparative_analysis/data/drug_signatures/tahoe/*.RData
-cdrpipe_comparative_analysis/data/filtered_tahoe/*.parquet
-cdrpipe_comparative_analysis/data/analysis/
-cdrpipe_comparative_analysis/data/disease_signatures/
-cdrpipe_comparative_analysis/data/drug_evidence/
-cdrpipe_comparative_analysis/data/known_drugs/
-cdrpipe_comparative_analysis/data/processed_data/
-cdrpipe_comparative_analysis/data/theodoris_lab/
-cdrpipe_comparative_analysis/dump/
-cdrpipe_comparative_analysis/validation/
-cdrpipe_comparative_analysis/dr_kord_analysis/
-cdrpipe_comparative_analysis/reports/*.txt
-cdrpipe_comparative_analysis/reports/*.csv
-cdrpipe_comparative_analysis/reports/*.md
-cdrpipe_comparative_analysis/reports/*.png
-cdrpipe_comparative_analysis/reports/comparison_plots/
-cdrpipe_comparative_analysis/reports/corefibroid_diagnostics/
-cdrpipe_comparative_analysis/scripts/__pycache__/
-cdrpipe_comparative_analysis/venv/
+# Manuscript comparative analysis now lives in its own repository
+cdrpipe_comparative_analysis/
 
 # Large drug signature files in scripts/
 scripts/data/drug_signatures/

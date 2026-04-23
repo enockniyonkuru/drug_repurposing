@@ -745,14 +745,6 @@ drug_repurposing/
 │   ├── app.R                          # Main Shiny application
 │   ├── run.R                          # Launcher with dependency checks
 │   └── check_packages.R              # Package verification script
-├── cdrpipe_comparative_analysis/      # Comparative analyses & case studies
-│   ├── README.md                      # Study documentation
-│   ├── shared/                        # Shared scripts and utilities
-│   ├── drug_signatures/               # Drug signature data files
-│   ├── drug_evidence/                 # Known drug evidence for validation
-│   ├── creeds/                        # CREEDS 233-disease analysis
-│   ├── autoimmune/                    # Autoimmune case study
-│   └── endometriosis/                 # Endometriosis case study
 ├── visuals/                           # Manuscript figures
 │   └── figures/                       # Generated figures
 └── dump/                              # Archived/deprecated files (not needed for pipeline)
@@ -769,10 +761,10 @@ Directories with their own README:
 | `CDRPipe/` | Core R package (functions, classes, CLI) | [CDRPipe/README.md](CDRPipe/README.md) |
 | `scripts/` | Pipeline execution, configuration, input data, results | [scripts/README.md](scripts/README.md) |
 | `shiny_app/` | Interactive web application for analysis and visualization | [shiny_app/README.md](shiny_app/README.md) |
-| `cdrpipe_comparative_analysis/` | Comparative analyses & case studies (CREEDS 233-disease, autoimmune, endometriosis) | [cdrpipe_comparative_analysis/README.md](cdrpipe_comparative_analysis/README.md) |
+| Manuscript comparative analysis | CREEDS 233-disease analysis, autoimmune case study, endometriosis case study, and manuscript-specific comparative analyses | [cdrpipe-comparative-analysis](https://github.com/enockniyonkuru/cdrpipe-comparative-analysis) |
 
 **Key references:**
-- For **threshold tuning**, valid instance creation, and batch processing: see [cdrpipe_comparative_analysis/README.md](cdrpipe_comparative_analysis/README.md)
+- For **threshold tuning**, valid instance creation, and manuscript batch processing: see [cdrpipe-comparative-analysis](https://github.com/enockniyonkuru/cdrpipe-comparative-analysis)
 - For **running your own disease**: see [scripts/README.md](scripts/README.md)
 
 ---
@@ -983,7 +975,7 @@ CMAP_Acne_Strict:
 
 ## 9.5 Advanced Threshold Tuning
 
-For detailed guidance on adjusting disease and drug signature thresholds, filtering parameters, and running batch analyses with custom configurations, see the **[cdrpipe_comparative_analysis README](cdrpipe_comparative_analysis/README.md)**.
+For detailed guidance on adjusting disease and drug signature thresholds, filtering parameters, and running manuscript batch analyses with custom configurations, see the **[cdrpipe-comparative-analysis repository](https://github.com/enockniyonkuru/cdrpipe-comparative-analysis)**.
 
 This includes:
 - **Creating valid instances** for drug signatures with correlation-based quality control
@@ -996,7 +988,7 @@ This includes:
 - **CMAP**: r = 0.15 (minimum correlation threshold)
 - **TAHOE**: r = 0.35 (stricter correlation threshold)
 
-These thresholds determine which drug signatures meet quality criteria based on replicate consistency. For more details on parameter sensitivity and best practices, refer to the [Comparative Analysis guide](cdrpipe_comparative_analysis/README.md).
+These thresholds determine which drug signatures meet quality criteria based on replicate consistency. For more details on parameter sensitivity and best practices, refer to the [cdrpipe-comparative-analysis repository](https://github.com/enockniyonkuru/cdrpipe-comparative-analysis).
 
 ---
 
