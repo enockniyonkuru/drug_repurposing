@@ -171,7 +171,13 @@ You can interact with this repository in two ways, depending on your preferences
    - Place your disease signature files in `scripts/data/disease_signatures/` directory
 
 3. **Install the R package**
+
+   > **Run in R (e.g., RStudio Console or R terminal):** First, make sure your working directory is set to the `drug_repurposing` folder.
+
    ```r
+   # Set working directory to the drug_repurposing folder (adjust path as needed)
+   setwd("/path/to/drug_repurposing")
+
    devtools::install("CDRPipe")
    ```
 
@@ -377,13 +383,21 @@ install.packages(c("pheatmap", "UpSetR", "gplots"))
 ### 5.3 Installation Steps
 
 #### Step 1: Clone Repository
+
+**Run in Terminal (Bash):**
 ```bash
 git clone https://github.com/enockniyonkuru/drug_repurposing.git
 cd drug_repurposing
 ```
 
 #### Step 2: Install CDRPipe Package
+
+**Run in R (e.g., RStudio Console or R terminal):** Make sure your working directory is the `drug_repurposing` folder before running these commands.
+
 ```r
+# Set your working directory to the drug_repurposing folder (adjust path as needed)
+setwd("/path/to/drug_repurposing")
+
 # Install devtools if needed
 install.packages("devtools", repos = "https://cloud.r-project.org")
 
@@ -392,6 +406,8 @@ devtools::install("CDRPipe")
 ```
 
 #### Step 3: Verify Installation
+
+**Run in R:**
 ```r
 library(CDRPipe)
 ?run_dr  # Should display help documentation
@@ -404,7 +420,7 @@ Current package interfaces:
 - `load_dr_config(...)`
 - `dr_cli()`
 
-Quick quality check:
+Quick quality check (**Run in Terminal (Bash)**, from the `drug_repurposing` folder):
 ```bash
 Rscript scripts/ci/check_cdrpipe.R
 ```
