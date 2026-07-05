@@ -10,35 +10,36 @@ with support for parameter sweeps and meta-analysis filters.
 }
 \section{Methods}{
 \subsection{Public methods}{
-\itemize{
-\item \href{#method-DRP-new}{\code{DRP$new()}}
-\item \href{#method-DRP-log}{\code{DRP$log()}}
-\item \href{#method-DRP-load_cmap}{\code{DRP$load_cmap()}}
-\item \href{#method-DRP-load_disease}{\code{DRP$load_disease()}}
-\item \href{#method-DRP-derive_threshold_grid}{\code{DRP$derive_threshold_grid()}}
-\item \href{#method-DRP-clean_signature}{\code{DRP$clean_signature()}}
-\item \href{#method-DRP-score}{\code{DRP$score()}}
-\item \href{#method-DRP-annotate_and_filter}{\code{DRP$annotate_and_filter()}}
-\item \href{#method-DRP-quick_report}{\code{DRP$quick_report()}}
-\item \href{#method-DRP-save_outputs}{\code{DRP$save_outputs()}}
-\item \href{#method-DRP-run_single}{\code{DRP$run_single()}}
-\item \href{#method-DRP-run_processing}{\code{DRP$run_processing()}}
-\item \href{#method-DRP-run_analysis}{\code{DRP$run_analysis()}}
-\item \href{#method-DRP-run_all}{\code{DRP$run_all()}}
-\item \href{#method-DRP-run_sweep}{\code{DRP$run_sweep()}}
-\item \href{#method-DRP-aggregate_thresholds}{\code{DRP$aggregate_thresholds()}}
-\item \href{#method-DRP-create_sweep_analysis_files}{\code{DRP$create_sweep_analysis_files()}}
-\item \href{#method-DRP-create_sweep_plots}{\code{DRP$create_sweep_plots()}}
-\item \href{#method-DRP-create_basic_consolidated_results}{\code{DRP$create_basic_consolidated_results()}}
-\item \href{#method-DRP-clone}{\code{DRP$clone()}}
-}
+  \itemize{
+    \item \href{#method-DRP-initialize}{\code{DRP$new()}}
+    \item \href{#method-DRP-log}{\code{DRP$log()}}
+    \item \href{#method-DRP-load_cmap}{\code{DRP$load_cmap()}}
+    \item \href{#method-DRP-load_disease}{\code{DRP$load_disease()}}
+    \item \href{#method-DRP-derive_threshold_grid}{\code{DRP$derive_threshold_grid()}}
+    \item \href{#method-DRP-clean_signature}{\code{DRP$clean_signature()}}
+    \item \href{#method-DRP-score}{\code{DRP$score()}}
+    \item \href{#method-DRP-annotate_and_filter}{\code{DRP$annotate_and_filter()}}
+    \item \href{#method-DRP-quick_report}{\code{DRP$quick_report()}}
+    \item \href{#method-DRP-save_outputs}{\code{DRP$save_outputs()}}
+    \item \href{#method-DRP-run_single}{\code{DRP$run_single()}}
+    \item \href{#method-DRP-run_processing}{\code{DRP$run_processing()}}
+    \item \href{#method-DRP-run_analysis}{\code{DRP$run_analysis()}}
+    \item \href{#method-DRP-run_all}{\code{DRP$run_all()}}
+    \item \href{#method-DRP-run_sweep}{\code{DRP$run_sweep()}}
+    \item \href{#method-DRP-aggregate_thresholds}{\code{DRP$aggregate_thresholds()}}
+    \item \href{#method-DRP-create_sweep_analysis_files}{\code{DRP$create_sweep_analysis_files()}}
+    \item \href{#method-DRP-create_sweep_plots}{\code{DRP$create_sweep_plots()}}
+    \item \href{#method-DRP-create_basic_consolidated_results}{\code{DRP$create_basic_consolidated_results()}}
+    \item \href{#method-DRP-clone}{\code{DRP$clone()}}
+  }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-DRP-new"></a>}}
-\if{latex}{\out{\hypertarget{method-DRP-new}{}}}
-\subsection{Method \code{new()}}{
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{DRP$new(
+\if{html}{\out{<a id="method-DRP-initialize"></a>}}
+\if{latex}{\out{\hypertarget{method-DRP-initialize}{}}}
+\subsection{\code{DRP$new()}}{
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{DRP$new(
   signatures_rdata,
   disease_path,
   disease_pattern = NULL,
@@ -85,187 +86,226 @@ with support for parameter sweeps and meta-analysis filters.
   ncores = NULL,
   pvalue_method = "continuous",
   phipson_smyth_correction = TRUE
-)}\if{html}{\out{</div>}}
+)}
+    \if{html}{\out{</div>}}
+  }
 }
 
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-DRP-log"></a>}}
 \if{latex}{\out{\hypertarget{method-DRP-log}{}}}
-\subsection{Method \code{log()}}{
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{DRP$log(...)}\if{html}{\out{</div>}}
+\subsection{\code{DRP$log()}}{
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{DRP$log(...)}
+    \if{html}{\out{</div>}}
+  }
 }
 
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-DRP-load_cmap"></a>}}
 \if{latex}{\out{\hypertarget{method-DRP-load_cmap}{}}}
-\subsection{Method \code{load_cmap()}}{
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{DRP$load_cmap()}\if{html}{\out{</div>}}
+\subsection{\code{DRP$load_cmap()}}{
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{DRP$load_cmap()}
+    \if{html}{\out{</div>}}
+  }
 }
 
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-DRP-load_disease"></a>}}
 \if{latex}{\out{\hypertarget{method-DRP-load_disease}{}}}
-\subsection{Method \code{load_disease()}}{
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{DRP$load_disease()}\if{html}{\out{</div>}}
+\subsection{\code{DRP$load_disease()}}{
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{DRP$load_disease()}
+    \if{html}{\out{</div>}}
+  }
 }
 
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-DRP-derive_threshold_grid"></a>}}
 \if{latex}{\out{\hypertarget{method-DRP-derive_threshold_grid}{}}}
-\subsection{Method \code{derive_threshold_grid()}}{
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{DRP$derive_threshold_grid()}\if{html}{\out{</div>}}
+\subsection{\code{DRP$derive_threshold_grid()}}{
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{DRP$derive_threshold_grid()}
+    \if{html}{\out{</div>}}
+  }
 }
 
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-DRP-clean_signature"></a>}}
 \if{latex}{\out{\hypertarget{method-DRP-clean_signature}{}}}
-\subsection{Method \code{clean_signature()}}{
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{DRP$clean_signature(cutoff = NULL)}\if{html}{\out{</div>}}
+\subsection{\code{DRP$clean_signature()}}{
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{DRP$clean_signature(cutoff = NULL)}
+    \if{html}{\out{</div>}}
+  }
 }
 
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-DRP-score"></a>}}
 \if{latex}{\out{\hypertarget{method-DRP-score}{}}}
-\subsection{Method \code{score()}}{
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{DRP$score()}\if{html}{\out{</div>}}
+\subsection{\code{DRP$score()}}{
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{DRP$score()}
+    \if{html}{\out{</div>}}
+  }
 }
 
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-DRP-annotate_and_filter"></a>}}
 \if{latex}{\out{\hypertarget{method-DRP-annotate_and_filter}{}}}
-\subsection{Method \code{annotate_and_filter()}}{
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{DRP$annotate_and_filter()}\if{html}{\out{</div>}}
+\subsection{\code{DRP$annotate_and_filter()}}{
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{DRP$annotate_and_filter()}
+    \if{html}{\out{</div>}}
+  }
 }
 
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-DRP-quick_report"></a>}}
 \if{latex}{\out{\hypertarget{method-DRP-quick_report}{}}}
-\subsection{Method \code{quick_report()}}{
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{DRP$quick_report(top_n = 25)}\if{html}{\out{</div>}}
+\subsection{\code{DRP$quick_report()}}{
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{DRP$quick_report(top_n = 25)}
+    \if{html}{\out{</div>}}
+  }
 }
 
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-DRP-save_outputs"></a>}}
 \if{latex}{\out{\hypertarget{method-DRP-save_outputs}{}}}
-\subsection{Method \code{save_outputs()}}{
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{DRP$save_outputs()}\if{html}{\out{</div>}}
+\subsection{\code{DRP$save_outputs()}}{
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{DRP$save_outputs()}
+    \if{html}{\out{</div>}}
+  }
 }
 
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-DRP-run_single"></a>}}
 \if{latex}{\out{\hypertarget{method-DRP-run_single}{}}}
-\subsection{Method \code{run_single()}}{
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{DRP$run_single()}\if{html}{\out{</div>}}
+\subsection{\code{DRP$run_single()}}{
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{DRP$run_single()}
+    \if{html}{\out{</div>}}
+  }
 }
 
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-DRP-run_processing"></a>}}
 \if{latex}{\out{\hypertarget{method-DRP-run_processing}{}}}
-\subsection{Method \code{run_processing()}}{
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{DRP$run_processing()}\if{html}{\out{</div>}}
+\subsection{\code{DRP$run_processing()}}{
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{DRP$run_processing()}
+    \if{html}{\out{</div>}}
+  }
 }
 
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-DRP-run_analysis"></a>}}
 \if{latex}{\out{\hypertarget{method-DRP-run_analysis}{}}}
-\subsection{Method \code{run_analysis()}}{
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{DRP$run_analysis(make_plots = TRUE)}\if{html}{\out{</div>}}
+\subsection{\code{DRP$run_analysis()}}{
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{DRP$run_analysis(make_plots = TRUE)}
+    \if{html}{\out{</div>}}
+  }
 }
 
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-DRP-run_all"></a>}}
 \if{latex}{\out{\hypertarget{method-DRP-run_all}{}}}
-\subsection{Method \code{run_all()}}{
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{DRP$run_all(make_plots = TRUE)}\if{html}{\out{</div>}}
+\subsection{\code{DRP$run_all()}}{
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{DRP$run_all(make_plots = TRUE)}
+    \if{html}{\out{</div>}}
+  }
 }
 
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-DRP-run_sweep"></a>}}
 \if{latex}{\out{\hypertarget{method-DRP-run_sweep}{}}}
-\subsection{Method \code{run_sweep()}}{
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{DRP$run_sweep()}\if{html}{\out{</div>}}
+\subsection{\code{DRP$run_sweep()}}{
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{DRP$run_sweep()}
+    \if{html}{\out{</div>}}
+  }
 }
 
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-DRP-aggregate_thresholds"></a>}}
 \if{latex}{\out{\hypertarget{method-DRP-aggregate_thresholds}{}}}
-\subsection{Method \code{aggregate_thresholds()}}{
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{DRP$aggregate_thresholds()}\if{html}{\out{</div>}}
+\subsection{\code{DRP$aggregate_thresholds()}}{
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{DRP$aggregate_thresholds()}
+    \if{html}{\out{</div>}}
+  }
 }
 
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-DRP-create_sweep_analysis_files"></a>}}
 \if{latex}{\out{\hypertarget{method-DRP-create_sweep_analysis_files}{}}}
-\subsection{Method \code{create_sweep_analysis_files()}}{
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{DRP$create_sweep_analysis_files()}\if{html}{\out{</div>}}
+\subsection{\code{DRP$create_sweep_analysis_files()}}{
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{DRP$create_sweep_analysis_files()}
+    \if{html}{\out{</div>}}
+  }
 }
 
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-DRP-create_sweep_plots"></a>}}
 \if{latex}{\out{\hypertarget{method-DRP-create_sweep_plots}{}}}
-\subsection{Method \code{create_sweep_plots()}}{
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{DRP$create_sweep_plots()}\if{html}{\out{</div>}}
+\subsection{\code{DRP$create_sweep_plots()}}{
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{DRP$create_sweep_plots()}
+    \if{html}{\out{</div>}}
+  }
 }
 
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-DRP-create_basic_consolidated_results"></a>}}
 \if{latex}{\out{\hypertarget{method-DRP-create_basic_consolidated_results}{}}}
-\subsection{Method \code{create_basic_consolidated_results()}}{
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{DRP$create_basic_consolidated_results()}\if{html}{\out{</div>}}
+\subsection{\code{DRP$create_basic_consolidated_results()}}{
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{DRP$create_basic_consolidated_results()}
+    \if{html}{\out{</div>}}
+  }
 }
 
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-DRP-clone"></a>}}
 \if{latex}{\out{\hypertarget{method-DRP-clone}{}}}
-\subsection{Method \code{clone()}}{
-The objects of this class are cloneable with this method.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{DRP$clone(deep = FALSE)}\if{html}{\out{</div>}}
+\subsection{\code{DRP$clone()}}{
+  The objects of this class are cloneable with this method.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{DRP$clone(deep = FALSE)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{deep}}{Whether to make a deep clone.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{deep}}{Whether to make a deep clone.}
-}
-\if{html}{\out{</div>}}
-}
-}
 }
