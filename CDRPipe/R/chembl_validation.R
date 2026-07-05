@@ -88,12 +88,13 @@ extract_chembl_indications <- function(
     on.exit(DBI::dbDisconnect(conn), add = TRUE)
     
   } else if (db_type == "mysql") {
-    if (!requireNamespace("RMySQL", quietly = TRUE)) {
-      stop("RMySQL package required. Install with: install.packages('RMySQL')")
-    }
-    # Expects db_path as "user:password@host/database"
-    conn <- DBI::dbConnect(RMySQL::MySQL(), group = "my-db")
-    on.exit(DBI::dbDisconnect(conn), add = TRUE)
+    stop(
+      "Direct MySQL connections via RMySQL are no longer supported (RMySQL is deprecated).\n",
+      "To connect to a live ChEMBL MySQL database, install RMariaDB and use:\n",
+      "  conn <- DBI::dbConnect(RMariaDB::MariaDB(), user=..., password=..., dbname=...)\n",
+      "Alternatively, export the ChEMBL dump to SQLite first with build_chembl_sqlite() ",
+      "after adapting it to use RMariaDB."
+    )
   } else {
     stop("db_type must be 'sqlite' or 'mysql'")
   }
@@ -325,19 +326,22 @@ build_chembl_sqlite <- function(
   verbose = TRUE
 ) {
   
-  if (!requireNamespace("RMySQL", quietly = TRUE)) {
-    stop("RMySQL required. Install: install.packages('RMySQL')")
-  }
-  
   if (!requireNamespace("RSQLite", quietly = TRUE)) {
     stop("RSQLite required. Install: install.packages('RSQLite')")
   }
-  
+
   if (verbose) cat("Connecting to MySQL...\n")
-  
-  # Connect to MySQL
+
+  # Connect to MySQL via RMariaDB (RMySQL is deprecated)
+  if (!requireNamespace("RMariaDB", quietly = TRUE)) {
+    stop(
+      "RMariaDB package required to connect to a MySQL/MariaDB database.\n",
+      "Install with: install.packages('RMariaDB')"
+    )
+  }
+
   mysql_conn <- DBI::dbConnect(
-    RMySQL::MySQL(),
+    RMariaDB::MariaDB(),
     user = mysql_user,
     password = mysql_pass,
     dbname = mysql_db

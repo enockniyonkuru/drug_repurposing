@@ -36,7 +36,7 @@ Imports:
     gprofiler2
 Suggests:
     DBI,
-    RMySQL,
+    RMariaDB,
     RSQLite,
     testthat (>= 3.0.0),
     writexl,
