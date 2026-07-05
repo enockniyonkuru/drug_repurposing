@@ -3,7 +3,6 @@ name: CDRPipe Checks
 on:
   push:
     branches:
-      - develop
       - main
       - master
   pull_request:
@@ -27,10 +26,12 @@ jobs:
         uses: r-lib/actions/setup-r-dependencies@v2
         with:
           working-directory: CDRPipe
+          dependencies: '"hard"'
           extra-packages: |
             any::devtools
             any::roxygen2
             any::rcmdcheck
+            any::testthat
 
       - name: Regenerate roxygen docs
         run: Rscript -e 'roxygen2::roxygenise("CDRPipe")'
